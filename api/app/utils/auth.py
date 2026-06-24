@@ -9,12 +9,15 @@ from sqlalchemy.orm import Session
 from dotenv import load_dotenv
 
 from app.database import get_db
-from app.models import Usuario
+from app.models import Usuario, Entrenador, Alumno
 
 load_dotenv()
 
 # Configuración de JWT
-JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY", "super_secret_key_change_me_in_production_9f2f8b")
+import secrets
+JWT_SECRET_KEY = os.getenv("JWT_SECRET_KEY")
+if not JWT_SECRET_KEY:
+    JWT_SECRET_KEY = secrets.token_urlsafe(32)
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24  # 24 horas por defecto para desarrollo
 
@@ -69,8 +72,36 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     if email is None:
         raise credentials_exception
         
+    rol = payload.get("rol")
+    if rol == "superadmin":
+        # Retornar un objeto usuario "falso" en memoria
+        from uuid import UUID
+        return Usuario(
+            id_usuario=UUID("00000000-0000-0000-0000-000000000000"),
+            email=email,
+            rol="superadmin"
+        )
+        
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
     if usuario is None:
         raise credentials_exception
         
+    # Validaciones financieras de acceso B2B
+    if usuario.rol == "entrenador":
+        entrenador = db.query(Entrenador).filter(Entrenador.id_usuario == usuario.id_usuario).first()
+        if entrenador and entrenador.estado_financiero == "suspendido":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Pago requerido"
+            )
+    elif usuario.rol == "alumno":
+        alumno = db.query(Alumno).filter(Alumno.id_usuario == usuario.id_usuario).first()
+        if alumno:
+            entrenador_asignado = db.query(Entrenador).filter(Entrenador.id_usuario == alumno.id_entrenador).first()
+            if entrenador_asignado and entrenador_asignado.estado_financiero == "suspendido":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Servicio temporalmente suspendido"
+                )
+                
     return usuario

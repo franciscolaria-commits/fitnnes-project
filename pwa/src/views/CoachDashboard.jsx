@@ -307,12 +307,27 @@ export default function CoachDashboard() {
                        <h3 className="text-sm font-semibold text-zinc-200">{rut.nombre_rutina}</h3>
                        <p className="text-xs text-blue-400 mt-1 font-mono">v{rut.version_id}</p>
                      </div>
-                     <button 
-                       onClick={() => { setEditingRoutine(rut); setIsBuildingRoutine(true); }}
-                       className="px-2 py-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 rounded text-xs"
-                     >
-                       Editar
-                     </button>
+                     <div className="flex gap-2">
+                       <button 
+                         onClick={() => { setEditingRoutine(rut); setIsBuildingRoutine(true); }}
+                         className="px-2 py-1 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 rounded text-xs"
+                       >
+                         Editar
+                       </button>
+                       <button 
+                         onClick={async () => {
+                           if (!(await modal.confirm(`¿Duplicar la rutina "${rut.nombre_rutina}"?`))) return;
+                           try {
+                             await api.post(`/api/v1/routines/${rut.id_rutina}/duplicate`);
+                             await modal.alert("Rutina duplicada exitosamente.");
+                             loadData();
+                           } catch(e) { await modal.alert(e.message); }
+                         }}
+                         className="px-2 py-1 bg-indigo-900/40 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-800/60 transition-colors rounded text-xs font-medium"
+                       >
+                         Duplicar
+                       </button>
+                     </div>
                    </div>
                    
                    <div className="mt-2 border-t border-zinc-800/50 pt-3">

@@ -139,6 +139,70 @@ def update_routine(
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Error transaccional al actualizar rutina: {str(e)}")
 
+@router.post("/{id_rutina}/duplicate", response_model=schemas.RutinaOut)
+def duplicate_routine(
+    id_rutina: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo los entrenadores pueden duplicar rutinas")
+
+    # 1. Buscar rutina original
+    old_rutina = db.query(models.Rutina).filter(
+        models.Rutina.id_rutina == id_rutina,
+        models.Rutina.id_entrenador == current_user.id_usuario,
+        models.Rutina.is_active == True
+    ).first()
+
+    if not old_rutina:
+        raise HTTPException(status_code=404, detail="Rutina activa no encontrada")
+
+    try:
+        # 2. Crear nueva Rutina (Copia)
+        new_rutina_id = uuid4()
+        new_rutina = models.Rutina(
+            id_rutina=new_rutina_id,
+            id_entrenador=current_user.id_usuario,
+            nombre_rutina=old_rutina.nombre_rutina + " (Copia)",
+            version_id=1,
+            is_active=True,
+            frecuencia_semanal=old_rutina.frecuencia_semanal
+        )
+        db.add(new_rutina)
+
+        # 3. Insertar la jerarquía profunda clonada
+        for old_dia in old_rutina.dias:
+            new_dia_id = uuid4()
+            new_dia = models.RutinaDia(
+                id_dia=new_dia_id,
+                id_rutina=new_rutina_id,
+                nombre_dia=old_dia.nombre_dia,
+                orden=old_dia.orden
+            )
+            db.add(new_dia)
+
+            for old_ej in old_dia.ejercicios:
+                new_ej_id = uuid4()
+                new_ej = models.RutinaEjercicio(
+                    id_rutina_ejercicio=new_ej_id,
+                    id_dia=new_dia_id,
+                    id_ejercicio=old_ej.id_ejercicio,
+                    series_esperadas=old_ej.series_esperadas,
+                    reps_esperadas=old_ej.reps_esperadas,
+                    descanso_segundos=old_ej.descanso_segundos,
+                    orden=old_ej.orden
+                )
+                db.add(new_ej)
+
+        db.commit()
+        db.refresh(new_rutina)
+        return new_rutina
+
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error transaccional al duplicar rutina: {str(e)}")
+
 @router.post("/{id_rutina}/assign")
 def assign_routine(
     id_rutina: UUID,

@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
 // Obtener el JWT de la sesión
 function getToken() {
@@ -41,6 +41,19 @@ async function request(endpoint, options = {}) {
       console.warn("[API] Token expirado o inválido. Forzando deslogueo.");
       logout();
       throw new Error("Sesión expirada. Por favor inicia sesión nuevamente.");
+    }
+
+    // Si recibimos un 403 Forbidden (Interceptor Financiero B2B)
+    if (response.status === 403) {
+      const errorData = await response.clone().json().catch(() => ({}));
+      const detail = errorData.detail || "";
+      if (detail.includes("Pago") || detail.includes("temporalmente") || detail.includes("suspendido")) {
+        console.warn("[API] Bloqueo financiero detectado.");
+        // Guardar el mensaje para que la vista de bloqueo lo lea
+        sessionStorage.setItem("fitness_blocked_reason", detail);
+        window.location.href = "/blocked";
+        throw new Error(detail);
+      }
     }
     
     return response;

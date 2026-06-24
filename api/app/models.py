@@ -21,6 +21,9 @@ class Entrenador(Base):
     biografia = Column(String)
     anios_experiencia = Column(Integer)
     url_foto_perfil = Column(String) # Se alojará en Cloudflare R2
+    limite_alumnos = Column(Integer, default=10, nullable=False)
+    fecha_vencimiento = Column(DateTime, nullable=True)
+    estado_financiero = Column(String, default="activo", nullable=False) # 'activo', 'suspendido'
     
     usuario = relationship("Usuario")
 
@@ -31,7 +34,7 @@ class Alumno(Base):
     peso_corporal_actual = Column(Float)
     fecha_ultimo_peso = Column(DateTime, default=datetime.utcnow)
     objetivo = Column(String)
-    estado_activo = Column(Boolean, default=True)
+    estado_activo = Column(Boolean, default=True, index=True)
     id_rutina_activa = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=True)
     
     usuario = relationship("Usuario")

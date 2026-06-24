@@ -12,8 +12,18 @@ from app.routers.student_me import router as student_me_router
 from app.routers.exercises import router as exercises_router
 from app.routers.routines import router as routines_router
 from app.routers.sessions import router as sessions_router
+from app.routers.superadmin import router as superadmin_router
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from app.utils.rate_limit import limiter
 
 app = FastAPI(title="Fitness Platform API")
+
+# Rate Limiting Global Setup
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 # Configurar middleware CORS para comunicación cruzada (Frontend PWA a Backend API)
 app.add_middleware(
@@ -33,6 +43,7 @@ app.include_router(exercises_router)
 app.include_router(routines_router)
 app.include_router(sessions_router)
 app.include_router(storage_router)
+app.include_router(superadmin_router)
 
 
 

@@ -1,5 +1,6 @@
+import os
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from uuid import UUID
@@ -12,6 +13,7 @@ from app.utils.auth import (
     verificar_password,
     crear_token_acceso
 )
+from app.utils.rate_limit import limiter
 
 router = APIRouter(
     prefix="/api/v1/auth",
@@ -138,11 +140,28 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
         )
 
 @router.post("/login", response_model=Token)
-def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Endpoint para autenticar usuarios mediante OAuth2.
     Valida las credenciales y retorna un token de acceso JWT.
     """
+    # 1. Validar si es el SuperAdmin B2B
+    SUPERADMIN_EMAIL = os.getenv("SUPERADMIN_EMAIL")
+    SUPERADMIN_PASSWORD = os.getenv("SUPERADMIN_PASSWORD")
+    
+    if SUPERADMIN_EMAIL and SUPERADMIN_PASSWORD and form_data.username.lower() == SUPERADMIN_EMAIL.lower() and form_data.password == SUPERADMIN_PASSWORD:
+        access_token = crear_token_acceso(data={"sub": SUPERADMIN_EMAIL, "rol": "superadmin"})
+        # Retornamos UUID dummy (lleno de ceros) ya que no existe en tabla usuarios
+        return Token(
+            access_token=access_token,
+            token_type="bearer",
+            email=SUPERADMIN_EMAIL,
+            rol="superadmin",
+            id_usuario=UUID("00000000-0000-0000-0000-000000000000")
+        )
+        
+    # 2. Validar usuarios normales en BD
     usuario = db.query(Usuario).filter(Usuario.email == form_data.username.lower()).first()
     if not usuario or not verificar_password(form_data.password, usuario.password_hash):
         raise HTTPException(

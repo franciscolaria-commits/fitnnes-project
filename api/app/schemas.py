@@ -48,6 +48,9 @@ class EntrenadorBase(BaseModel):
     biografia: Optional[str] = None
     anios_experiencia: Optional[int] = None
     url_foto_perfil: Optional[str] = None
+    limite_alumnos: Optional[int] = 10
+    fecha_vencimiento: Optional[datetime] = None
+    estado_financiero: Optional[str] = "activo"
 
 class EntrenadorUpdate(EntrenadorBase):
     pass
@@ -274,3 +277,21 @@ class LeagueStatusOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+# ==========================================
+# ESQUEMAS SUPERADMIN
+# ==========================================
+
+class CoachAdminOut(BaseModel):
+    id_usuario: UUID
+    nombre: Optional[str] = None
+    email: str
+    limite_alumnos: int
+    estado_financiero: str
+    fecha_vencimiento: Optional[datetime] = None
+    total_alumnos: int
+
+class CoachAdminUpdate(BaseModel):
+    limite_alumnos: Optional[int] = None
+    estado_financiero: Optional[str] = None
+    fecha_vencimiento: Optional[datetime] = None
