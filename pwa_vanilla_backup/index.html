@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fitness Coach Platform - Dashboard</title>
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./vendor/tailwind.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #09090b;
+      background-image: 
+        radial-gradient(at 0% 0%, hsla(242, 78%, 15%, 0.5) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(217, 91%, 12%, 0.4) 0px, transparent 50%);
+      background-attachment: fixed;
+    }
+    .glass-card {
+      background: rgba(18, 18, 24, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    /* Estilos forzados para garantizar inputs oscuros y legibles en cualquier navegador */
+    input, textarea, select {
+      background-color: #121218 !important;
+      color: #f4f4f5 !important;
+      border: 1px solid rgba(255, 255, 255, 0.12) !important;
+      outline: none !important;
+      transition: all 0.2s ease-in-out !important;
+    }
+    input:focus, textarea:focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25) !important;
+    }
+    input::placeholder, textarea::placeholder {
+      color: #52525b !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen text-zinc-100 flex flex-col justify-between p-4 md:p-8">
+
+  <!-- ========================================================== -->
+  <!-- 1. VISTA DE AUTENTICACIÓN (LOGIN/REGISTRO) -->
+  <!-- ========================================================== -->
+  <div id="auth-view" class="w-full max-w-md mx-auto my-auto flex flex-col gap-6">
+    <div class="text-center">
+      <div class="h-12 w-12 mx-auto rounded-xl bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/20 mb-4 animate-bounce">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      </div>
+      <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">COACH PLATFORM</h1>
+      <p class="text-xs text-zinc-400 mt-1">Gestión Premium e Invitaciones Inmutables</p>
+    </div>
+
+    <!-- Login Panel -->
+    <div id="panel-login" class="glass-card rounded-2xl p-6 shadow-xl flex flex-col gap-4">
+      <h2 class="text-lg font-bold text-zinc-100">Iniciar Sesión</h2>
+      <form id="form-login" class="flex flex-col gap-3">
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Email</label>
+          <input type="email" id="login-email" required placeholder="entrenador@correo.com o alumno@correo.com" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Contraseña</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+        </div>
+        <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10">
+          Entrar a la Plataforma
+        </button>
+      </form>
+      
+      <!-- Sección de Registro Rediseñada con Botones Grandes, Modernos y Amigables -->
+      <div class="border-t border-zinc-800/60 mt-4 pt-4 flex flex-col gap-3">
+        <p class="text-center text-[10px] text-zinc-400 font-bold uppercase tracking-wider">¿Aún no tienes cuenta?</p>
+        <div class="grid grid-cols-2 gap-3">
+          <button id="btn-go-register-coach" type="button" class="w-full py-3.5 px-4 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 active:scale-95 transition-all text-xs font-bold text-blue-400 flex items-center justify-center gap-1.5 shadow-md shadow-blue-500/5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Soy Entrenador
+          </button>
+          <button id="btn-go-register-student" type="button" class="w-full py-3.5 px-4 rounded-xl border border-indigo-500/20 bg-indigo-500/5 hover:bg-indigo-500/10 active:scale-95 transition-all text-xs font-bold text-indigo-400 flex items-center justify-center gap-1.5 shadow-md shadow-indigo-500/5">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            Soy Alumno
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Registro de Entrenador -->
+    <div id="panel-register-coach" class="glass-card rounded-2xl p-6 shadow-xl flex flex-col gap-4 hidden">
+      <h2 class="text-lg font-bold text-zinc-100">Crear Cuenta de Entrenador</h2>
+      <form id="form-register-coach" class="flex flex-col gap-3">
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Email Profesional</label>
+          <input type="email" id="reg-coach-email" required placeholder="coach@profesional.com" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="reg-coach-password" required minlength="6" placeholder="Mínimo 6 caracteres" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+        </div>
+        <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10">
+          Registrarse como Entrenador
+        </button>
+      </form>
+      
+      <div class="border-t border-zinc-800/60 mt-4 pt-4">
+        <button id="btn-back-login-1" type="button" class="w-full py-3 rounded-xl border border-zinc-800 hover:bg-zinc-800/40 transition-all text-xs font-bold text-zinc-400 active:scale-95">
+          Regresar al Inicio de Sesión
+        </button>
+      </div>
+    </div>
+
+    <!-- Registro de Alumno (con Código de Invitación UUIDv4) -->
+    <div id="panel-register-student" class="glass-card rounded-2xl p-6 shadow-xl flex flex-col gap-4 hidden">
+      <div class="flex items-center gap-2">
+        <span class="h-2.5 w-2.5 rounded-full bg-indigo-500 animate-ping"></span>
+        <h2 class="text-lg font-bold text-zinc-100">Registro de Alumnos</h2>
+      </div>
+      <p class="text-xs text-zinc-400 leading-relaxed">Requerís obligatoriamente el código de invitación UUIDv4 brindado por tu coach.</p>
+      
+      <form id="form-register-student" class="flex flex-col gap-3">
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Código de Invitación (UUIDv4)</label>
+          <input type="text" id="reg-student-code" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" class="w-full border rounded-xl px-4 py-3 text-xs font-mono text-zinc-200">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Email</label>
+          <input type="email" id="reg-student-email" required placeholder="atleta@correo.com" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+        </div>
+        <div>
+          <label class="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
+          <input type="password" id="reg-student-password" required minlength="6" placeholder="Mínimo 6 caracteres" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-xs text-zinc-400 font-semibold block mb-1">Peso Corporal (kg)</label>
+            <input type="number" step="0.1" id="reg-student-weight" placeholder="Ej: 75.5" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+          </div>
+          <div>
+            <label class="text-xs text-zinc-400 font-semibold block mb-1">Objetivo</label>
+            <input type="text" id="reg-student-goal" placeholder="Ej: Fuerza" class="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200">
+          </div>
+        </div>
+        <button type="submit" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-indigo-500/10">
+          Completar Mi Registro
+        </button>
+      </form>
+      
+      <div class="border-t border-zinc-800/60 mt-4 pt-4">
+        <button id="btn-back-login-2" type="button" class="w-full py-3 rounded-xl border border-zinc-800 hover:bg-zinc-800/40 transition-all text-xs font-bold text-zinc-400 active:scale-95">
+          Regresar al Inicio de Sesión
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <!-- ========================================================== -->
+  <!-- 2. VISTA DE DASHBOARD DE ENTRENADOR -->
+  <!-- ========================================================== -->
+  <div id="coach-view" class="w-full max-w-5xl mx-auto flex flex-col gap-6 hidden">
+    <!-- Navbar Premium -->
+    <header class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-3">
+        <div class="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+        </div>
+        <div class="hidden sm:block">
+          <h1 class="text-base font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">COACH HUB</h1>
+          <p id="coach-navbar-email" class="text-xs text-zinc-400 truncate max-w-xs font-mono">coach@platform.com</p>
+        </div>
+      </div>
+
+      <!-- Menú Navegación -->
+      <nav class="flex items-center gap-1">
+        <button id="nav-btn-students" class="px-3 py-2 rounded-xl text-xs font-bold bg-blue-600 text-white transition-all">
+          Alumnos
+        </button>
+        <button id="nav-btn-exercises" class="px-3 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all">
+          Ejercicios
+        </button>
+        <button id="nav-btn-profile" class="px-3 py-2 rounded-xl text-xs font-bold text-zinc-400 hover:text-white hover:bg-zinc-800/50 transition-all">
+          Mi Perfil
+        </button>
+        <button id="nav-btn-logout" class="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10 ml-2">
+          Salir
+        </button>
+      </nav>
+    </header>
+
+    <!-- PANELES DEL ENTRENADOR -->
+    <div class="grid grid-cols-1 gap-6">
+      
+      <!-- ==================== PANEL 1: GESTIÓN DE ALUMNOS & INVITACIONES ==================== -->
+      <section id="panel-students" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Columna Invitaciones -->
+        <div class="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6">
+          <div>
+            <h2 class="text-lg font-bold text-zinc-100">Crear Invitación</h2>
+            <p class="text-xs text-zinc-400 mt-1">Genera un enlace/código de invitación único (UUIDv4) para vincular a tus alumnos.</p>
+          </div>
+
+          <form id="form-create-invitation" class="flex flex-col gap-3">
+            <div>
+              <label class="text-xs text-zinc-400 font-semibold block mb-1">Email del Destinatario (Opcional)</label>
+              <input type="email" id="invite-email" placeholder="alumno@correo.com" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-zinc-200">
+            </div>
+            <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm active:scale-95 transition-all">
+              Generar UUIDv4 de Invitación
+            </button>
+          </form>
+
+          <!-- Listado de Invitaciones -->
+          <div class="flex flex-col gap-3">
+            <h3 class="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Historial de Códigos</h3>
+            <div id="invitations-list" class="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
+              <!-- Cargado dinámicamente -->
+              <p class="text-xs text-zinc-500 italic">No has generado códigos aún.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Lista de Alumnos -->
+        <div class="glass-card rounded-2xl p-6 shadow-lg md:col-span-2 flex flex-col gap-6">
+          <div>
+            <h2 class="text-lg font-bold text-zinc-100">Mis Alumnos Activos</h2>
+            <p class="text-xs text-zinc-400 mt-1">Lista de atletas que actualmente entrenan bajo tu tutela.</p>
+          </div>
+
+          <div id="students-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Cargado dinámicamente -->
+            <div class="col-span-2 text-center py-8 text-zinc-500 text-sm">
+              No tienes alumnos vinculados actualmente. Generá una invitación arriba para vincular tu primer alumno.
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ==================== PANEL 2: CATÁLOGO DE EJERCICIOS ==================== -->
+      <section id="panel-exercises" class="grid grid-cols-1 md:grid-cols-3 gap-6 hidden">
+        <!-- Columna Crear Ejercicio Custom -->
+        <div class="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6">
+          <div>
+            <h2 class="text-lg font-bold text-zinc-100">Crear Ejercicio Custom</h2>
+            <p class="text-xs text-zinc-400 mt-1">Sube contenido multimedia a R2 y crea un ejercicio personalizado para tus rutinas.</p>
+          </div>
+
+          <form id="form-create-exercise" class="flex flex-col gap-3">
+            <div>
+              <label class="text-xs text-zinc-400 font-semibold block mb-1">Nombre del Ejercicio</label>
+              <input type="text" id="exe-name" required placeholder="Ej: Prensa Inclinada 45°" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-zinc-200">
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 font-semibold block mb-1">Descripción / Ejecución</label>
+              <textarea id="exe-desc" rows="3" placeholder="Detalla la ejecución correcta..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-zinc-200"></textarea>
+            </div>
+            <div>
+              <label class="text-xs text-zinc-400 font-semibold block mb-1">Subir Imagen/Multimedia (R2 Decoupled)</label>
+              <div class="mt-1 flex items-center justify-between gap-3">
+                <label for="exe-file" class="cursor-pointer py-2 px-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-all text-xs font-semibold border border-zinc-700/60 flex-shrink-0">
+                  Seleccionar Multimedia
+                </label>
+                <input type="file" id="exe-file" class="hidden">
+                <span id="exe-file-display" class="text-xs text-zinc-400 font-mono truncate max-w-xs block">Sin archivo</span>
+              </div>
+            </div>
+            <button type="submit" id="exe-submit-btn" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm mt-2">
+              Guardar Ejercicio Custom
+            </button>
+            <div id="exe-upload-status" class="text-xs text-zinc-400 text-center mt-1"></div>
+          </form>
+        </div>
+
+        <!-- Columna Catálogo Maestro -->
+        <div class="glass-card rounded-2xl p-6 shadow-lg md:col-span-2 flex flex-col gap-6">
+          <div>
+            <h2 class="text-lg font-bold text-zinc-100">Catálogo Maestro de Ejercicios</h2>
+            <p class="text-xs text-zinc-400 mt-1">Lista combinada de ejercicios globales pre-cargados y tus creaciones custom.</p>
+          </div>
+
+          <div id="exercises-catalog" class="grid grid-cols-1 sm:grid-cols-2 gap-4 max-h-160 overflow-y-auto pr-1">
+            <!-- Cargado dinámicamente -->
+            <div class="col-span-2 text-center py-8 text-zinc-500 text-sm">
+              Cargando catálogo maestro...
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- ==================== PANEL 3: PERFIL PROFESIONAL DEL ENTRENADOR ==================== -->
+      <section id="panel-profile" class="glass-card rounded-2xl p-6 shadow-lg max-w-xl mx-auto w-full hidden flex flex-col gap-6">
+        <div>
+          <h2 class="text-lg font-bold text-zinc-100">Mi Perfil Profesional</h2>
+          <p class="text-xs text-zinc-400 mt-1">Actualiza tu biografía, especialidad y foto de perfil en Cloudflare R2.</p>
+        </div>
+
+        <div class="flex flex-col sm:flex-row items-center gap-6 p-4 rounded-xl bg-zinc-900/40 border border-zinc-800">
+          <!-- Vista previa foto perfil -->
+          <div class="relative h-24 w-24 rounded-full border-2 border-blue-500 bg-zinc-950 overflow-hidden flex items-center justify-center flex-shrink-0 shadow-lg">
+            <img id="profile-img-preview" src="https://img.icons8.com/color/192/dumbbells.png" alt="Foto de perfil" class="h-full w-full object-cover hidden">
+            <svg id="profile-svg-placeholder" xmlns="http://www.w3.org/2000/svg" class="h-10 w-10 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+
+          <!-- Selector foto perfil -->
+          <div class="flex flex-col gap-2 w-full">
+            <p class="text-xs text-zinc-400 font-semibold">Foto de Perfil Profesional</p>
+            <label for="profile-photo-input" class="cursor-pointer py-2 px-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-all text-xs font-semibold border border-zinc-700/60 block text-center sm:inline-block sm:w-auto">
+              Subir Nueva Foto (R2 Direct)
+            </label>
+            <input type="file" id="profile-photo-input" class="hidden">
+            <span id="profile-photo-status" class="text-xs text-zinc-400 text-center sm:text-left block mt-1"></span>
+          </div>
+        </div>
+
+        <form id="form-update-profile" class="flex flex-col gap-4">
+          <div>
+            <label class="text-xs text-zinc-400 font-semibold block mb-1">Especialidad Profesional</label>
+            <input type="text" id="prof-specialty" placeholder="Ej: Powerlifting / Hipertrofia" class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-zinc-200">
+          </div>
+          <div>
+            <label class="text-xs text-zinc-400 font-semibold block mb-1">Biografía Corta</label>
+            <textarea id="prof-bio" rows="4" placeholder="Contale a tus alumnos sobre tu trayectoria y metodología de trabajo..." class="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-blue-500 text-zinc-200"></textarea>
+          </div>
+          <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm shadow-lg shadow-blue-500/10">
+            Guardar Cambios de Perfil
+          </button>
+        </form>
+      </section>
+
+    </div>
+  </div>
+
+
+  <!-- ========================================================== -->
+  <!-- 3. VISTA DE DASHBOARD DE ALUMNO -->
+  <!-- ========================================================== -->
+  <div id="student-view" class="w-full max-w-md mx-auto my-auto flex flex-col gap-6 hidden">
+    <header class="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg">
+      <div class="flex items-center gap-2">
+        <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+        <h1 class="text-sm font-bold bg-gradient-to-r from-emerald-400 to-teal-300 bg-clip-text text-transparent">ATLETA PANEL</h1>
+      </div>
+      <button id="student-logout-btn" class="px-3 py-1.5 rounded-lg text-xs font-semibold text-red-400 hover:bg-red-500/10 border border-red-500/10">
+        Salir
+      </button>
+    </header>
+
+    <div class="glass-card rounded-2xl p-6 shadow-xl flex flex-col gap-6 text-center">
+      <div class="h-16 w-16 mx-auto rounded-2xl bg-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-9 w-9 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+        </svg>
+      </div>
+
+      <div>
+        <h2 id="student-welcome-title" class="text-xl font-bold text-zinc-100">¡Hola, Atleta!</h2>
+        <p id="student-info-email" class="text-xs font-mono text-zinc-400 mt-1">alumno@correo.com</p>
+      </div>
+
+      <div class="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800 text-left flex flex-col gap-3">
+        <h3 class="text-xs text-zinc-400 font-bold uppercase tracking-wider">Tu Entrenador de Cabecera</h3>
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-full bg-zinc-850 border border-zinc-700 flex items-center justify-center flex-shrink-0">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-zinc-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div>
+            <p id="student-coach-name" class="text-sm font-semibold text-zinc-200">Buscando coach...</p>
+            <p class="text-xs text-zinc-500">Vinculado exitosamente</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-4 rounded-xl bg-emerald-950/20 border border-emerald-500/20 text-left flex flex-col gap-2">
+        <h3 class="text-xs text-emerald-400 font-bold uppercase tracking-wider">🔒 Modo Entrenamiento Offline (Fase 3)</h3>
+        <p class="text-xs text-zinc-300 leading-relaxed">
+          Tu cuenta está configurada y lista para entrenar. El motor offline-first impulsado por IndexedDB + TanStack Query para guardar tus entrenamientos sin señal se activará completamente en la **Fase 3**.
+        </p>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Footer -->
+  <footer class="w-full max-w-5xl mx-auto text-center py-6 mt-8 border-t border-zinc-800/40 text-xs text-zinc-500">
+    Fitness Platform &bull; Arquitectura Desacoplada Validada &bull; 2026
+  </footer>
+
+  <!-- Cargador de Lógica en Módulo Nativo -->
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

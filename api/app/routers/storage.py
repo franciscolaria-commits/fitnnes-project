@@ -1,0 +1,67 @@
+import os
+import uuid
+from fastapi import APIRouter, HTTPException, status
+from pydantic import BaseModel, Field
+from app.services.r2 import generar_url_presubida
+
+router = APIRouter(
+    prefix="/api/v1/storage",
+    tags=["storage"]
+)
+
+class PresignedUrlRequest(BaseModel):
+    filename: str = Field(..., description="Nombre original del archivo (ej. foto.png)")
+    content_type: str = Field(..., description="Tipo MIME del archivo (ej. image/png)")
+
+class PresignedUrlResponse(BaseModel):
+    upload_url: str = Field(..., description="URL pre-firmada para subir el archivo vía HTTP PUT")
+    public_url: str = Field(..., description="URL de acceso público final")
+    key: str = Field(..., description="Nombre único (Key) generado para R2")
+
+@router.post("/presigned", response_model=PresignedUrlResponse, status_code=status.HTTP_200_OK)
+def get_presigned_url(request: PresignedUrlRequest):
+    """
+    Genera una URL pre-firmada para subir directamente un archivo a Cloudflare R2
+    desde el cliente usando el método HTTP PUT. Evita colisiones renombrando el archivo 
+    con un UUIDv4 conservando su extensión.
+    """
+    try:
+        # Extraer la extensión del archivo
+        _, ext = os.path.splitext(request.filename.lower())
+        
+        # Si no tiene extensión, intentar deducirla vagamente o dejarla vacía
+        if not ext and "/" in request.content_type:
+            ext = f".{request.content_type.split('/')[-1]}"
+            
+        # Generar nombre único basado en UUIDv4
+        unique_key = f"{uuid.uuid4()}{ext}"
+        
+        # Generar las URLs
+        urls = generar_url_presubida(
+            object_name=unique_key,
+            content_type=request.content_type
+        )
+        
+        return PresignedUrlResponse(
+            upload_url=urls["upload_url"],
+            public_url=urls["public_url"],
+            key=urls["key"]
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al generar la URL de subida: {str(e)}"
+        )
+
+from fastapi import Request
+
+@router.put("/mock-upload")
+async def mock_upload(request: Request, key: str):
+    """
+    Endpoint de simulación local para capturar las subidas binarias de prueba (PUT)
+    cuando no hay credenciales reales de Cloudflare R2 configuradas.
+    """
+    body = await request.body()
+    print(f"📥 [MOCK STORAGE] Archivo '{key}' recibido de forma directa ({len(body)} bytes).")
+    return {"status": "success", "detail": "Archivo cargado en storage simulado con éxito"}
+
