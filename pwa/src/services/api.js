@@ -36,8 +36,8 @@ async function request(endpoint, options = {}) {
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     
-    // Si recibimos un 401 Unauthorized, forzamos deslogueo inmediato por seguridad
-    if (response.status === 401) {
+    // Si recibimos un 401 Unauthorized y NO es el endpoint de login, forzamos deslogueo
+    if (response.status === 401 && !endpoint.includes('/login')) {
       console.warn("[API] Token expirado o inválido. Forzando deslogueo.");
       logout();
       throw new Error("Sesión expirada. Por favor inicia sesión nuevamente.");
@@ -58,6 +58,10 @@ async function request(endpoint, options = {}) {
     
     return response;
   } catch (error) {
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      console.error(`[API Error] Error de red al contactar ${endpoint}.`);
+      throw new Error("Error de conexión. El servidor no responde o está en mantenimiento.");
+    }
     console.error(`[API Error] Error en petición ${endpoint}:`, error);
     throw error;
   }
