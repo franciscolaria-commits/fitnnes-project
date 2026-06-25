@@ -158,7 +158,8 @@ export default function CoachDashboard() {
           </div>
         </div>
 
-        <nav className="flex items-center gap-1">
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-1">
           <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); }} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Alumnos</button>
           <button onClick={() => setActivePanel('exercises')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Ejercicios</button>
           <button onClick={() => setActivePanel('routines')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Mis Rutinas</button>
@@ -171,6 +172,32 @@ export default function CoachDashboard() {
           <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); }} className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 ml-2">Crear Rutina</button>
           <button onClick={() => setActivePanel('profile')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'profile' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'} ml-2`}>Perfil</button>
           <button onClick={logout} className="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10 ml-2">Salir</button>
+        </nav>
+
+        {/* Mobile Nav */}
+        <nav className="md:hidden flex items-center gap-2">
+          <select 
+            value={activePanel} 
+            onChange={(e) => { 
+              if (e.target.value === 'crear_rutina') { 
+                setActivePanel('routines'); 
+                setEditingRoutine(null); 
+                setIsBuildingRoutine(true); 
+              } else {
+                setActivePanel(e.target.value); 
+                if (e.target.value === 'students') setSelectedStudentId(null); 
+              }
+            }}
+            className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-blue-500"
+          >
+            <option value="students">Alumnos</option>
+            <option value="exercises">Ejercicios</option>
+            <option value="routines">Mis Rutinas</option>
+            <option value="audits">Auditoría ({audits.length})</option>
+            <option value="crear_rutina">Crear Rutina</option>
+            <option value="profile">Perfil</option>
+          </select>
+          <button onClick={logout} className="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10">Salir</button>
         </nav>
       </header>
 
@@ -186,7 +213,7 @@ export default function CoachDashboard() {
             </div>
           ) : (
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6">
+            <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6 order-2 md:order-1">
               <div>
                 <h2 className="text-lg font-bold text-zinc-100">Crear Invitación</h2>
                 <p className="text-xs text-zinc-400 mt-1">Genera un código UUIDv4 para tus alumnos.</p>
@@ -206,7 +233,7 @@ export default function CoachDashboard() {
                 </div>
               </div>
             </div>
-            <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-2 flex flex-col gap-6">
+            <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-2 flex flex-col gap-6 order-1 md:order-2">
               <div>
                 <h2 className="text-lg font-bold text-zinc-100">Mis Alumnos Activos</h2>
               </div>

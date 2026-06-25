@@ -120,29 +120,29 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
   return (
     <div className="fixed inset-0 z-50 bg-[#09090b] overflow-y-auto flex flex-col">
       {/* Header Fijo */}
-      <div className="sticky top-0 z-10 glass-card border-b border-zinc-800 p-4 flex items-center justify-between shadow-xl">
+      <div className="sticky top-0 z-10 glass-card border-b border-zinc-800 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-4">
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400 transition-all">
+          <button onClick={onClose} className="p-2 rounded-xl hover:bg-zinc-800 text-zinc-400 transition-all shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           </button>
-          <div>
-            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent">Workout Builder</h1>
-            <p className="text-xs text-zinc-400">Creación de estructura jerárquica inmutable</p>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-indigo-300 bg-clip-text text-transparent truncate">Workout Builder</h1>
+            <p className="text-xs text-zinc-400 truncate">Creación de estructura jerárquica inmutable</p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 w-full sm:w-auto">
           <input 
             type="text" 
             value={routineName} 
             onChange={(e) => setRoutineName(e.target.value)}
-            className="bg-zinc-900 border border-zinc-700 text-sm font-bold text-white px-4 py-2 rounded-xl focus:border-blue-500 outline-none w-64"
+            className="bg-zinc-900 border border-zinc-700 text-sm font-bold text-white px-4 py-2 rounded-xl focus:border-blue-500 outline-none flex-1 sm:flex-none sm:w-64 min-w-0"
           />
           <button 
             onClick={handleSave} 
             disabled={loading}
-            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm shadow-lg shadow-blue-500/20 disabled:opacity-50"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm shadow-lg shadow-blue-500/20 disabled:opacity-50 shrink-0"
           >
-            {loading ? 'Guardando...' : 'Guardar Rutina'}
+            {loading ? 'Guardando...' : 'Guardar'}
           </button>
         </div>
       </div>
@@ -203,18 +203,18 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
                         </p>
                       </div>
                       
-                      <div className="flex flex-wrap sm:flex-nowrap items-center gap-3">
+                      <div className="grid grid-cols-3 gap-2 w-full sm:w-auto mt-2 sm:mt-0">
                         <div className="flex flex-col">
                           <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Series</label>
-                          <input type="number" min="1" value={ex.series_esperadas} onChange={e => updateExercise(dIndex, exIndex, 'series_esperadas', e.target.value)} className="w-16 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
+                          <input type="number" min="1" value={ex.series_esperadas} onChange={e => updateExercise(dIndex, exIndex, 'series_esperadas', e.target.value)} className="w-full sm:w-16 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
                         </div>
                         <div className="flex flex-col">
                           <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Reps</label>
-                          <input type="number" min="1" value={ex.reps_esperadas} onChange={e => updateExercise(dIndex, exIndex, 'reps_esperadas', e.target.value)} className="w-16 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
+                          <input type="number" min="1" value={ex.reps_esperadas} onChange={e => updateExercise(dIndex, exIndex, 'reps_esperadas', e.target.value)} className="w-full sm:w-16 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
                         </div>
                         <div className="flex flex-col">
-                          <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1">Descanso (s)</label>
-                          <input type="number" step="15" min="0" value={ex.descanso_segundos} onChange={e => updateExercise(dIndex, exIndex, 'descanso_segundos', e.target.value)} className="w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
+                          <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 truncate">Descanso (s)</label>
+                          <input type="number" step="15" min="0" value={ex.descanso_segundos} onChange={e => updateExercise(dIndex, exIndex, 'descanso_segundos', e.target.value)} className="w-full sm:w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
                         </div>
                       </div>
 

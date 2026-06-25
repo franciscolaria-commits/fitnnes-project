@@ -73,12 +73,6 @@ export default function StudentDashboard() {
           >
             Mi Liga
           </button>
-          <button 
-            onClick={() => setActiveTab('history')} 
-            className={`flex-1 md:flex-none whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'history' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
-          >
-            Historial
-          </button>
         </nav>
 
         <button onClick={logout} className="text-xs font-black uppercase text-zinc-500 hover:text-red-500 transition-colors hidden md:block">
@@ -206,13 +200,7 @@ export default function StudentDashboard() {
           <StudentProgress />
         )}
 
-        {activeTab === 'history' && (
-          <div className="border border-zinc-800 bg-zinc-900 min-h-[600px] flex items-center justify-center p-8 text-center">
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-black text-zinc-800 uppercase tracking-tighter max-w-4xl leading-none">
-              MÓDULO DE HISTORIAL EN CONSTRUCCIÓN.
-            </h2>
-          </div>
-        )}
+
 
       </main>
 

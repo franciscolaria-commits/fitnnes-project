@@ -1,7 +1,8 @@
-import React from "react";
-import { CheckCircle2, Dumbbell, Star, ChevronRight, WifiOff, TrendingUp } from "lucide-react";
+import React, { useState } from "react";
+import { CheckCircle2, Dumbbell, Star, ChevronRight, WifiOff, TrendingUp, Menu, X } from "lucide-react";
 
 export default function LandingPage() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const WHATSAPP_LINK = "https://wa.me/5492644517903?text=Hola,%20quiero%20activar%20el%20periodo%20de%20prueba%20para%20mi%20gimnasio/entrenamiento.";
 
   return (
@@ -38,12 +39,12 @@ export default function LandingPage() {
               <a href="#pricing" className="hover:text-white transition-colors cursor-pointer">Precios</a>
             </div>
 
-            <div className="flex items-center gap-6">
+            <div className="hidden md:flex items-center gap-6">
               <button 
                 onClick={() => window.location.href = '/login'}
                 className="text-sm font-medium text-white/70 hover:text-emerald-400 transition-all duration-300 hover:scale-105 cursor-pointer"
               >
-                Ya soy alumno/entrenador
+                Iniciar Sesión / Registrarse
               </button>
               <button 
                 onClick={() => window.location.href = WHATSAPP_LINK}
@@ -52,7 +53,34 @@ export default function LandingPage() {
                 Demo gratis
               </button>
             </div>
+
+            {/* Hamburger icon for mobile */}
+            <div className="md:hidden flex items-center">
+              <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-2">
+                {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
+
+          {/* Mobile Menu Dropdown */}
+          {isMobileMenuOpen && (
+            <div className="md:hidden absolute top-full left-0 w-full px-6 mt-2 z-50">
+              <div className="bg-gray-900/95 backdrop-blur-xl border border-emerald-500/20 rounded-2xl p-4 flex flex-col gap-4 shadow-xl">
+                <button 
+                  onClick={() => window.location.href = '/login'}
+                  className="w-full text-center py-3 text-sm font-bold text-white hover:bg-white/5 rounded-xl transition-colors border border-white/10"
+                >
+                  Iniciar Sesión / Registrarse
+                </button>
+                <button 
+                  onClick={() => window.location.href = WHATSAPP_LINK}
+                  className="w-full bg-emerald-500 text-gray-900 py-3 rounded-xl text-sm font-bold shadow-[0_0_15px_rgba(16,185,129,0.2)]"
+                >
+                  Demo gratis
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -80,22 +108,22 @@ export default function LandingPage() {
         </button>
 
         {/* Social Proof */}
-        <div className="mt-12 flex items-center gap-4 text-sm text-white/40">
+        <div className="mt-12 flex flex-col sm:flex-row items-center gap-4 text-sm text-white/40">
           <div className="flex -space-x-3">
             <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
             <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
             <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
             <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
           </div>
-          <div className="flex flex-col items-start">
+          <div className="flex flex-col items-center sm:items-start">
             <div className="flex text-emerald-400 gap-0.5">
-              <Star className="w-3 h-3 fill-current" />
-              <Star className="w-3 h-3 fill-current" />
-              <Star className="w-3 h-3 fill-current" />
-              <Star className="w-3 h-3 fill-current" />
-              <Star className="w-3 h-3 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
+              <Star className="w-4 h-4 fill-current" />
             </div>
-            <span>Usado por cientos de entrenadores</span>
+            <span className="mt-1">Usado por cientos de entrenadores</span>
           </div>
         </div>
       </section>
