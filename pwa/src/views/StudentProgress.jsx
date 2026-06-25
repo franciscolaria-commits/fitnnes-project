@@ -25,15 +25,15 @@ const ShieldIcon = ({ className }) => (
   </svg>
 );
 
-export default function StudentProgress() {
+export default function StudentProgress({ studentId }) {
   const { data: stats, isLoading: loadingStats } = useQuery({
-    queryKey: ['studentStats'],
-    queryFn: () => api.get('/api/v1/students/me/stats')
+    queryKey: ['studentStats', studentId || 'me'],
+    queryFn: () => api.get(studentId ? `/api/v1/coaches/students/${studentId}/stats` : '/api/v1/students/me/stats')
   });
 
   const { data: leagues, isLoading: loadingLeagues } = useQuery({
-    queryKey: ['studentLeagues'],
-    queryFn: () => api.get('/api/v1/students/me/league')
+    queryKey: ['studentLeagues', studentId || 'me'],
+    queryFn: () => api.get(studentId ? `/api/v1/coaches/students/${studentId}/league` : '/api/v1/students/me/league')
   });
 
   if (loadingStats) {
@@ -78,25 +78,27 @@ export default function StudentProgress() {
                   </div>
                 )}
                 
-                <div className="flex justify-between items-start mb-8 border-b border-zinc-800/50 pb-4">
-                  <h3 className="text-xl md:text-2xl font-black text-white uppercase tracking-tighter w-1/2 break-words leading-none">{league.ejercicio_nombre}</h3>
-                  <div className="flex flex-col items-end">
-                    <ShieldIcon className={`w-16 h-16 ${tierStyle.shield} mb-2 drop-shadow-lg`} />
-                    <span className={`block text-3xl md:text-4xl font-black leading-none uppercase ${tierStyle.text}`}>{league.nivel_actual}</span>
+                <div className="flex flex-col mb-6 lg:mb-8 border-b border-zinc-800/50 pb-4 relative">
+                  <div className="flex justify-between items-start mb-3">
+                    <h3 className="text-lg sm:text-xl lg:text-2xl font-black text-white uppercase tracking-tighter pr-2 leading-tight">{league.ejercicio_nombre}</h3>
+                    <ShieldIcon className={`w-10 h-10 shrink-0 ${tierStyle.shield} drop-shadow-lg`} />
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2 mt-auto">
+                    <span className={`block text-2xl sm:text-3xl font-black leading-none uppercase ${tierStyle.text}`}>{league.nivel_actual}</span>
                     {league.nivel_actual !== "Sin Nivel" && (
-                      <span className="block text-white font-bold uppercase tracking-widest text-xs mt-1 bg-zinc-950 px-2 py-0.5 border border-zinc-800">NIVEL {league.subnivel_actual}</span>
+                      <span className="block text-white font-bold uppercase tracking-widest text-[10px] bg-zinc-950 px-2 py-0.5 border border-zinc-800">NIVEL {league.subnivel_actual}</span>
                     )}
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mb-8 flex-grow">
-                  <div className="border-r border-zinc-800 pr-4">
-                    <span className="block text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">e1RM ACTUAL</span>
-                    <span className="block text-3xl font-black text-white">{Math.round(league.e1rm_actual)}<span className="text-sm text-zinc-600">KG</span></span>
+                <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6 lg:mb-8 flex-grow">
+                  <div className="border-r border-zinc-800 pr-2 lg:pr-4">
+                    <span className="block text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate">e1RM ACTUAL</span>
+                    <span className="block text-xl sm:text-2xl lg:text-3xl font-black text-white">{Math.round(league.e1rm_actual)}<span className="text-xs lg:text-sm text-zinc-600">KG</span></span>
                   </div>
-                  <div className="pl-2">
-                    <span className="block text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1">MULTIPLICADOR</span>
-                    <span className="block text-3xl font-black text-indigo-400">{league.multiplicador_actual.toFixed(2)}x</span>
+                  <div className="pl-1 sm:pl-2">
+                    <span className="block text-[9px] sm:text-[10px] text-zinc-500 font-bold uppercase tracking-widest mb-1 truncate">MULTIPLICADOR</span>
+                    <span className="block text-xl sm:text-2xl lg:text-3xl font-black text-indigo-400">{league.multiplicador_actual.toFixed(2)}x</span>
                   </div>
                 </div>
                 

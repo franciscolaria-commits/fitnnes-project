@@ -99,13 +99,14 @@ class AlumnoCreate(AlumnoBase):
 class AlumnoUpdate(AlumnoBase):
     estado_activo: Optional[bool] = None
 
-class AlumnoOut(AlumnoBase):
+class AlumnoOut(AlumnoBase):    
     id_usuario: UUID
     id_entrenador: UUID
     estado_activo: bool
     fecha_ultimo_peso: Optional[datetime] = None
     usuario: UsuarioOut
     entrenador: Optional[EntrenadorOut] = None
+    rutina_nombre: Optional[str] = None
 
     class Config:
         from_attributes = True

@@ -10,14 +10,14 @@ from dotenv import load_dotenv
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 load_dotenv()
 
-from app.database import Base, SQLALCHEMY_DATABASE_URL
+from app.database import Base, ALEMBIC_DATABASE_URL
 import app.models  # Crucial para que Base.metadata conozca las tablas
 # --------------------
 
 config = context.config
 
 # --- SOBRESCRIBIR LA URL CON LA DEL .ENV ---
-config.set_main_option("sqlalchemy.url", SQLALCHEMY_DATABASE_URL)
+config.set_main_option("sqlalchemy.url", ALEMBIC_DATABASE_URL)
 # -------------------------------------------
 
 if config.config_file_name is not None:

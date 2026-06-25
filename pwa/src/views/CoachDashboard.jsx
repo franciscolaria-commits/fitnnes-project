@@ -2,9 +2,11 @@ import React, { useState, useEffect, useRef } from 'react';
 import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
+import StudentProgress from './StudentProgress.jsx';
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
+  const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [isBuildingRoutine, setIsBuildingRoutine] = useState(false);
   const [email, setEmail] = useState('');
   const [students, setStudents] = useState([]);
@@ -157,7 +159,7 @@ export default function CoachDashboard() {
         </div>
 
         <nav className="flex items-center gap-1">
-          <button onClick={() => setActivePanel('students')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Alumnos</button>
+          <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); }} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Alumnos</button>
           <button onClick={() => setActivePanel('exercises')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Ejercicios</button>
           <button onClick={() => setActivePanel('routines')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Mis Rutinas</button>
           <button onClick={() => setActivePanel('audits')} className={`relative px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>
@@ -174,6 +176,15 @@ export default function CoachDashboard() {
 
       <div className="grid grid-cols-1 gap-6">
         {activePanel === 'students' && (
+          selectedStudentId ? (
+            <div className="flex flex-col gap-4 w-full">
+              <button onClick={() => setSelectedStudentId(null)} className="self-start px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-xs font-bold transition-all border border-zinc-700/50 flex items-center gap-2 mb-2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+                Volver a Mis Alumnos
+              </button>
+              <StudentProgress studentId={selectedStudentId} />
+            </div>
+          ) : (
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6">
               <div>
@@ -203,15 +214,21 @@ export default function CoachDashboard() {
                 {students.length === 0 ? <p className="col-span-2 text-center text-zinc-500 text-sm">No tienes alumnos vinculados actualmente.</p> : students.map(alumno => (
                   <div key={alumno.id_usuario} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex flex-col justify-between gap-3">
                     <div>
-                      <h3 className="text-sm font-semibold text-zinc-200">{alumno.usuario.email}</h3>
-                      <p className="text-xs text-zinc-400 mt-1 font-medium">Objetivo: <span className="text-blue-400">{alumno.objetivo || "No definido"}</span></p>
+                      <h3 className="text-sm font-bold text-zinc-100">{alumno.usuario.email.split('@')[0]}</h3>
+                      <p className="text-[10px] text-zinc-500">{alumno.usuario.email}</p>
+                      <p className="text-xs text-zinc-400 mt-2 font-medium">Objetivo: <span className="text-blue-400">{alumno.objetivo || "No definido"}</span></p>
+                      <p className="text-xs text-zinc-400 mt-1 font-medium">Rutina: <span className={alumno.rutina_nombre ? "text-emerald-400" : "text-zinc-500"}>{alumno.rutina_nombre || "Ninguna asignada"}</span></p>
                     </div>
-                    <button onClick={() => handleDeactivateStudent(alumno.id_usuario)} className="w-full py-2 px-3 rounded-lg text-xs bg-red-950/20 text-red-400 border border-red-500/10 font-semibold">Dar de Baja</button>
+                    <div className="flex gap-2 w-full mt-2">
+                      <button onClick={() => setSelectedStudentId(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors border border-indigo-500/20">Ver Progreso</button>
+                      <button onClick={() => handleDeactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-red-950/20 hover:bg-red-900/40 text-red-400 border border-red-500/10 font-semibold transition-colors">Dar Baja</button>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
           </section>
+          )
         )}
         
         {activePanel === 'audits' && (
