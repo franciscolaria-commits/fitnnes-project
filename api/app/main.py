@@ -59,3 +59,11 @@ def ping(db: Session = Depends(get_db)):
         return {"status": "ok", "database": "connected"}
     except Exception as e:
         return {"status": "error", "database": str(e)}
+
+@app.get("/ping", tags=["Health"])
+async def ping():
+    """
+    Endpoint ultraligero para mantener activo el servidor.
+    No toca la base de datos.
+    """
+    return {"status": "awake", "service": "Syncro API"}
