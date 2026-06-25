@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from '../services/api.js';
 import { enqueueSession } from '../services/offlineSync.js';
 import Confetti from 'react-confetti';
@@ -13,6 +13,7 @@ const getYouTubeEmbedUrl = (url) => {
 };
 
 export default function ActiveWorkout({ routine, onComplete, onCancel }) {
+  const queryClient = useQueryClient();
   const storedDay = parseInt(localStorage.getItem(`last_day_${routine.id_rutina}`) || '0');
   const [currentDayIdx, setCurrentDayIdx] = useState(storedDay % routine.dias.length);
   const [sets, setSets] = useState([]);
@@ -48,6 +49,9 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
       return completeResponse;
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['studentStats'] });
+      queryClient.invalidateQueries({ queryKey: ['studentLeagues'] });
+      
       if (data && data.nuevos_prs && data.nuevos_prs.length > 0) {
         setShowConfetti(true);
         setPrs(data.nuevos_prs);

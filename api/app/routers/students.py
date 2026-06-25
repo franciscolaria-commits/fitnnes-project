@@ -181,11 +181,11 @@ def get_student_league(
     peso_corporal = alumno.peso_corporal_actual or 70.0
 
     MAPEO_PILARES = {
-        "Press Banca": "Press de Banca con Barra (Bench Press)",
-        "Sentadilla": "Sentadilla Trasera (Squat)",
-        "Peso Muerto": "Peso Muerto Convencional (Deadlift)",
-        "Press Militar": "Press Militar de Pie (Overhead Press)",
-        "Dominadas": "Dominadas Pronas (Pull-ups)"
+        "Press Banca": "Press Banca",
+        "Sentadilla": "Sentadilla",
+        "Peso Muerto": "Peso Muerto",
+        "Press Militar": "Press Militar",
+        "Dominadas": "Dominadas"
     }
     
     result = []

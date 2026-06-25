@@ -1,3 +1,10 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+direct_url = os.environ.get("DIRECT_URL")
+if direct_url:
+    os.environ["DATABASE_URL"] = direct_url
+
 from app.database import engine, Base
 from sqlalchemy import text
 import app.models
@@ -7,16 +14,6 @@ def upgrade():
     Base.metadata.create_all(bind=engine)
     
     with engine.begin() as conn:
-        # 2. Añadir columna frecuencia_semanal a Rutina si no existe
-        try:
-            conn.execute(text("ALTER TABLE rutinas ADD COLUMN frecuencia_semanal INTEGER DEFAULT 3;"))
-            print("Columna 'frecuencia_semanal' añadida.")
-        except Exception as e:
-            if "already exists" in str(e):
-                print("Columna 'frecuencia_semanal' ya existe.")
-            else:
-                print("Ignorando error al alterar rutinas:", e)
-
         # 3. Crear Vista Materializada mv_rep_maxes
         # Eliminarla primero por si ya existe (para evitar errores)
         try:

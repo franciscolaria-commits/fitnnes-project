@@ -150,11 +150,11 @@ def complete_session(
 
             # --- Lógica de Ligas B2B y Antifraude ---
             MAPEO_PILARES_INVERSO = {
-                "Press de Banca con Barra (Bench Press)": "Press Banca",
-                "Sentadilla Trasera (Squat)": "Sentadilla",
-                "Peso Muerto Convencional (Deadlift)": "Peso Muerto",
-                "Press Militar de Pie (Overhead Press)": "Press Militar",
-                "Dominadas Pronas (Pull-ups)": "Dominadas"
+                "Press Banca": "Press Banca",
+                "Sentadilla": "Sentadilla",
+                "Peso Muerto": "Peso Muerto",
+                "Press Militar": "Press Militar",
+                "Dominadas": "Dominadas"
             }
             pilar = MAPEO_PILARES_INVERSO.get(nombre_ej)
             if pilar and is_new_pr:
