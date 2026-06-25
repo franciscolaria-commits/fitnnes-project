@@ -132,6 +132,13 @@ def update_routine(
                 )
                 db.add(new_ej)
 
+        # 5. Reasignar automáticamente a los alumnos afectados
+        alumnos_afectados = db.query(models.Alumno).filter(
+            models.Alumno.id_rutina_activa == old_rutina.id_rutina
+        ).all()
+        for alumno in alumnos_afectados:
+            alumno.id_rutina_activa = new_rutina_id
+
         db.commit()
         db.refresh(new_rutina)
         return new_rutina

@@ -114,7 +114,7 @@ export default function StudentDashboard() {
                     onClick={() => setIsWorkingOut(true)}
                     className="w-full bg-emerald-500 text-zinc-950 font-black text-xl md:text-3xl uppercase tracking-tighter py-6 md:py-8 hover:bg-emerald-400 transition-all border-4 border-emerald-500 hover:border-white flex justify-between items-center px-6 md:px-10"
                   >
-                    <span>INICIAR SESIÓN</span>
+                    <span>ENTRENAR</span>
                     <span className="text-4xl md:text-5xl">→</span>
                   </button>
                 )}
