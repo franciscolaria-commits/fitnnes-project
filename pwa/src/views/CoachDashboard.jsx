@@ -3,11 +3,13 @@ import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
 import StudentProgress from './StudentProgress.jsx';
+import { Menu, X } from "lucide-react";
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [isBuildingRoutine, setIsBuildingRoutine] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [email, setEmail] = useState('');
   const [students, setStudents] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -144,8 +146,8 @@ export default function CoachDashboard() {
   };
 
   return (
-    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-8">
-      <header className="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg">
+    <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-8 relative">
+      <header className="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg relative z-20">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/10">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
@@ -174,32 +176,30 @@ export default function CoachDashboard() {
           <button onClick={logout} className="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10 ml-2">Salir</button>
         </nav>
 
-        {/* Mobile Nav */}
-        <nav className="md:hidden flex items-center gap-2">
-          <select 
-            value={activePanel} 
-            onChange={(e) => { 
-              if (e.target.value === 'crear_rutina') { 
-                setActivePanel('routines'); 
-                setEditingRoutine(null); 
-                setIsBuildingRoutine(true); 
-              } else {
-                setActivePanel(e.target.value); 
-                if (e.target.value === 'students') setSelectedStudentId(null); 
-              }
-            }}
-            className="bg-zinc-900 border border-zinc-800 text-zinc-200 text-xs font-bold rounded-xl px-3 py-2 outline-none focus:border-blue-500"
-          >
-            <option value="students">Alumnos</option>
-            <option value="exercises">Ejercicios</option>
-            <option value="routines">Mis Rutinas</option>
-            <option value="audits">Auditoría ({audits.length})</option>
-            <option value="crear_rutina">Crear Rutina</option>
-            <option value="profile">Perfil</option>
-          </select>
-          <button onClick={logout} className="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10">Salir</button>
-        </nav>
+        {/* Hamburger icon for mobile */}
+        <div className="md:hidden flex items-center">
+          <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-400 hover:text-white p-2">
+            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
       </header>
+
+      {/* Mobile Menu Dropdown */}
+      {isMobileMenuOpen && (
+        <div className="md:hidden absolute top-[80px] left-4 right-4 z-50">
+          <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 shadow-xl">
+            <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Alumnos</button>
+            <button onClick={() => { setActivePanel('exercises'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Ejercicios</button>
+            <button onClick={() => { setActivePanel('routines'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Mis Rutinas</button>
+            <button onClick={() => { setActivePanel('audits'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>
+              Auditoría {audits.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{audits.length}</span>}
+            </button>
+            <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white">Crear Rutina</button>
+            <button onClick={() => { setActivePanel('profile'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'profile' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Perfil</button>
+            <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10">Salir</button>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 gap-6">
         {activePanel === 'students' && (
