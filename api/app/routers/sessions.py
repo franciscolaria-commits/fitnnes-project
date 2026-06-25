@@ -46,9 +46,10 @@ def start_session(
         db.commit()
         db.refresh(new_session)
         return new_session
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al iniciar sesión: {str(e)}")
+        print(f"ERROR INTERNO (Iniciar Sesión): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 
 from sqlalchemy import text
@@ -211,6 +212,7 @@ def complete_session(
         sesion_out.nuevos_prs = nuevos_prs
         return sesion_out
 
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al completar la sesión (Offline Sync): {str(e)}")
+        print(f"ERROR INTERNO (Offline Sync): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")

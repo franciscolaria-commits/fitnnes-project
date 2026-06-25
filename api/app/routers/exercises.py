@@ -102,9 +102,10 @@ def create_custom_exercise(
         return nuevo_ejercicio
     except Exception as e:
         db.rollback()
+        print(f"ERROR INTERNO (Crear Ejercicio Custom): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al crear el ejercicio personalizado: {str(e)}"
+            detail="Ocurrió un error interno en el servidor."
         )
 
 class OverrideMediaRequest(BaseModel):
@@ -139,7 +140,8 @@ def override_exercise_media(
         return {"message": "Media actualizada correctamente"}
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"ERROR INTERNO (Guardar Video Override): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 @router.put("/{ejercicio_id}", response_model=EjercicioOut)
 def update_custom_exercise(

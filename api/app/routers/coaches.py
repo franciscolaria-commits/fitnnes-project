@@ -79,9 +79,10 @@ def update_coach_profile(
         return perfil
     except Exception as e:
         db.rollback()
+        print(f"ERROR INTERNO (Update Entrenador): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al actualizar el perfil: {str(e)}"
+            detail="Ocurrió un error interno en el servidor."
         )
 
 @router.post("/profile/image", response_model=EntrenadorOut)
@@ -128,9 +129,10 @@ async def upload_coach_profile_image(
         raise
     except Exception as e:
         db.rollback()
+        print(f"ERROR INTERNO (Upload Foto): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al procesar la imagen: {str(e)}"
+            detail="Ocurrió un error interno en el servidor."
         )
 
 @router.post("/invitations", response_model=InvitacionOut, status_code=status.HTTP_201_CREATED)
@@ -168,9 +170,10 @@ def create_invitation(
         return nueva_invitacion
     except Exception as e:
         db.rollback()
+        print(f"ERROR INTERNO (Generar Invitacion): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al generar la invitación: {str(e)}"
+            detail="Ocurrió un error interno en el servidor."
         )
 
 @router.get("/invitations", response_model=List[InvitacionOut])

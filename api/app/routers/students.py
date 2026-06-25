@@ -73,9 +73,10 @@ def update_student(
         db.commit()
         db.refresh(alumno)
         return alumno
-    except SQLAlchemyError as e:
+    except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=400, detail=str(e))
+        print(f"ERROR INTERNO (Assign Rutina a Estudiante): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 @router.get("/{alumno_id}/stats", response_model=schemas.StudentStatsOut)
 def get_student_stats(

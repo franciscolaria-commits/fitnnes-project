@@ -48,9 +48,10 @@ def get_presigned_url(request: PresignedUrlRequest):
             key=urls["key"]
         )
     except Exception as e:
+        print(f"ERROR INTERNO (Storage): {str(e)}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al generar la URL de subida: {str(e)}"
+            status_code=500,
+            detail="Ocurrió un error interno en el servidor."
         )
 
 from fastapi import Request

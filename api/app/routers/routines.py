@@ -68,7 +68,8 @@ def create_routine(
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error transaccional al guardar rutina: {str(e)}")
+        print(f"ERROR INTERNO (Crear Rutina): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 from uuid import UUID
 
@@ -137,7 +138,8 @@ def update_routine(
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error transaccional al actualizar rutina: {str(e)}")
+        print(f"ERROR INTERNO (Actualizar Rutina): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 @router.post("/{id_rutina}/duplicate", response_model=schemas.RutinaOut)
 def duplicate_routine(
@@ -201,7 +203,8 @@ def duplicate_routine(
 
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error transaccional al duplicar rutina: {str(e)}")
+        print(f"ERROR INTERNO (Duplicar Rutina): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 @router.post("/{id_rutina}/assign")
 def assign_routine(
@@ -239,7 +242,8 @@ def assign_routine(
         return {"status": "success", "message": "Rutina asignada exitosamente al alumno."}
     except SQLAlchemyError as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail=f"Error al asignar rutina: {str(e)}")
+        print(f"ERROR INTERNO (Asignar Rutina): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 @router.get("", response_model=List[schemas.RutinaOut])
 def get_routines(

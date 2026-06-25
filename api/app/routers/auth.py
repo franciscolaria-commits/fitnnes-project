@@ -65,9 +65,10 @@ def register_coach(user_data: UsuarioCreate, db: Session = Depends(get_db)):
         return nuevo_usuario
     except Exception as e:
         db.rollback()
+        print(f"ERROR INTERNO (Registro Entrenador): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error durante el registro del entrenador: {str(e)}"
+            detail="Ocurrió un error interno en el servidor."
         )
 
 @router.post("/register-student", response_model=AlumnoOut, status_code=status.HTTP_201_CREATED)
@@ -134,9 +135,10 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
         return nuevo_alumno
     except Exception as e:
         db.rollback()
+        print(f"ERROR INTERNO (Registro Alumno): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error durante el registro del alumno: {str(e)}"
+            detail="Ocurrió un error interno en el servidor."
         )
 
 @router.post("/login", response_model=Token)
