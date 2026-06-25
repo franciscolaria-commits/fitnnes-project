@@ -60,10 +60,10 @@ def ping(db: Session = Depends(get_db)):
     except Exception as e:
         return {"status": "error", "database": str(e)}
 
-@app.get("/ping", tags=["Health"])
-async def ping():
+@app.get("/keep-alive", tags=["Health"])
+async def keep_alive():
     """
-    Endpoint ultraligero para mantener activo el servidor.
-    No toca la base de datos.
+    Endpoint ultraligero exclusivo para el cron job de Render.
+    Evita consultar PostgreSQL para no agotar el pooler de Supabase.
     """
     return {"status": "awake", "service": "Syncro API"}
