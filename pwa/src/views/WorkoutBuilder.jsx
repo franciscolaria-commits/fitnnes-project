@@ -150,7 +150,7 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
       <div className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-[1600px] mx-auto w-full">
         
         {/* Catálogo lateral izquierdo */}
-        <div className="lg:col-span-1 glass-card rounded-2xl p-4 flex flex-col gap-4 h-[calc(100vh-120px)] sticky top-24">
+        <div className="lg:col-span-1 glass-card rounded-2xl p-4 flex flex-col gap-4 h-[350px] lg:h-[calc(100vh-120px)] lg:sticky lg:top-24 mb-4 lg:mb-0">
           <h2 className="text-sm font-bold text-zinc-100 uppercase tracking-wider">Catálogo Maestro</h2>
           <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-3">
             {exercisesCatalog.map(ex => (
