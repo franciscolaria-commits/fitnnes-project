@@ -131,6 +131,9 @@ def update_routine(
                     orden=ej_data.orden
                 )
                 db.add(new_ej)
+        
+        # Forzar la inserción de la nueva rutina antes de reasignar a los alumnos
+        db.flush()
 
         # 5. Reasignar automáticamente a los alumnos afectados
         alumnos_afectados = db.query(models.Alumno).filter(
