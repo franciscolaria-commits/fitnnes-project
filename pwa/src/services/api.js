@@ -34,7 +34,10 @@ async function request(endpoint, options = {}) {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+      ...config,
+      signal: AbortSignal.timeout(10000) // 10 seconds timeout
+    });
     
     // Si recibimos un 401 Unauthorized y NO es el endpoint de login, forzamos deslogueo
     if (response.status === 401 && !endpoint.includes('/login')) {
@@ -58,9 +61,13 @@ async function request(endpoint, options = {}) {
     
     return response;
   } catch (error) {
-    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+    if (error.name === 'TimeoutError' || error.name === 'AbortError') {
+      console.error(`[API Error] Timeout al contactar ${endpoint}.`);
+      throw new Error("OFFLINE");
+    }
+    if (error.name === 'TypeError' && (error.message === 'Failed to fetch' || error.message.includes('NetworkError'))) {
       console.error(`[API Error] Error de red al contactar ${endpoint}.`);
-      throw new Error("Error de conexión. El servidor no responde o está en mantenimiento.");
+      throw new Error("OFFLINE");
     }
     console.error(`[API Error] Error en petición ${endpoint}:`, error);
     throw error;

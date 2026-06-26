@@ -41,6 +41,9 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
 
   const mutation = useMutation({
     mutationFn: async (sessionData) => {
+      if (!navigator.onLine) {
+        throw new Error("OFFLINE");
+      }
       const sessionStart = await api.post('/api/v1/sessions/start', { id_rutina: sessionData.id_rutina });
       const completeResponse = await api.put(`/api/v1/sessions/${sessionStart.id_sesion}/complete`, {
         fecha_fin: sessionData.fecha_fin,
@@ -64,10 +67,14 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
       }
     },
     onError: async (error, variables) => {
-      console.warn("Fallo de red, guardando en cola offline...");
-      await enqueueSession(variables);
-      await modal.alert("Guardado localmente. Se sincronizará automáticamente cuando haya conexión a Internet.");
-      onComplete();
+      if (error.message === "OFFLINE") {
+        console.warn("Fallo de red o modo offline detectado, guardando en cola offline...");
+        await enqueueSession(variables);
+        await modal.alert("Sin conexión. Guardado localmente. Se sincronizará automáticamente cuando haya conexión a Internet.");
+        onComplete();
+      } else {
+        await modal.alert("Ocurrió un error: " + error.message);
+      }
     }
   });
 
