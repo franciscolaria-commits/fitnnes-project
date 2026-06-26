@@ -29,6 +29,7 @@ def create_routine(
             id_rutina=new_rutina_id,
             id_entrenador=current_user.id_usuario,
             nombre_rutina=routine_data.nombre_rutina,
+            frecuencia_semanal=routine_data.frecuencia_semanal,
             version_id=1,
             is_active=True
         )
@@ -103,6 +104,7 @@ def update_routine(
             id_rutina=new_rutina_id,
             id_entrenador=current_user.id_usuario,
             nombre_rutina=routine_data.nombre_rutina,
+            frecuencia_semanal=routine_data.frecuencia_semanal,
             version_id=old_rutina.version_id + 1,
             is_active=True
         )

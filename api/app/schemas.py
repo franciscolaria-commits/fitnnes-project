@@ -154,6 +154,7 @@ class RutinaDiaCreate(BaseModel):
 
 class RutinaCreate(BaseModel):
     nombre_rutina: str
+    frecuencia_semanal: int = 3
     dias: List[RutinaDiaCreate]
 
 class RutinaEjercicioOut(BaseModel):
@@ -183,6 +184,7 @@ class RutinaOut(BaseModel):
     version_id: int
     is_active: bool
     fecha_creacion: datetime
+    frecuencia_semanal: int
     dias: List[RutinaDiaOut] = []
 
     class Config:

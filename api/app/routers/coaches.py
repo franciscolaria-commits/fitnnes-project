@@ -287,3 +287,78 @@ def get_student_progress_chart(
             "max_peso": round(row.max_peso, 2)
         } for row in result
     ]
+
+@router.get("/students/{id_alumno}/attendance")
+def get_student_attendance(
+    id_alumno: str,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == id_alumno,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado o no autorizado")
+        
+    rutina_activa = db.query(models.Rutina).filter(models.Rutina.id_rutina == alumno.id_rutina_activa).first()
+    frecuencia_objetivo = rutina_activa.frecuencia_semanal if rutina_activa and rutina_activa.frecuencia_semanal else 3
+
+    query = text("""
+        WITH SessionDays AS (
+            SELECT 
+                ses.id_sesion,
+                DATE_TRUNC('week', ses.fecha_inicio) AS semana,
+                re.id_dia,
+                COUNT(DISTINCT re.id_ejercicio) AS ejercicios_realizados
+            FROM entrenamiento_sesiones ses
+            JOIN entrenamiento_sets_reales set_r ON ses.id_sesion = set_r.id_sesion
+            JOIN rutinas_ejercicios re ON set_r.id_rutina_ejercicio = re.id_rutina_ejercicio
+            WHERE ses.id_alumno = :id_alumno 
+              AND ses.estado = 'completado'
+            GROUP BY ses.id_sesion, DATE_TRUNC('week', ses.fecha_inicio), re.id_dia
+        ),
+        DayTotals AS (
+            SELECT id_dia, COUNT(DISTINCT id_ejercicio) AS total_ejercicios
+            FROM rutinas_ejercicios
+            GROUP BY id_dia
+        ),
+        SessionStats AS (
+            SELECT 
+                sd.id_sesion,
+                sd.semana,
+                sd.id_dia,
+                sd.ejercicios_realizados,
+                dt.total_ejercicios,
+                (sd.ejercicios_realizados::FLOAT / NULLIF(dt.total_ejercicios, 0)) AS completitud,
+                ROW_NUMBER() OVER (PARTITION BY sd.id_sesion ORDER BY (sd.ejercicios_realizados::FLOAT / NULLIF(dt.total_ejercicios, 0)) DESC) as rn
+            FROM SessionDays sd
+            JOIN DayTotals dt ON sd.id_dia = dt.id_dia
+        ),
+        ValidSessions AS (
+            SELECT id_sesion, semana
+            FROM SessionStats
+            WHERE rn = 1 AND completitud >= 0.6
+        )
+        SELECT 
+            semana,
+            COUNT(id_sesion) AS asistencias
+        FROM ValidSessions
+        GROUP BY semana
+        ORDER BY semana DESC
+        LIMIT 10
+    """)
+    result = db.execute(query, {"id_alumno": id_alumno}).fetchall()
+    
+    return {
+        "frecuencia_objetivo": frecuencia_objetivo,
+        "asistencias_por_semana": [
+            {
+                "semana": row.semana.isoformat() if hasattr(row.semana, 'isoformat') else str(row.semana),
+                "asistencias": row.asistencias
+            } for row in result
+        ]
+    }

@@ -43,6 +43,12 @@ export default function StudentProgress({ studentId }) {
     enabled: !!studentId
   });
 
+  const { data: attendanceData, isLoading: loadingAttendance } = useQuery({
+    queryKey: ['studentAttendance', studentId],
+    queryFn: () => api.get(`/api/v1/coaches/students/${studentId}/attendance`),
+    enabled: !!studentId
+  });
+
   const availableExercises = chartData ? [...new Set(chartData.map(d => d.ejercicio_nombre))] : [];
   
   React.useEffect(() => {
@@ -71,6 +77,54 @@ export default function StudentProgress({ studentId }) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
+
+      {/* ASISTENCIA HERO (Sólo Entrenador) */}
+      {studentId && (
+        <div className="lg:col-span-12 border border-zinc-800 bg-zinc-900 p-6 md:p-10 flex flex-col">
+          <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8 border-b border-zinc-800 pb-4">
+            CONTROL DE ASISTENCIA
+          </h2>
+          {loadingAttendance ? (
+            <p className="text-zinc-700 font-black text-2xl uppercase tracking-tighter">CARGANDO ASISTENCIA...</p>
+          ) : !attendanceData || attendanceData.asistencias_por_semana.length === 0 ? (
+            <p className="text-zinc-700 font-black text-2xl uppercase tracking-tighter">SIN DATOS DE ASISTENCIA.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {attendanceData.asistencias_por_semana.map((weekData, idx) => {
+                const target = attendanceData.frecuencia_objetivo || 3;
+                const achieved = weekData.asistencias;
+                const percent = Math.min(100, Math.round((achieved / target) * 100));
+                
+                // Formatear la fecha para que sea legible (ej: "Semana del 12/10")
+                const weekDate = new Date(weekData.semana);
+                const dateStr = `${weekDate.getDate().toString().padStart(2, '0')}/${(weekDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                
+                let colorClass = "bg-red-500/20 border-red-500/50 text-red-400"; // < 50%
+                let barColor = "bg-red-500";
+                
+                if (percent >= 100) {
+                  colorClass = "bg-green-500/20 border-green-500/50 text-green-400";
+                  barColor = "bg-green-500";
+                } else if (percent >= 60) {
+                  colorClass = "bg-yellow-500/20 border-yellow-500/50 text-yellow-400";
+                  barColor = "bg-yellow-500";
+                }
+
+                return (
+                  <div key={idx} className={`border p-4 rounded-xl flex flex-col items-center justify-center text-center ${colorClass}`}>
+                    <span className="text-xs font-bold uppercase tracking-widest opacity-80 mb-1">Semana {dateStr}</span>
+                    <span className="text-3xl font-black">{achieved}<span className="text-xl opacity-60">/{target}</span></span>
+                    
+                    <div className="w-full bg-black/40 h-2 rounded-full mt-3 overflow-hidden">
+                      <div className={`h-full ${barColor} transition-all duration-500`} style={{ width: `${percent}%` }}></div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* CHART HERO (Sólo Entrenador) */}
       {studentId && (

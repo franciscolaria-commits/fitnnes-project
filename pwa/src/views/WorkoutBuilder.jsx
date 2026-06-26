@@ -8,6 +8,7 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
   
   // Si tenemos initialData, inicializamos con esos datos. Si no, datos por defecto.
   const [routineName, setRoutineName] = useState(initialData ? initialData.nombre_rutina : 'Mi Nueva Rutina');
+  const [frecuenciaSemanal, setFrecuenciaSemanal] = useState(initialData?.frecuencia_semanal || 3);
   
   const initialDays = initialData && initialData.dias ? initialData.dias.map((d, dIdx) => ({
     id: d.id_dia || `dia-${dIdx}`,
@@ -87,6 +88,7 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
       // Preparar payload para la API (Schemas: RutinaCreate, RutinaDiaCreate, RutinaEjercicioCreate)
       const payload = {
         nombre_rutina: routineName,
+        frecuencia_semanal: parseInt(frecuenciaSemanal),
         dias: days.map((day, dIndex) => ({
           nombre_dia: day.name,
           orden: dIndex + 1,
@@ -136,7 +138,20 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
             value={routineName} 
             onChange={(e) => setRoutineName(e.target.value)}
             className="bg-zinc-900 border border-zinc-700 text-sm font-bold text-white px-4 py-2 rounded-xl focus:border-blue-500 outline-none flex-1 sm:flex-none sm:w-64 min-w-0"
+            placeholder="Nombre de Rutina"
           />
+          <div className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 shrink-0">
+            <span className="text-xs font-bold text-zinc-400 uppercase">Días/Sem:</span>
+            <select
+              value={frecuenciaSemanal}
+              onChange={(e) => setFrecuenciaSemanal(e.target.value)}
+              className="bg-transparent text-white font-bold text-sm outline-none cursor-pointer"
+            >
+              {[1, 2, 3, 4, 5, 6, 7].map(num => (
+                <option key={num} value={num} className="bg-zinc-900">{num}</option>
+              ))}
+            </select>
+          </div>
           <button 
             onClick={handleSave} 
             disabled={loading}
