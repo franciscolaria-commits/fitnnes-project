@@ -252,3 +252,38 @@ def resolve_audit(
         return {"status": "Rechazado", "message": "Récord rechazado."}
     else:
         raise HTTPException(status_code=400, detail="Acción inválida")
+
+from sqlalchemy import text
+
+@router.get("/students/{id_alumno}/progress_chart")
+def get_student_progress_chart(
+    id_alumno: str,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == id_alumno,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado o no autorizado")
+
+    query = text("""
+        SELECT ejercicio_nombre, fecha, max_e1rm, max_peso
+        FROM mv_student_progress_chart
+        WHERE id_alumno = :id_alumno
+        ORDER BY fecha ASC
+    """)
+    result = db.execute(query, {"id_alumno": id_alumno}).fetchall()
+    
+    return [
+        {
+            "ejercicio_nombre": row.ejercicio_nombre,
+            "fecha": row.fecha.isoformat() if hasattr(row.fecha, 'isoformat') else str(row.fecha),
+            "max_e1rm": round(row.max_e1rm, 2),
+            "max_peso": round(row.max_peso, 2)
+        } for row in result
+    ]

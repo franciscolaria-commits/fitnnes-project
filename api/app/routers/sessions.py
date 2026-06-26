@@ -202,6 +202,7 @@ def complete_session(
         # Refresh de Vista Materializada (en caso de que aplique a rep_maxes)
         try:
             db.execute(text("REFRESH MATERIALIZED VIEW mv_rep_maxes"))
+            db.execute(text("REFRESH MATERIALIZED VIEW CONCURRENTLY mv_student_progress_chart"))
             db.commit()
         except Exception as mv_e:
             db.rollback()

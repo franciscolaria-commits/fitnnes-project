@@ -1,7 +1,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api.js';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
 
 // Helper para obtener estilo visual según el nivel
 const getTierStyle = (tier) => {
@@ -26,6 +26,7 @@ const ShieldIcon = ({ className }) => (
 );
 
 export default function StudentProgress({ studentId }) {
+  const [selectedExercise, setSelectedExercise] = React.useState('');
   const { data: stats, isLoading: loadingStats } = useQuery({
     queryKey: ['studentStats', studentId || 'me'],
     queryFn: () => api.get(studentId ? `/api/v1/coaches/students/${studentId}/stats` : '/api/v1/students/me/stats')
@@ -35,6 +36,22 @@ export default function StudentProgress({ studentId }) {
     queryKey: ['studentLeagues', studentId || 'me'],
     queryFn: () => api.get(studentId ? `/api/v1/coaches/students/${studentId}/league` : '/api/v1/students/me/league')
   });
+
+  const { data: chartData, isLoading: loadingChart } = useQuery({
+    queryKey: ['studentChart', studentId],
+    queryFn: () => api.get(`/api/v1/coaches/students/${studentId}/progress_chart`),
+    enabled: !!studentId
+  });
+
+  const availableExercises = chartData ? [...new Set(chartData.map(d => d.ejercicio_nombre))] : [];
+  
+  React.useEffect(() => {
+    if (availableExercises.length > 0 && !selectedExercise) {
+      setSelectedExercise(availableExercises[0]);
+    }
+  }, [availableExercises, selectedExercise]);
+
+  const filteredChartData = chartData ? chartData.filter(d => d.ejercicio_nombre === selectedExercise) : [];
 
   if (loadingStats) {
     return <div className="p-12 text-center text-zinc-500 font-mono uppercase tracking-widest">CARGANDO DATOS...</div>;
@@ -55,6 +72,50 @@ export default function StudentProgress({ studentId }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
       
+      {/* CHART HERO (Sólo Entrenador) */}
+      {studentId && (
+        <div className="lg:col-span-12 border border-zinc-800 bg-zinc-900 p-6 md:p-10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 border-b border-zinc-800 pb-4">
+            <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter">GRÁFICO DE PROGRESO</h2>
+            {availableExercises.length > 0 && (
+              <select 
+                value={selectedExercise}
+                onChange={e => setSelectedExercise(e.target.value)}
+                className="mt-4 sm:mt-0 bg-zinc-950 border border-zinc-700 text-white p-2 outline-none font-bold text-sm uppercase tracking-widest cursor-pointer"
+              >
+                {availableExercises.map(ex => (
+                  <option key={ex} value={ex}>{ex}</option>
+                ))}
+              </select>
+            )}
+          </div>
+          
+          {loadingChart ? (
+             <p className="text-zinc-700 font-black text-3xl uppercase tracking-tighter">CARGANDO GRÁFICO...</p>
+          ) : filteredChartData.length === 0 ? (
+             <p className="text-zinc-700 font-black text-3xl uppercase tracking-tighter">SIN DATOS PARA GRAFICAR.</p>
+          ) : (
+             <div className="w-full h-[400px]">
+               <ResponsiveContainer width="100%" height="100%">
+                 <LineChart data={filteredChartData}>
+                   <CartesianGrid strokeDasharray="3 3" stroke="#27272a" vertical={false} />
+                   <XAxis dataKey="fecha" stroke="#a1a1aa" tick={{fill: '#a1a1aa', fontSize: 12}} tickMargin={10} minTickGap={30} />
+                   <YAxis yAxisId="left" stroke="#3b82f6" tick={{fill: '#3b82f6', fontSize: 12}} domain={['auto', 'auto']} />
+                   <YAxis yAxisId="right" orientation="right" stroke="#10b981" tick={{fill: '#10b981', fontSize: 12}} domain={['auto', 'auto']} />
+                   <RechartsTooltip 
+                     contentStyle={{ backgroundColor: '#18181b', borderColor: '#27272a', color: '#fff' }}
+                     itemStyle={{ fontWeight: 'bold' }}
+                   />
+                   <Legend wrapperStyle={{ paddingTop: '20px' }} />
+                   <Line yAxisId="left" type="monotone" dataKey="max_e1rm" name="e1RM (Fuerza Estimada) [KG]" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4, fill: '#3b82f6', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                   <Line yAxisId="right" type="monotone" dataKey="max_peso" name="Peso Real Máx [KG]" stroke="#10b981" strokeWidth={3} dot={{ r: 4, fill: '#10b981', strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                 </LineChart>
+               </ResponsiveContainer>
+             </div>
+          )}
+        </div>
+      )}
+
       {/* LIGAS HERO (Fase 4.5) */}
       <div className="lg:col-span-12 border border-zinc-800 bg-zinc-900 p-6 md:p-10">
         <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tighter mb-8 border-b border-zinc-800 pb-4">FUERZA RELATIVA / MI LIGA</h2>
