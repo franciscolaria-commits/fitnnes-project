@@ -20,6 +20,8 @@ export default function CoachDashboard() {
   const [audits, setAudits] = useState([]);
   const [attendanceAlerts, setAttendanceAlerts] = useState([]);
   const [loadingAction, setLoadingAction] = useState(null);
+  const [assignMenuOpenId, setAssignMenuOpenId] = useState(null);
+  const [selectedStudentsForAssign, setSelectedStudentsForAssign] = useState([]);
   const modal = useModal();
 
   useEffect(() => {
@@ -424,25 +426,66 @@ export default function CoachDashboard() {
                      </div>
                    </div>
                    
-                   <div className="mt-2 border-t border-zinc-800/50 pt-3">
-                     <p className="text-[10px] text-zinc-500 uppercase mb-2">Asignar a Alumno</p>
-                     <select 
-                       className="w-full bg-zinc-950 border border-zinc-800 rounded p-1 text-xs text-zinc-300"
-                       onChange={async (e) => {
-                         if(!e.target.value) return;
-                         try {
-                           await api.post(`/api/v1/routines/${rut.id_rutina}/assign`, { id_alumno: e.target.value });
-                           await modal.alert("Rutina asignada exitosamente.");
-                           e.target.value = "";
-                         } catch (err) {
-                           await modal.alert(err.message);
-                         }
-                       }}
-                     >
-                       <option value="">Seleccionar Alumno...</option>
-                       {students.map(s => <option key={s.id_usuario} value={s.id_usuario}>{s.usuario.email}</option>)}
-                     </select>
-                   </div>
+                   <div className="mt-2 border-t border-zinc-800/50 pt-3 relative">
+                      <button 
+                        onClick={() => {
+                          if (assignMenuOpenId === rut.id_rutina) {
+                            setAssignMenuOpenId(null);
+                          } else {
+                            setAssignMenuOpenId(rut.id_rutina);
+                            setSelectedStudentsForAssign([]);
+                          }
+                        }}
+                        className="w-full bg-zinc-800 hover:bg-zinc-700 border border-zinc-700/50 rounded p-2 text-xs text-zinc-200 font-bold flex justify-between items-center transition-colors"
+                      >
+                        Asignar a Alumnos
+                        <svg xmlns="http://www.w3.org/2000/svg" className={`h-4 w-4 transition-transform ${assignMenuOpenId === rut.id_rutina ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                      </button>
+                      
+                      {assignMenuOpenId === rut.id_rutina && (
+                        <div className="absolute top-full left-0 right-0 mt-1 bg-zinc-900 border border-zinc-700 rounded-lg shadow-2xl z-10 flex flex-col overflow-hidden">
+                          <div className="max-h-48 overflow-y-auto p-2 flex flex-col gap-1">
+                            {students.length === 0 ? <p className="text-xs text-zinc-500 p-2">No tienes alumnos.</p> : students.map(s => (
+                              <label key={s.id_usuario} className="flex items-center gap-2 p-2 hover:bg-zinc-800 rounded cursor-pointer transition-colors">
+                                <input 
+                                  type="checkbox"
+                                  className="rounded bg-zinc-950 border-zinc-700 text-blue-500 focus:ring-blue-500 focus:ring-offset-zinc-900"
+                                  checked={selectedStudentsForAssign.includes(s.id_usuario)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedStudentsForAssign([...selectedStudentsForAssign, s.id_usuario]);
+                                    } else {
+                                      setSelectedStudentsForAssign(selectedStudentsForAssign.filter(id => id !== s.id_usuario));
+                                    }
+                                  }}
+                                />
+                                <span className="text-xs text-zinc-300 truncate">{s.usuario.email}</span>
+                              </label>
+                            ))}
+                          </div>
+                          <div className="p-2 border-t border-zinc-800 bg-zinc-950/50">
+                            <button
+                              disabled={selectedStudentsForAssign.length === 0 || loadingAction === `assign-${rut.id_rutina}`}
+                              onClick={async () => {
+                                setLoadingAction(`assign-${rut.id_rutina}`);
+                                try {
+                                  await api.post(`/api/v1/routines/${rut.id_rutina}/assign-bulk`, { id_alumnos: selectedStudentsForAssign });
+                                  await modal.alert("Rutina asignada exitosamente.");
+                                  setAssignMenuOpenId(null);
+                                } catch (err) {
+                                  await modal.alert(err.message);
+                                } finally {
+                                  setLoadingAction(null);
+                                }
+                              }}
+                              className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded transition-colors disabled:opacity-50"
+                            >
+                              {loadingAction === `assign-${rut.id_rutina}` ? 'Procesando...' : `Confirmar (${selectedStudentsForAssign.length})`}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                  </div>
                ))}
             </div>

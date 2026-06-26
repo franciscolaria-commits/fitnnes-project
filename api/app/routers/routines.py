@@ -257,6 +257,43 @@ def assign_routine(
         print(f"ERROR INTERNO (Asignar Rutina): {str(e)}")
         raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
+@router.post("/{id_rutina}/assign-bulk")
+def assign_routine_bulk(
+    id_rutina: UUID,
+    asignacion: schemas.AsignacionBulkCreate,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo los entrenadores pueden asignar rutinas")
+
+    # Validar que la rutina pertenezca al coach y esté activa
+    rutina = db.query(models.Rutina).filter(
+        models.Rutina.id_rutina == id_rutina,
+        models.Rutina.id_entrenador == current_user.id_usuario,
+        models.Rutina.is_active == True
+    ).first()
+    
+    if not rutina:
+        raise HTTPException(status_code=404, detail="Rutina activa no encontrada")
+
+    try:
+        # Filtrar alumnos válidos que pertenezcan al coach
+        alumnos = db.query(models.Alumno).filter(
+            models.Alumno.id_usuario.in_(asignacion.id_alumnos),
+            models.Alumno.id_entrenador == current_user.id_usuario
+        ).all()
+
+        for alumno in alumnos:
+            alumno.id_rutina_activa = id_rutina
+
+        db.commit()
+        return {"status": "success", "message": f"Rutina asignada exitosamente a {len(alumnos)} alumnos."}
+    except SQLAlchemyError as e:
+        db.rollback()
+        print(f"ERROR INTERNO (Asignar Rutina Masiva): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
+
 @router.get("", response_model=List[schemas.RutinaOut])
 def get_routines(
     db: Session = Depends(get_db),

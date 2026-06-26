@@ -197,6 +197,9 @@ class RutinaOut(BaseModel):
 class AsignacionCreate(BaseModel):
     id_alumno: UUID
 
+class AsignacionBulkCreate(BaseModel):
+    id_alumnos: List[UUID]
+
 # ==========================================
 # ESQUEMAS DE SESIONES Y ENTRENAMIENTO OFFLINE
 # ==========================================
