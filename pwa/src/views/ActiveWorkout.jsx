@@ -173,9 +173,8 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
             </p>
           </div>
         ))}
-        
-        <button onClick={handleFinish} className="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-xl shadow-blue-500/20 transition-all text-lg uppercase tracking-wider">
-          Finalizar y Sincronizar
+        <button disabled={mutation.isPending} onClick={handleFinish} className="w-full mt-8 bg-blue-600 hover:bg-blue-500 text-white font-black py-4 rounded-xl shadow-xl shadow-blue-500/20 transition-all text-lg uppercase tracking-wider disabled:opacity-50">
+          {mutation.isPending ? 'Procesando...' : 'Finalizar y Sincronizar'}
         </button>
       </div>
       

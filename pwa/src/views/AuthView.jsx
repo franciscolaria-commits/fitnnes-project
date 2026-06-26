@@ -5,12 +5,14 @@ import { useModal } from '../components/ModalProvider.jsx';
 export default function AuthView({ onLoginSuccess }) {
   const [activePanel, setActivePanel] = useState('login'); // 'login', 'registerCoach', 'registerStudent'
   const [error, setError] = useState(null);
+  const [loadingAction, setLoadingAction] = useState(null);
   const modal = useModal();
 
   const handleLogin = async (e) => {
     e.preventDefault();
     const email = e.target['login-email'].value;
     const password = e.target['login-password'].value;
+    setLoadingAction('login');
     try {
       const formData = new FormData();
       formData.append("username", email);
@@ -23,6 +25,8 @@ export default function AuthView({ onLoginSuccess }) {
       onLoginSuccess();
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -30,12 +34,15 @@ export default function AuthView({ onLoginSuccess }) {
     e.preventDefault();
     const email = e.target['reg-coach-email'].value;
     const password = e.target['reg-coach-password'].value;
+    setLoadingAction('registerCoach');
     try {
       await api.post("/api/v1/auth/register", { email, password, rol: "entrenador" });
       await modal.alert("¡Cuenta de entrenador creada con éxito! Ahora inicia sesión.");
       setActivePanel('login');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -46,6 +53,7 @@ export default function AuthView({ onLoginSuccess }) {
     const password = e.target['reg-student-password'].value;
     const weight = e.target['reg-student-weight'].value;
     const goal = e.target['reg-student-goal'].value;
+    setLoadingAction('registerStudent');
     try {
       await api.post("/api/v1/auth/register-student", {
         codigo_invitacion: code,
@@ -58,6 +66,8 @@ export default function AuthView({ onLoginSuccess }) {
       setActivePanel('login');
     } catch (err) {
       setError(err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -87,8 +97,8 @@ export default function AuthView({ onLoginSuccess }) {
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña</label>
               <input type="password" id="login-password" required placeholder="••••••••" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
             </div>
-            <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10">
-              Entrar a la Plataforma
+            <button type="submit" disabled={loadingAction === 'login'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
+              {loadingAction === 'login' ? 'Cargando...' : 'Entrar a la Plataforma'}
             </button>
           </form>
           
@@ -118,8 +128,8 @@ export default function AuthView({ onLoginSuccess }) {
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
               <input type="password" id="reg-coach-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
             </div>
-            <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10">
-              Registrarse como Entrenador
+            <button type="submit" disabled={loadingAction === 'registerCoach'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
+              {loadingAction === 'registerCoach' ? 'Cargando...' : 'Registrarse como Entrenador'}
             </button>
           </form>
           <div className="border-t border-zinc-800/60 mt-4 pt-4">
@@ -160,8 +170,8 @@ export default function AuthView({ onLoginSuccess }) {
                 <input type="text" id="reg-student-goal" placeholder="Ej: Fuerza" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
               </div>
             </div>
-            <button type="submit" className="w-full py-3.5 rounded-xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-indigo-500/10">
-              Completar Mi Registro
+            <button type="submit" disabled={loadingAction === 'registerStudent'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
+              {loadingAction === 'registerStudent' ? 'Cargando...' : 'Registrarse como Alumno'}
             </button>
           </form>
           <div className="border-t border-zinc-800/60 mt-4 pt-4">

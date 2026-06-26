@@ -18,6 +18,8 @@ export default function CoachDashboard() {
   const [profile, setProfile] = useState({});
   const [editingRoutine, setEditingRoutine] = useState(null);
   const [audits, setAudits] = useState([]);
+  const [attendanceAlerts, setAttendanceAlerts] = useState([]);
+  const [loadingAction, setLoadingAction] = useState(null);
   const modal = useModal();
 
   useEffect(() => {
@@ -48,6 +50,9 @@ export default function CoachDashboard() {
       
       const audData = await api.get("/api/v1/coaches/audits/pending");
       setAudits(audData);
+
+      const alertsData = await api.get("/api/v1/coaches/audits/attendance_alerts");
+      setAttendanceAlerts(alertsData);
     } catch (err) {
       console.error(err);
     }
@@ -55,12 +60,15 @@ export default function CoachDashboard() {
 
   const handleResolveAudit = async (id, action) => {
     if (!(await modal.confirm(`¿Seguro que deseas ${action} este récord?`))) return;
+    setLoadingAction(`audit-${id}-${action}`);
     try {
       await api.post(`/api/v1/coaches/audits/${id}/resolve`, { action });
       await modal.alert(`Récord ${action} exitosamente.`);
       loadData();
     } catch (err) {
       await modal.alert("Error: " + err.message);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -70,6 +78,7 @@ export default function CoachDashboard() {
     const descripcion = e.target.descripcion.value.trim();
     const url_media = e.target.url_media.value.trim();
     
+    setLoadingAction('create_exercise');
     try {
       await api.post("/api/v1/exercises/custom", { nombre, descripcion, url_media });
       await modal.alert("Ejercicio creado exitosamente.");
@@ -77,6 +86,8 @@ export default function CoachDashboard() {
       loadData();
     } catch (error) {
       await modal.alert(`Error al crear ejercicio: ${error.message}`);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -135,6 +146,7 @@ export default function CoachDashboard() {
   const handleCreateInvitation = async (e) => {
     e.preventDefault();
     const destEmail = e.target['invite-email'].value.trim();
+    setLoadingAction('create_invitation');
     try {
       const data = await api.post("/api/v1/coaches/invitations", { email_destinatario: destEmail || null });
       await modal.alert(`¡Invitación creada con éxito!\nCódigo UUIDv4: ${data.codigo_unico}`);
@@ -142,6 +154,8 @@ export default function CoachDashboard() {
       loadData();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
+    } finally {
+      setLoadingAction(null);
     }
   };
 
@@ -220,7 +234,9 @@ export default function CoachDashboard() {
               </div>
               <form onSubmit={handleCreateInvitation} className="flex flex-col gap-3">
                 <input type="email" id="invite-email" placeholder="alumno@correo.com" className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-200" />
-                <button type="submit" className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm">Generar UUIDv4</button>
+                <button type="submit" disabled={loadingAction === 'create_invitation'} className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm disabled:opacity-50">
+                  {loadingAction === 'create_invitation' ? 'Procesando...' : 'Generar UUIDv4'}
+                </button>
               </form>
               <div className="flex flex-col gap-3">
                 <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Historial de Códigos</h3>
@@ -275,11 +291,43 @@ export default function CoachDashboard() {
                     <p className="text-xs text-amber-500/80 mt-1">Alcanza nivel: <span className="font-bold">{audit.nivel_alcanzado} {audit.subnivel_alcanzado}</span></p>
                   </div>
                   <div className="flex gap-2 w-full sm:w-auto">
-                    <button onClick={() => handleResolveAudit(audit.id_log, 'aprobar')} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition-all">Aprobar</button>
-                    <button onClick={() => handleResolveAudit(audit.id_log, 'rechazar')} className="flex-1 sm:flex-none px-4 py-2 bg-red-900/50 hover:bg-red-600 text-red-200 hover:text-white font-bold text-xs rounded-lg transition-all border border-red-500/30">Rechazar</button>
+                    <button disabled={loadingAction === `audit-${audit.id_log}-aprobar`} onClick={() => handleResolveAudit(audit.id_log, 'aprobar')} className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-lg transition-all disabled:opacity-50">
+                      {loadingAction === `audit-${audit.id_log}-aprobar` ? 'Cargando...' : 'Aprobar'}
+                    </button>
+                    <button disabled={loadingAction === `audit-${audit.id_log}-rechazar`} onClick={() => handleResolveAudit(audit.id_log, 'rechazar')} className="flex-1 sm:flex-none px-4 py-2 bg-red-900/50 hover:bg-red-600 text-red-200 hover:text-white font-bold text-xs rounded-lg transition-all border border-red-500/30 disabled:opacity-50">
+                      {loadingAction === `audit-${audit.id_log}-rechazar` ? 'Cargando...' : 'Rechazar'}
+                    </button>
                   </div>
                 </div>
               ))}
+            </div>
+
+            <div className="mt-6 border-t border-zinc-800 pt-6">
+              <h2 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-1">🚨 Alertas de Baja Asistencia</h2>
+              <p className="text-xs text-zinc-400 mb-4">Alumnos que asistieron menos del 50% de su objetivo la semana pasada.</p>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {attendanceAlerts.length === 0 ? <p className="text-zinc-500 text-sm">No hay alertas de asistencia.</p> : attendanceAlerts.map(alert => {
+                  const weekDate = new Date(alert.semana);
+                  const dateStr = `${weekDate.getDate().toString().padStart(2, '0')}/${(weekDate.getMonth() + 1).toString().padStart(2, '0')}`;
+                  
+                  return (
+                    <div key={alert.id_alumno} className="p-4 rounded-xl bg-red-950/20 border border-red-500/30 flex flex-col sm:flex-row justify-between gap-4 items-center">
+                      <div>
+                        <h3 className="text-sm font-bold text-zinc-200">Alumno: <span className="text-blue-400">{alert.alumno_nombre}</span></h3>
+                        <p className="text-xs text-zinc-400 mt-1">
+                          Semana del {dateStr}: Asistió <span className="text-red-400 font-bold">{alert.asistencias}</span> vez/veces, pero su objetivo era <span className="text-white font-semibold">{alert.frecuencia_objetivo}</span>.
+                        </p>
+                      </div>
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <button onClick={() => { setActivePanel('students'); setSelectedStudentId(alert.id_alumno); }} className="flex-1 sm:flex-none px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-lg transition-all border border-zinc-700/50">
+                          Ver Progreso
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </section>
         )}
@@ -299,7 +347,9 @@ export default function CoachDashboard() {
                 <input type="text" name="nombre" placeholder="Nombre del Ejercicio (Ej. Remo Pendlay)" required className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200" />
                 <textarea name="descripcion" placeholder="Instrucciones breves..." required className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200 h-20 resize-none"></textarea>
                 <input type="url" name="url_media" placeholder="URL de YouTube (Ej. https://youtube.com/watch?v=...)" className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200" />
-                <button type="submit" className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-widest text-white transition-all">Añadir al Catálogo</button>
+                <button type="submit" disabled={loadingAction === 'create_exercise'} className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-widest text-white transition-all disabled:opacity-50">
+                  {loadingAction === 'create_exercise' ? 'Procesando...' : 'Añadir al Catálogo'}
+                </button>
               </form>
             </div>
 
