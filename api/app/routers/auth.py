@@ -94,12 +94,6 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
             detail="El código de invitación proporcionado es inválido o no existe."
         )
         
-    if invitacion.is_used:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El código de invitación ya ha sido utilizado."
-        )
-        
     if invitacion.fecha_expiracion < datetime.utcnow():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -127,8 +121,8 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
         )
         db.add(nuevo_alumno)
         
-        # 5. Inhabilitar la invitación
-        invitacion.is_used = True
+        # 5. La invitación ya no se inahbilita (códigos reutilizables)
+        # invitacion.is_used = True
         
         db.commit()
         db.refresh(nuevo_alumno)
