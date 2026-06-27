@@ -17,7 +17,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal }) {
     setLoading(true);
     try {
       const response = await api.get(`/api/v1/coaches/payments?anio_mes=${monthYearString}`);
-      setPayments(response.data);
+      setPayments(response);
     } catch (e) {
       console.error(e);
     } finally {
@@ -84,9 +84,10 @@ export default function FinancesPanel({ students, api, loadStudents, modal }) {
     }
   };
 
-  const totalPaid = payments.filter(p => p.pagado).length;
-  const totalPending = payments.filter(p => !p.pagado && p.estado_activo).length;
-  const totalMoney = payments.filter(p => p.pagado && p.pago?.monto).reduce((acc, curr) => acc + curr.pago.monto, 0);
+  const safePayments = Array.isArray(payments) ? payments : [];
+  const totalPaid = safePayments.filter(p => p.pagado).length;
+  const totalPending = safePayments.filter(p => !p.pagado && p.estado_activo).length;
+  const totalMoney = safePayments.filter(p => p.pagado && p.pago?.monto).reduce((acc, curr) => acc + curr.pago.monto, 0);
 
   return (
     <section className="glass-card rounded-2xl p-6 shadow-lg flex flex-col gap-6">
@@ -130,10 +131,10 @@ export default function FinancesPanel({ students, api, loadStudents, modal }) {
       <div className="flex flex-col gap-3 mt-4">
         {loading ? (
           <p className="text-center text-sm text-zinc-500 py-4">Cargando...</p>
-        ) : payments.length === 0 ? (
+        ) : safePayments.length === 0 ? (
           <p className="text-center text-sm text-zinc-500 py-4">No tienes alumnos registrados.</p>
         ) : (
-          payments.map(student => (
+          safePayments.map(student => (
             <div key={student.id_alumno} className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl border ${!student.estado_activo ? 'bg-zinc-900/40 border-red-900/30 opacity-70' : student.pagado ? 'bg-emerald-900/10 border-emerald-900/30' : 'bg-zinc-900/60 border-zinc-800/60'} gap-4`}>
               <div>
                 <h3 className="text-sm font-bold text-zinc-200 flex items-center gap-2">
