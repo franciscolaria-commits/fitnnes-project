@@ -69,7 +69,8 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
     onError: async (error, variables) => {
       if (error.message === "OFFLINE") {
         console.warn("Fallo de red o modo offline detectado, guardando en cola offline...");
-        await enqueueSession(variables);
+        // Disparar en background y continuar inmediatamente
+        enqueueSession(variables).catch(e => console.error("Fallo al encolar session", e));
         await modal.alert("Sin conexión. Guardado localmente. Se sincronizará automáticamente cuando haya conexión a Internet.");
         onComplete();
       } else {

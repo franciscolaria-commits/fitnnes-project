@@ -33,12 +33,18 @@ async function request(endpoint, options = {}) {
     headers
   };
 
+  // Manual timeout for max compatibility
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s
+
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...config,
-      signal: AbortSignal.timeout(10000) // 10 seconds timeout
+      signal: controller.signal
     });
     
+    clearTimeout(timeoutId);
+
     // Si recibimos un 401 Unauthorized y NO es el endpoint de login, forzamos deslogueo
     if (response.status === 401 && !endpoint.includes('/login')) {
       console.warn("[API] Token expirado o inválido. Forzando deslogueo.");
@@ -61,6 +67,7 @@ async function request(endpoint, options = {}) {
     
     return response;
   } catch (error) {
+    clearTimeout(timeoutId);
     if (error.name === 'TimeoutError' || error.name === 'AbortError') {
       console.error(`[API Error] Timeout al contactar ${endpoint}.`);
       throw new Error("OFFLINE");

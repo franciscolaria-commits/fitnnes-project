@@ -5,16 +5,60 @@ const QUEUE_KEY = 'offline_sync_queue';
 
 // Agrega una sesión a la cola offline
 export async function enqueueSession(sessionData) {
-  const queue = (await get(QUEUE_KEY)) || [];
-  queue.push(sessionData);
-  await set(QUEUE_KEY, queue);
+  try {
+    const queue = (await get(QUEUE_KEY)) || [];
+    queue.push(sessionData);
+    await set(QUEUE_KEY, queue);
+  } catch (err) {
+    console.error("[OfflineSync] IDB falló, usando localStorage de respaldo", err);
+    try {
+      const queueRaw = localStorage.getItem(QUEUE_KEY);
+      const queue = queueRaw ? JSON.parse(queueRaw) : [];
+      queue.push(sessionData);
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    } catch (lsErr) {
+      console.error("[OfflineSync] Todo el almacenamiento falló", lsErr);
+    }
+  }
+}
+
+// Obtener la cola combinando IDB y localStorage
+async function getFullQueue() {
+  let queue = [];
+  try {
+    queue = (await get(QUEUE_KEY)) || [];
+  } catch(e) {
+    console.warn("IDB read failed", e);
+  }
+  
+  try {
+    const lsRaw = localStorage.getItem(QUEUE_KEY);
+    if (lsRaw) {
+      const lsQueue = JSON.parse(lsRaw);
+      queue = [...queue, ...lsQueue];
+    }
+  } catch(e) {}
+  
+  return queue;
+}
+
+// Limpiar colas combinadas
+async function saveFullQueue(queue) {
+  try {
+    await set(QUEUE_KEY, queue);
+    localStorage.removeItem(QUEUE_KEY); // Limpiamos el fallback si idb funcionó
+  } catch(e) {
+    try {
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+    } catch(err) {}
+  }
 }
 
 // Intenta sincronizar toda la cola con el servidor
 export async function syncOfflineQueue() {
   if (!navigator.onLine) return;
   
-  const queue = (await get(QUEUE_KEY)) || [];
+  const queue = await getFullQueue();
   if (queue.length === 0) return;
 
   const newQueue = [];
@@ -33,13 +77,13 @@ export async function syncOfflineQueue() {
       console.error("[OfflineSync] Error sincronizando sesión:", error);
       // Si falla por otra cosa que no sea red (ej: 400 Bad Request), igual lo droppeamos o lo guardamos?
       // Por ahora, si hay error de red, lo devolvemos a la cola.
-      if (error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
+      if (error.message.includes("OFFLINE") || error.message.includes("Failed to fetch") || error.message.includes("NetworkError")) {
         newQueue.push(sessionData);
       }
     }
   }
 
-  await set(QUEUE_KEY, newQueue);
+  await saveFullQueue(newQueue);
 }
 
 // Iniciar listener
