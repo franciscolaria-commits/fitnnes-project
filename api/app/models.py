@@ -147,4 +147,19 @@ class Invitacion(Base):
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
     fecha_expiracion = Column(DateTime, nullable=False)
     
-    entrenador = relationship("Entrenador")
+    entrenador = relationship("Entrenador")
+
+class PagoAlumno(Base):
+    __tablename__ = "pagos_alumnos"
+    id_pago = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_alumno = Column(UUID(as_uuid=True), ForeignKey("alumnos.id_usuario"), nullable=False)
+    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False)
+    anio_mes = Column(String, nullable=False, index=True) # ej: '2026-06'
+    fecha_pago = Column(DateTime, default=datetime.utcnow)
+    monto = Column(Float, nullable=True)
+    metodo_pago = Column(String, nullable=True) # efvo, transferencia, etc.
+    notas = Column(String, nullable=True)
+    
+    alumno = relationship("Alumno")
+    entrenador = relationship("Entrenador")
+

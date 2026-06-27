@@ -442,3 +442,130 @@ def get_student_attendance(
             } for row in result
         ]
     }
+
+# ==========================================
+# ENDPOINTS DE FINANZAS Y SUSPENSIÓN
+# ==========================================
+
+@router.get("/payments", response_model=List[schemas.EstadoPagoAlumnoResponse])
+def get_payments_status(
+    anio_mes: str,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    alumnos = db.query(models.Alumno).filter(models.Alumno.id_entrenador == current_user.id_usuario).all()
+    
+    pagos = db.query(models.PagoAlumno).filter(
+        models.PagoAlumno.id_entrenador == current_user.id_usuario,
+        models.PagoAlumno.anio_mes == anio_mes
+    ).all()
+    
+    pagos_dict = {str(p.id_alumno): p for p in pagos}
+    
+    result = []
+    for al in alumnos:
+        usuario_al = db.query(models.Usuario).filter(models.Usuario.id_usuario == al.id_usuario).first()
+        pago = pagos_dict.get(str(al.id_usuario))
+        
+        result.append({
+            "id_alumno": al.id_usuario,
+            "nombre_alumno": usuario_al.email.split("@")[0] if usuario_al else "Alumno",
+            "email_alumno": usuario_al.email if usuario_al else "",
+            "estado_activo": al.estado_activo,
+            "pagado": True if pago else False,
+            "pago": pago
+        })
+        
+    return result
+
+@router.post("/payments", response_model=schemas.PagoAlumnoOut)
+def register_payment(
+    pago_data: schemas.PagoAlumnoCreate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    # Verificar si el alumno es suyo
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == pago_data.id_alumno,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+        
+    # Verificar si ya existe pago para ese mes
+    pago_existente = db.query(models.PagoAlumno).filter(
+        models.PagoAlumno.id_alumno == pago_data.id_alumno,
+        models.PagoAlumno.anio_mes == pago_data.anio_mes
+    ).first()
+    
+    if pago_existente:
+        pago_existente.monto = pago_data.monto
+        pago_existente.metodo_pago = pago_data.metodo_pago
+        pago_existente.notas = pago_data.notas
+        pago_existente.fecha_pago = datetime.utcnow()
+        db.commit()
+        db.refresh(pago_existente)
+        return pago_existente
+        
+    nuevo_pago = models.PagoAlumno(
+        id_alumno=pago_data.id_alumno,
+        id_entrenador=current_user.id_usuario,
+        anio_mes=pago_data.anio_mes,
+        monto=pago_data.monto,
+        metodo_pago=pago_data.metodo_pago,
+        notas=pago_data.notas,
+        fecha_pago=datetime.utcnow()
+    )
+    db.add(nuevo_pago)
+    db.commit()
+    db.refresh(nuevo_pago)
+    return nuevo_pago
+
+@router.delete("/payments/{id_pago}")
+def delete_payment(
+    id_pago: str,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    pago = db.query(models.PagoAlumno).filter(
+        models.PagoAlumno.id_pago == id_pago,
+        models.PagoAlumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not pago:
+        raise HTTPException(status_code=404, detail="Pago no encontrado")
+        
+    db.delete(pago)
+    db.commit()
+    return {"status": "ok", "message": "Pago eliminado"}
+
+@router.patch("/students/{id_alumno}/suspend")
+def suspend_student(
+    id_alumno: str,
+    data: schemas.SuspensionUpdate,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == id_alumno,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+        
+    alumno.estado_activo = data.estado_activo
+    db.commit()
+    return {"status": "ok", "estado_activo": alumno.estado_activo}

@@ -3,6 +3,7 @@ import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
 import StudentProgress from './StudentProgress.jsx';
+import FinancesPanel from '../components/FinancesPanel.jsx';
 import { Menu, X } from "lucide-react";
 
 export default function CoachDashboard() {
@@ -181,6 +182,7 @@ export default function CoachDashboard() {
           <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); }} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Alumnos</button>
           <button onClick={() => setActivePanel('exercises')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Ejercicios</button>
           <button onClick={() => setActivePanel('routines')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Mis Rutinas</button>
+          <button onClick={() => setActivePanel('finances')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'finances' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Finanzas</button>
           <button onClick={() => setActivePanel('audits')} className={`relative px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>
             Auditoría
             {audits.length > 0 && (
@@ -207,6 +209,7 @@ export default function CoachDashboard() {
             <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Alumnos</button>
             <button onClick={() => { setActivePanel('exercises'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Ejercicios</button>
             <button onClick={() => { setActivePanel('routines'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Mis Rutinas</button>
+            <button onClick={() => { setActivePanel('finances'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'finances' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Finanzas</button>
             <button onClick={() => { setActivePanel('audits'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>
               Auditoría {audits.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{audits.length}</span>}
             </button>
@@ -490,6 +493,10 @@ export default function CoachDashboard() {
                ))}
             </div>
           </section>
+        )}
+
+        {activePanel === 'finances' && (
+          <FinancesPanel students={students} api={api} loadStudents={loadData} modal={modal} />
         )}
 
         {activePanel === 'profile' && (
