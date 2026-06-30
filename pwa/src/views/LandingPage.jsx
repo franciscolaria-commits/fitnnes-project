@@ -177,7 +177,7 @@ export default function LandingPage() {
                 </div>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">La Solución:</span>
-                  <p className="text-white/60 text-sm mt-1 leading-relaxed">La aplicación funciona 100% sin internet. El alumno carga sus pesos y repeticiones directamente en la sala de musculación. El sistema guarda la información y la sube sola en cuanto detecta señal. Cero pérdida de datos, cero fricción para el cliente.</p>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Registro de pesos y repeticiones 100% offline. Los datos se suben automáticamente al recuperar conexión. Sin fricción ni pérdida de registros.</p>
                 </div>
               </div>
             </div>
@@ -196,7 +196,7 @@ export default function LandingPage() {
                 </div>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-blue-500">La Solución:</span>
-                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Cada cambio que hacés en una rutina se guarda sin borrar el pasado. Esto genera gráficos automáticos con la evolución real de la fuerza del alumno a lo largo de los meses. Esa evidencia visual y objetiva de su progreso es tu principal argumento para justificar el precio de tu servicio o aumentarlo.</p>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Cada actualización mantiene el registro previo, generando gráficos visuales de fuerza a lo largo de los meses. Evidencia objetiva para justificar tu servicio.</p>
                 </div>
               </div>
             </div>
@@ -215,7 +215,7 @@ export default function LandingPage() {
                 </div>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-red-500">La Solución:</span>
-                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Un sistema de Ligas (Cobre a Diamante) que evalúa la fuerza del alumno basándose en su peso corporal. La app detecta automáticamente cuándo rompen un récord lógico y los sube de nivel, generando adicción al progreso. Si alguien carga un peso imposible o falso, el sistema lo frena y te envía una alerta para que lo audites.</p>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Sistema automático de ligas de fuerza. La app detecta RPs y los asciende, gamificando el esfuerzo y generando motivación, con bloqueos antifraude incluidos.</p>
                 </div>
               </div>
               <div className="bg-black/50 p-4 rounded-xl border border-white/5 mt-6 relative overflow-hidden">
@@ -245,7 +245,7 @@ export default function LandingPage() {
                 </div>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-purple-500">La Solución:</span>
-                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Un panel de control que lee el comportamiento de tus clientes y te muestra quiénes están perdiendo la constancia o llevan semanas estancados. Te marca exactamente a quién tenés que mandarle un mensaje de reactivación semanas antes de que decidan dejar de pagar.</p>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Radar inteligente que analiza el progreso de tus clientes. Identifica estancamientos e inactividad semanas antes, permitiéndote enviar mensajes precisos de reactivación.</p>
                 </div>
               </div>
             </div>
@@ -264,7 +264,7 @@ export default function LandingPage() {
                 </div>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-yellow-500">La Solución:</span>
-                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Armás tu plantilla base de entrenamiento una sola vez en el sistema con tus propios videos. Luego, la seleccionás y se la asignás a 10, 20 o 50 alumnos en simultáneo con un solo clic. El trabajo administrativo repetitivo desaparece.</p>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Crea plantillas modulares una sola vez y asígnalas a decenas de alumnos con un clic. Elimina por completo las horas operativas sin facturación.</p>
                 </div>
               </div>
             </div>
