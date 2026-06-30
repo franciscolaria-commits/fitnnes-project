@@ -137,10 +137,14 @@ export default function LandingPage() {
             <div className="w-3 h-3 rounded-full bg-yellow-500/80"></div>
             <div className="w-3 h-3 rounded-full bg-green-500/80"></div>
           </div>
-          {/* Imagen generada por IA */}
-          <img 
-            src="/app_mockup.png" 
-            alt="Dashboard de Entrenamiento" 
+          {/* Video subido a Cloudflare R2 */}
+          <video 
+            src="https://pub-c9df6b372d71433c93f52808f95347d4.r2.dev/landing/VideoPresentacion.mp4"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
             className="w-full h-auto object-cover opacity-90 mix-blend-screen"
           />
           {/* Sutil gradiente oscuro en la parte inferior de la imagen para fundirse */}
@@ -271,7 +275,7 @@ export default function LandingPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all"></div>
               <h3 className="text-lg font-medium text-white/70 mb-2">Plan Inicial</h3>
               <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-4xl font-bold text-white">$2.000</span>
+                <span className="text-4xl font-bold text-white">$1.500</span>
                 <span className="text-white/40 text-sm">ARS / mes</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1 text-sm text-white/60">
@@ -302,7 +306,7 @@ export default function LandingPage() {
               </div>
               <h3 className="text-lg font-medium text-emerald-400 mb-2 relative z-10">Plan Pro</h3>
               <div className="flex items-baseline gap-2 mb-8 relative z-10">
-                <span className="text-4xl font-bold text-white">$15.000</span>
+                <span className="text-4xl font-bold text-white">$12.000</span>
                 <span className="text-white/40 text-sm">ARS / mes</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1 text-sm text-white/60 relative z-10">
@@ -328,7 +332,7 @@ export default function LandingPage() {
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-3xl group-hover:bg-emerald-500/20 transition-all"></div>
               <h3 className="text-lg font-medium text-white/70 mb-2">Plan Premium</h3>
               <div className="flex items-baseline gap-2 mb-8">
-                <span className="text-4xl font-bold text-white">$70.000</span>
+                <span className="text-4xl font-bold text-white">$50.000</span>
                 <span className="text-white/40 text-sm">ARS / mes</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1 text-sm text-white/60">
