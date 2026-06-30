@@ -169,29 +169,35 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-emerald-500/50">
                 <WifiOff className="w-6 h-6 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Motor Offline-First Nativo</h3>
-              <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                El alumno registra pesos, repeticiones y RPE sin internet. Los datos se encolan localmente y se sincronizan al detectar red.
-              </p>
-              <div className="mt-auto pt-4 border-t border-white/5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">Valor Comercial:</span>
-                <p className="text-white/40 text-sm mt-1">Cero fricción por mala señal en el gimnasio. El alumno nunca pierde un registro y tu tasa de abandono cae a cero.</p>
+              <h3 className="text-xl font-bold mb-4">1. Entrenamientos sin Interrupciones</h3>
+              <div className="space-y-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-red-400">El Problema:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Los gimnasios tienen pésima señal de celular o Wi-Fi. Si una app depende de internet, no carga, el alumno se frustra y abandona el seguimiento.</p>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">La Solución:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">La aplicación funciona 100% sin internet. El alumno carga sus pesos y repeticiones directamente en la sala de musculación. El sistema guarda la información y la sube sola en cuanto detecta señal. Cero pérdida de datos, cero fricción para el cliente.</p>
+                </div>
               </div>
             </div>
 
-            {/* 2. Backoffice (antes en lugar 5) */}
-            <div className="bg-[#111111] p-8 rounded-3xl border border-white/5 hover:border-yellow-500/30 transition-all hover:-translate-y-1 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl group-hover:bg-yellow-500/20 transition-all"></div>
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-yellow-500/50">
-                <CheckCircle2 className="w-6 h-6 text-yellow-400" />
+            {/* 2. Historial */}
+            <div className="bg-[#111111] p-8 rounded-3xl border border-white/5 hover:border-blue-500/30 transition-all hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all"></div>
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-blue-500/50">
+                <Dumbbell className="w-6 h-6 text-blue-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Backoffice Masivo</h3>
-              <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                Constructor jerárquico de plantillas con almacenamiento de recursos visuales independientes vía Cloudflare R2.
-              </p>
-              <div className="mt-auto pt-4 border-t border-white/5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-yellow-500">Valor Comercial:</span>
-                <p className="text-white/40 text-sm mt-1">Destruye el tiempo operativo de armar rutinas por WhatsApp. Creás una matriz una sola vez y la asignás a 50 alumnos simultáneamente con un clic.</p>
+              <h3 className="text-xl font-bold mb-4">2. Historial de Progreso Intacto</h3>
+              <div className="space-y-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-red-400">El Problema:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Cuando actualizás un Excel o mandás un PDF nuevo, el registro de lo que el alumno levantaba el mes pasado se pierde o queda desorganizado.</p>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-blue-500">La Solución:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Cada cambio que hacés en una rutina se guarda sin borrar el pasado. Esto genera gráficos automáticos con la evolución real de la fuerza del alumno a lo largo de los meses. Esa evidencia visual y objetiva de su progreso es tu principal argumento para justificar el precio de tu servicio o aumentarlo.</p>
+                </div>
               </div>
             </div>
 
@@ -201,11 +207,18 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-red-500/50">
                 <TrendingUp className="w-6 h-6 text-red-400" />
               </div>
-              <h3 className="text-2xl font-bold mb-3">Gamificación Antifraude (e1RM)</h3>
-              <p className="text-white/60 text-base mb-6 leading-relaxed">
-                Calcula el 1RM estimado en tiempo real (Fórmula de Epley) y clasifica al alumno en ligas de fuerza normalizadas por su peso corporal.
-              </p>
-              <div className="bg-black/50 p-4 rounded-xl border border-white/5 mb-6 relative overflow-hidden">
+              <h3 className="text-2xl font-bold mb-4">3. Motivación en Piloto Automático</h3>
+              <div className="space-y-4 flex-1">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-red-400">El Problema:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">El alumno promedio pierde la constancia a los 3 meses. Revisar alumno por alumno quién superó sus marcas para felicitarlo es insostenible si tenés volumen.</p>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-red-500">La Solución:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Un sistema de Ligas (Cobre a Diamante) que evalúa la fuerza del alumno basándose en su peso corporal. La app detecta automáticamente cuándo rompen un récord lógico y los sube de nivel, generando adicción al progreso. Si alguien carga un peso imposible o falso, el sistema lo frena y te envía una alerta para que lo audites.</p>
+                </div>
+              </div>
+              <div className="bg-black/50 p-4 rounded-xl border border-white/5 mt-6 relative overflow-hidden">
                  {/* Decoración simulando el nivel */}
                  <div className="absolute right-[-20px] top-[-20px] text-8xl opacity-10">💎</div>
                  <div className="flex justify-between items-center mb-2">
@@ -216,10 +229,6 @@ export default function LandingPage() {
                    <div className="w-3/4 bg-emerald-500 h-full"></div>
                  </div>
               </div>
-              <div className="mt-auto pt-4 border-t border-white/5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-red-500">Valor Comercial:</span>
-                <p className="text-white/40 text-sm mt-2">Genera lock-in psicológico. Aprobación automática de progreso normal, pero con alertas de auditoría (Red Flags) ante saltos imposibles para mantener tu legitimidad.</p>
-              </div>
             </div>
 
             {/* 4. Retención */}
@@ -228,29 +237,35 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-purple-500/50">
                 <Star className="w-6 h-6 text-purple-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Dashboard de Retención</h3>
-              <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                Métricas accionables: Tasa de Sobrecarga, Matriz de Récords y Consistencia Móvil (30 días).
-              </p>
-              <div className="mt-auto pt-4 border-t border-white/5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-purple-500">Valor Comercial:</span>
-                <p className="text-white/40 text-sm mt-1">Detecta el churn antes de que ocurra. Envía mensajes de reactivación semanas antes de que el alumno decida no pagar el mes siguiente.</p>
+              <h3 className="text-xl font-bold mb-4">4. Radar Anti-Abandono</h3>
+              <div className="space-y-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-red-400">El Problema:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Te enterás de que perdiste un cliente el día que te deja de transferir la cuota. Para ese momento, ya es irrecuperable.</p>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-purple-500">La Solución:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Un panel de control que lee el comportamiento de tus clientes y te muestra quiénes están perdiendo la constancia o llevan semanas estancados. Te marca exactamente a quién tenés que mandarle un mensaje de reactivación semanas antes de que decidan dejar de pagar.</p>
+                </div>
               </div>
             </div>
 
-            {/* 5. Inmutables (antes en lugar 2) */}
-            <div className="bg-[#111111] p-8 rounded-3xl border border-white/5 hover:border-blue-500/30 transition-all hover:-translate-y-1 group relative overflow-hidden">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl group-hover:bg-blue-500/20 transition-all"></div>
-              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-blue-500/50">
-                <Dumbbell className="w-6 h-6 text-blue-400" />
+            {/* 5. Backoffice Masivo */}
+            <div className="bg-[#111111] p-8 rounded-3xl border border-white/5 hover:border-yellow-500/30 transition-all hover:-translate-y-1 group relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl group-hover:bg-yellow-500/20 transition-all"></div>
+              <div className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center mb-6 border border-white/10 group-hover:border-yellow-500/50">
+                <CheckCircle2 className="w-6 h-6 text-yellow-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2">Arquitectura Inmutable</h3>
-              <p className="text-white/60 text-sm mb-4 leading-relaxed">
-                Versionado estricto a cada bloque. Editar una rutina a mitad de mes no sobrescribe el historial previo del alumno.
-              </p>
-              <div className="mt-auto pt-4 border-t border-white/5">
-                <span className="text-xs font-semibold uppercase tracking-wider text-blue-500">Valor Comercial:</span>
-                <p className="text-white/40 text-sm mt-1">Garantiza la integridad matemática de las estadísticas de fuerza. Métrica profesional que justifica el aumento de tu tarifa.</p>
+              <h3 className="text-xl font-bold mb-4">5. Asignación Masiva de Rutinas</h3>
+              <div className="space-y-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-red-400">El Problema:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Escribir rutinas por WhatsApp, copiar y pegar mensajes, o armar decenas de PDFs individuales te roba horas de tu semana que no estás cobrando.</p>
+                </div>
+                <div className="pt-4 border-t border-white/5">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-yellow-500">La Solución:</span>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Armás tu plantilla base de entrenamiento una sola vez en el sistema con tus propios videos. Luego, la seleccionás y se la asignás a 10, 20 o 50 alumnos en simultáneo con un solo clic. El trabajo administrativo repetitivo desaparece.</p>
+                </div>
               </div>
             </div>
 
