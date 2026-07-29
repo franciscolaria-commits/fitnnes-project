@@ -51,12 +51,13 @@ def register_coach(user_data: UsuarioCreate, db: Session = Depends(get_db)):
         db.add(nuevo_usuario)
         db.flush() # Obtener id_usuario generado por la base de datos
         
-        # Crear perfil del entrenador asociado
+        # Crear perfil del entrenador asociado (suspendido por defecto)
         nuevo_entrenador = Entrenador(
             id_usuario=nuevo_usuario.id_usuario,
             especialidad=None,
             biografia=None,
-            url_foto_perfil=None
+            url_foto_perfil=None,
+            estado_financiero="suspendido"
         )
         db.add(nuevo_entrenador)
         db.commit()
@@ -165,6 +166,15 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
             detail="Correo electrónico o contraseña incorrectos",
             headers={"WWW-Authenticate": "Bearer"},
         )
+        
+    # Verificar si es entrenador y está suspendido
+    if usuario.rol == "entrenador":
+        entrenador = db.query(Entrenador).filter(Entrenador.id_usuario == usuario.id_usuario).first()
+        if entrenador and entrenador.estado_financiero == "suspendido":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Tu cuenta está suspendida porque todavía no se ha dado de alta o por falta de pago."
+            )
         
     # Crear token JWT
     access_token = crear_token_acceso(data={"sub": usuario.email, "rol": usuario.rol})

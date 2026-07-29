@@ -37,7 +37,7 @@ export default function AuthView({ onLoginSuccess }) {
     setLoadingAction('registerCoach');
     try {
       await api.post("/api/v1/auth/register", { email, password, rol: "entrenador" });
-      await modal.alert("¡Cuenta de entrenador creada con éxito! Ahora inicia sesión.");
+      await modal.alert("¡Cuenta de entrenador creada con éxito! Actualmente se encuentra suspendida hasta que el administrador te dé de alta.");
       setActivePanel('login');
     } catch (err) {
       setError(err.message);
