@@ -157,58 +157,75 @@ const DeadliftAnimation = () => (
   </svg>
 );
 
-// Dominadas (Pull-ups) - Mejoradas
-const PullUpAnimation = () => (
-  <svg viewBox="0 0 100 100" className="w-full h-full text-indigo-500" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-    {/* Barra de dominadas */}
-    <path d="M20 20 L80 20" strokeWidth="6" />
-    <path d="M20 10 L20 20 M80 10 L80 20" strokeWidth="2" />
-    
-    {/* Cuerpo subiendo y bajando */}
-    <g className="animate-[pullup_2.5s_ease-in-out_infinite]">
-      <circle cx="50" cy="40" r="6" />
-      <path d="M50 46 L50 75" /> {/* Torso */}
-      <path d="M50 75 L45 90 L40 95 M50 75 L55 90 L60 95" /> {/* Piernas con leve cruce/flexión */}
-      {/* Brazos tirando (codos viajan hacia abajo) */}
-      <path d="M35 20 L40 35 L50 46 M65 20 L60 35 L50 46" className="animate-[pullup-arms_2.5s_ease-in-out_infinite]" />
+// Remo con Barra (Barbell Row)
+const RowAnimation = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full text-zinc-400" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 90 L90 90" strokeWidth="2" strokeDasharray="5,5" className="opacity-30" />
+    <path d="M40 90 L50 70 L45 50" /> {/* Piernas semi-flexionadas */}
+    <g className="animate-[row-torso_2s_ease-in-out_infinite]">
+      <path d="M45 50 L70 35" /> {/* Torso inclinado */}
+      <circle cx="72" cy="28" r="6" /> {/* Cabeza */}
+      <g className="animate-[row-arms_2s_ease-in-out_infinite]">
+        <path d="M65 38 L65 75" /> {/* Brazos extendidos -> flexionados */}
+        <path d="M55 75 L75 75" strokeWidth="6" className="text-emerald-500" /> {/* Barra */}
+      </g>
     </g>
     <style>{`
-      @keyframes pullup {
-        0%, 100% { transform: translateY(20px); }
-        50% { transform: translateY(-10px); }
+      @keyframes row-torso {
+        0%, 100% { transform: rotate(0deg); transform-origin: 45px 50px; }
+        50% { transform: rotate(-5deg); transform-origin: 45px 50px; }
       }
-      @keyframes pullup-arms {
-        0%, 100% { d: path("M35 0 L40 10 L50 26 M65 0 L60 10 L50 26"); }
-        50% { d: path("M35 30 L30 45 L50 56 M65 30 L70 45 L50 56"); }
+      @keyframes row-arms {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-30px); }
       }
     `}</style>
   </svg>
 );
 
-// Press Militar (Overhead Press)
-const OverheadPressAnimation = () => (
-  <svg viewBox="0 0 100 100" className="w-full h-full text-orange-500" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round">
-    <g className="animate-[ohp_2s_ease-in-out_infinite]">
-      <path d="M25 25 L75 25" strokeWidth="6" />
-      <rect x="20" y="15" width="8" height="20" fill="currentColor" />
-      <rect x="72" y="15" width="8" height="20" fill="currentColor" />
-    </g>
-    {/* Cuerpo (de pie) */}
-    <circle cx="50" cy="45" r="8" />
-    <path d="M50 53 L50 80" />
-    <path d="M50 80 L45 100 M50 80 L55 100" />
-    {/* Brazos empujando */}
-    <g className="animate-[ohp-arms_2s_ease-in-out_infinite]">
-      <path d="M35 25 L50 50 L65 25" />
+// Curl de Bíceps (Bicep Curl)
+const CurlAnimation = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full text-rose-500" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 90 L90 90" strokeWidth="2" strokeDasharray="5,5" className="opacity-30" />
+    <path d="M50 90 L50 50" /> {/* Piernas rectas */}
+    <path d="M50 50 L50 20" /> {/* Torso */}
+    <circle cx="50" cy="12" r="6" /> {/* Cabeza */}
+    
+    {/* Brazo superior (fijo) */}
+    <path d="M50 25 L45 45" /> 
+    
+    {/* Antebrazo y pesa (animado) */}
+    <g className="animate-[curl_2s_ease-in-out_infinite] origin-[45px_45px]">
+      <path d="M45 45 L60 60" />
+      <circle cx="60" cy="60" r="8" fill="currentColor" className="opacity-30" stroke="none" />
     </g>
     <style>{`
-      @keyframes ohp {
-        0%, 100% { transform: translateY(25px); }
-        50% { transform: translateY(-10px); }
+      @keyframes curl {
+        0%, 100% { transform: rotate(0deg); }
+        50% { transform: rotate(-100deg); }
       }
-      @keyframes ohp-arms {
-        0%, 100% { transform: translateY(10px) scaleY(0.5); transform-origin: 50% 50px; }
-        50% { transform: translateY(-10px) scaleY(1); transform-origin: 50% 50px; }
+    `}</style>
+  </svg>
+);
+
+// Plancha (Plank)
+const PlankAnimation = () => (
+  <svg viewBox="0 0 100 100" className="w-full h-full text-teal-500" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M10 80 L90 80" strokeWidth="2" strokeDasharray="5,5" className="opacity-30" />
+    
+    <g className="animate-[plank_3s_ease-in-out_infinite]">
+      {/* Pies */}
+      <path d="M20 80 L25 70" />
+      {/* Piernas y Torso rectos */}
+      <path d="M25 70 L70 65" className="text-white" />
+      <circle cx="75" cy="62" r="6" />
+      {/* Brazos apoyados */}
+      <path d="M70 65 L70 80 M75 80 L65 80" />
+    </g>
+    <style>{`
+      @keyframes plank {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(2px); }
       }
     `}</style>
   </svg>
@@ -217,11 +234,14 @@ const OverheadPressAnimation = () => (
 export default function ExerciseAnimations({ exerciseName }) {
   const nameLower = exerciseName?.toLowerCase() || "";
 
-  if (nameLower.includes("sentadilla") || nameLower.includes("squat")) return <SquatAnimation />;
-  if (nameLower.includes("banca") || nameLower.includes("bench")) return <BenchPressAnimation />;
-  if (nameLower.includes("muerto") || nameLower.includes("deadlift")) return <DeadliftAnimation />;
-  if (nameLower.includes("dominada") || nameLower.includes("pull-up") || nameLower.includes("pullup")) return <PullUpAnimation />;
-  if (nameLower.includes("militar") || nameLower.includes("overhead")) return <OverheadPressAnimation />;
+  if (nameLower.includes("sentadilla") || nameLower.includes("squat") || nameLower.includes("prensa")) return <SquatAnimation />;
+  if (nameLower.includes("banca") || nameLower.includes("bench") || nameLower.includes("press inclinado") || nameLower.includes("apertura") || nameLower.includes("fondo")) return <BenchPressAnimation />;
+  if (nameLower.includes("muerto") || nameLower.includes("deadlift") || nameLower.includes("isquio")) return <DeadliftAnimation />;
+  if (nameLower.includes("dominada") || nameLower.includes("pull-up") || nameLower.includes("pullup") || nameLower.includes("jalón")) return <PullUpAnimation />;
+  if (nameLower.includes("militar") || nameLower.includes("overhead") || nameLower.includes("elevacion") || nameLower.includes("pájaro")) return <OverheadPressAnimation />;
+  if (nameLower.includes("remo")) return <RowAnimation />;
+  if (nameLower.includes("curl") || nameLower.includes("tríceps") || nameLower.includes("biceps")) return <CurlAnimation />;
+  if (nameLower.includes("plancha") || nameLower.includes("crunch") || nameLower.includes("rueda") || nameLower.includes("core")) return <PlankAnimation />;
 
   return <GenericAnimation />;
 }

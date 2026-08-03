@@ -16,27 +16,27 @@ from app.database import SessionLocal, engine
 from app.models import Ejercicio
 
 EJERCICIOS_BASE = [
-    {"nombre": "Press Banca Plano", "categoria": "Pecho", "url_gif": "https://via.placeholder.com/300?text=Press+Banca"},
-    {"nombre": "Press Inclinado con Mancuernas", "categoria": "Pecho", "url_gif": "https://via.placeholder.com/300?text=Press+Inclinado"},
-    {"nombre": "Aperturas en Polea", "categoria": "Pecho", "url_gif": "https://via.placeholder.com/300?text=Aperturas"},
-    {"nombre": "Dominadas", "categoria": "Espalda", "url_gif": "https://via.placeholder.com/300?text=Dominadas"},
-    {"nombre": "Remo con Barra", "categoria": "Espalda", "url_gif": "https://via.placeholder.com/300?text=Remo+Barra"},
-    {"nombre": "Jalón al Pecho", "categoria": "Espalda", "url_gif": "https://via.placeholder.com/300?text=Jalon"},
-    {"nombre": "Sentadilla Libre", "categoria": "Piernas", "url_gif": "https://via.placeholder.com/300?text=Sentadilla"},
-    {"nombre": "Prensa de Piernas", "categoria": "Piernas", "url_gif": "https://via.placeholder.com/300?text=Prensa"},
-    {"nombre": "Peso Muerto", "categoria": "Piernas", "url_gif": "https://via.placeholder.com/300?text=Peso+Muerto"},
-    {"nombre": "Extensiones de Cuádriceps", "categoria": "Piernas", "url_gif": "https://via.placeholder.com/300?text=Extensiones"},
-    {"nombre": "Curl de Isquios", "categoria": "Piernas", "url_gif": "https://via.placeholder.com/300?text=Curl+Isquios"},
-    {"nombre": "Press Militar", "categoria": "Hombros", "url_gif": "https://via.placeholder.com/300?text=Press+Militar"},
-    {"nombre": "Elevaciones Laterales", "categoria": "Hombros", "url_gif": "https://via.placeholder.com/300?text=Elevaciones"},
-    {"nombre": "Pájaros", "categoria": "Hombros", "url_gif": "https://via.placeholder.com/300?text=Pajaros"},
-    {"nombre": "Curl de Bíceps con Barra", "categoria": "Brazos", "url_gif": "https://via.placeholder.com/300?text=Curl+Biceps"},
-    {"nombre": "Curl Martillo", "categoria": "Brazos", "url_gif": "https://via.placeholder.com/300?text=Curl+Martillo"},
-    {"nombre": "Extensión de Tríceps en Polea", "categoria": "Brazos", "url_gif": "https://via.placeholder.com/300?text=Extension+Triceps"},
-    {"nombre": "Fondos en Paralelas", "categoria": "Brazos", "url_gif": "https://via.placeholder.com/300?text=Fondos"},
-    {"nombre": "Plancha Abdominal", "categoria": "Core", "url_gif": "https://via.placeholder.com/300?text=Plancha"},
-    {"nombre": "Crunch Abdominal", "categoria": "Core", "url_gif": "https://via.placeholder.com/300?text=Crunch"},
-    {"nombre": "Rueda Abdominal", "categoria": "Core", "url_gif": "https://via.placeholder.com/300?text=Rueda"}
+    {"nombre": "Press Banca Plano", "categoria": "Pecho", "url_gif": None},
+    {"nombre": "Press Inclinado con Mancuernas", "categoria": "Pecho", "url_gif": None},
+    {"nombre": "Aperturas en Polea", "categoria": "Pecho", "url_gif": None},
+    {"nombre": "Dominadas", "categoria": "Espalda", "url_gif": None},
+    {"nombre": "Remo con Barra", "categoria": "Espalda", "url_gif": None},
+    {"nombre": "Jalón al Pecho", "categoria": "Espalda", "url_gif": None},
+    {"nombre": "Sentadilla Libre", "categoria": "Piernas", "url_gif": None},
+    {"nombre": "Prensa de Piernas", "categoria": "Piernas", "url_gif": None},
+    {"nombre": "Peso Muerto", "categoria": "Piernas", "url_gif": None},
+    {"nombre": "Extensiones de Cuádriceps", "categoria": "Piernas", "url_gif": None},
+    {"nombre": "Curl de Isquios", "categoria": "Piernas", "url_gif": None},
+    {"nombre": "Press Militar", "categoria": "Hombros", "url_gif": None},
+    {"nombre": "Elevaciones Laterales", "categoria": "Hombros", "url_gif": None},
+    {"nombre": "Pájaros", "categoria": "Hombros", "url_gif": None},
+    {"nombre": "Curl de Bíceps con Barra", "categoria": "Brazos", "url_gif": None},
+    {"nombre": "Curl Martillo", "categoria": "Brazos", "url_gif": None},
+    {"nombre": "Extensión de Tríceps en Polea", "categoria": "Brazos", "url_gif": None},
+    {"nombre": "Fondos en Paralelas", "categoria": "Brazos", "url_gif": None},
+    {"nombre": "Plancha Abdominal", "categoria": "Core", "url_gif": None},
+    {"nombre": "Crunch Abdominal", "categoria": "Core", "url_gif": None},
+    {"nombre": "Rueda Abdominal", "categoria": "Core", "url_gif": None}
 ]
 
 def seed_ejercicios():
