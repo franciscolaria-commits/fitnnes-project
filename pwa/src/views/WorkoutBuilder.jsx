@@ -179,7 +179,7 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
             className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-200 outline-none focus:border-blue-500"
           />
 
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+          <div className="flex flex-wrap gap-2 pb-2">
             {categories.map(cat => (
               <button
                 key={cat}
@@ -197,9 +197,23 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
               .filter(ex => ex.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
               .map(ex => (
               <div key={ex.id_ejercicio} className="p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl hover:border-blue-500/50 transition-all flex flex-col gap-2">
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-3 relative">
                   {ex.url_gif ? (
-                    <img src={ex.url_gif} alt={ex.nombre} className="w-12 h-12 rounded-lg object-cover bg-zinc-800 shrink-0" loading="lazy" />
+                    <>
+                      <img 
+                        src={ex.url_gif} 
+                        alt={ex.nombre} 
+                        className="w-12 h-12 rounded-lg object-cover bg-zinc-800 shrink-0" 
+                        loading="lazy" 
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                          e.target.nextElementSibling.style.display = 'flex';
+                        }}
+                      />
+                      <div className="fallback-icon w-12 h-12 rounded-lg bg-zinc-800 hidden items-center justify-center shrink-0">
+                        <span className="text-[10px] text-zinc-500 font-bold uppercase text-center leading-tight">No GIF</span>
+                      </div>
+                    </>
                   ) : (
                     <div className="w-12 h-12 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
                       <span className="text-[10px] text-zinc-500 font-bold uppercase text-center leading-tight">No GIF</span>

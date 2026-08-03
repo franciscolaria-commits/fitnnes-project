@@ -218,8 +218,19 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
             </div>
             <div className="p-6 bg-zinc-950 flex flex-col items-center justify-center min-h-[300px]">
               {demoExercise.url_gif ? (
-                <div className="w-full max-w-sm aspect-square bg-black rounded-lg overflow-hidden border border-zinc-800 flex items-center justify-center">
-                  <img src={demoExercise.url_gif} alt={demoExercise.nombre} className="w-full h-full object-contain" />
+                <div className="w-full max-w-sm aspect-square bg-black rounded-lg overflow-hidden border border-zinc-800 flex items-center justify-center relative">
+                  <img 
+                    src={demoExercise.url_gif} 
+                    alt={demoExercise.nombre} 
+                    className="w-full h-full object-contain" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="fallback-icon absolute inset-0 bg-zinc-900 hidden flex-col items-center justify-center p-8">
+                    <span className="text-sm text-zinc-500 font-bold uppercase text-center leading-tight">Sin Imagen Disponible</span>
+                  </div>
                 </div>
               ) : demoExercise.url_media ? (
                 <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-800 bg-black flex flex-col items-center justify-center">

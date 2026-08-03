@@ -408,7 +408,21 @@ export default function CoachDashboard() {
                    )}
                    <div className="flex gap-4 w-full">
                       {exe.url_gif ? (
-                        <img src={exe.url_gif} alt={exe.nombre} className="h-16 w-16 rounded-lg object-cover bg-zinc-950 flex-shrink-0 border border-zinc-800 shadow-inner" loading="lazy" />
+                        <div className="relative">
+                          <img 
+                            src={exe.url_gif} 
+                            alt={exe.nombre} 
+                            className="h-16 w-16 rounded-lg object-cover bg-zinc-950 flex-shrink-0 border border-zinc-800 shadow-inner" 
+                            loading="lazy" 
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextElementSibling.style.display = 'flex';
+                            }}
+                          />
+                          <div className="fallback-icon h-16 w-16 bg-zinc-950 rounded-lg hidden items-center justify-center flex-shrink-0 border border-zinc-800 overflow-hidden shadow-inner text-2xl">
+                            {exe.url_media?.includes('youtube') ? '🎥' : exe.id_entrenador ? '🏋️‍♂️' : '🌐'}
+                          </div>
+                        </div>
                       ) : (
                         <div className="h-16 w-16 bg-zinc-950 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-800 overflow-hidden shadow-inner text-2xl">
                           {exe.url_media?.includes('youtube') ? '🎥' : exe.id_entrenador ? '🏋️‍♂️' : '🌐'}
