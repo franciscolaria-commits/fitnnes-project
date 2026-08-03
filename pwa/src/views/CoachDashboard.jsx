@@ -4,7 +4,14 @@ import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
 import StudentProgress from './StudentProgress.jsx';
 import FinancesPanel from '../components/FinancesPanel.jsx';
-import { Menu, X } from "lucide-react";
+import { Menu, X, Eye } from "lucide-react";
+import ExerciseAnimations from '../components/ExerciseAnimations.jsx';
+
+const getYouTubeEmbedUrl = (url) => {
+  if (!url) return null;
+  const match = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|shorts\/|watch\?v=|watch\?.+&v=))([^&?]+)/);
+  return match ? `https://www.youtube.com/embed/${match[1]}?autoplay=1&mute=1&loop=1&playlist=${match[1]}` : url;
+};
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
@@ -23,6 +30,7 @@ export default function CoachDashboard() {
   const [loadingAction, setLoadingAction] = useState(null);
   const [assignMenuOpenId, setAssignMenuOpenId] = useState(null);
   const [selectedStudentsForAssign, setSelectedStudentsForAssign] = useState([]);
+  const [demoExercise, setDemoExercise] = useState(null);
   const modal = useModal();
 
   useEffect(() => {
@@ -642,6 +650,70 @@ export default function CoachDashboard() {
           </section>
         )}
       </div>
+
+      {demoExercise && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-xl w-full max-w-2xl overflow-hidden flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900/50">
+              <h3 className="font-black text-white uppercase tracking-tight truncate pr-4">{demoExercise.nombre}</h3>
+              <button onClick={() => setDemoExercise(null)} className="text-zinc-500 hover:text-white p-1">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="p-6 bg-zinc-950 flex flex-col items-center justify-center min-h-[300px]">
+              {demoExercise.url_gif ? (
+                <div className="w-full max-w-sm aspect-square bg-black rounded-lg overflow-hidden border border-zinc-800 flex items-center justify-center relative">
+                  <img 
+                    src={demoExercise.url_gif} 
+                    alt={demoExercise.nombre} 
+                    className="w-full h-full object-contain" 
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                      e.target.nextElementSibling.style.display = 'flex';
+                    }}
+                  />
+                  <div className="fallback-icon absolute inset-0 bg-zinc-900 hidden flex-col items-center justify-center p-8">
+                    <span className="text-sm text-zinc-500 font-bold uppercase text-center leading-tight">Sin Imagen Disponible</span>
+                  </div>
+                </div>
+              ) : demoExercise.url_media ? (
+                <div className="w-full aspect-video rounded-lg overflow-hidden border border-zinc-800 bg-black flex flex-col items-center justify-center">
+                  {getYouTubeEmbedUrl(demoExercise.url_media) !== demoExercise.url_media ? (
+                    <iframe 
+                      width="100%" 
+                      height="100%" 
+                      src={getYouTubeEmbedUrl(demoExercise.url_media)} 
+                      title="YouTube video player" 
+                      frameBorder="0" 
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                      allowFullScreen
+                    ></iframe>
+                  ) : (
+                    <div className="flex flex-col items-center gap-4 text-center p-6">
+                      <span className="text-zinc-400 text-sm">El entrenador proporcionó un enlace externo para este ejercicio.</span>
+                      <a href={demoExercise.url_media} target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg uppercase tracking-widest text-xs transition-colors">
+                        Abrir Enlace Externo 🚀
+                      </a>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="w-full max-w-sm aspect-square bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center p-8">
+                  <ExerciseAnimations exerciseName={demoExercise.nombre} />
+                </div>
+              )}
+              {demoExercise.descripcion && (
+                <p className="mt-6 text-zinc-400 text-sm text-center italic">{demoExercise.descripcion}</p>
+              )}
+            </div>
+            <div className="p-4 border-t border-zinc-800 bg-zinc-900/50 text-center">
+              <button onClick={() => setDemoExercise(null)} className="w-full sm:w-auto px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg uppercase tracking-widest text-xs transition-colors">
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isBuildingRoutine && (
         <WorkoutBuilder 
