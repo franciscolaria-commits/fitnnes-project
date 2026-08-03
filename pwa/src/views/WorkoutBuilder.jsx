@@ -4,6 +4,9 @@ import { useModal } from '../components/ModalProvider.jsx';
 
 export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) {
   const [exercisesCatalog, setExercisesCatalog] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('Todos');
+  const categories = ['Todos', 'Pecho', 'Espalda', 'Piernas', 'Hombros', 'Brazos', 'Core', 'General'];
   const modal = useModal();
   
   // Si tenemos initialData, inicializamos con esos datos. Si no, datos por defecto.
@@ -165,14 +168,49 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
       <div className="flex-1 p-6 grid grid-cols-1 lg:grid-cols-4 gap-6 max-w-[1600px] mx-auto w-full">
         
         {/* Catálogo lateral izquierdo */}
-        <div className="lg:col-span-1 glass-card rounded-2xl p-4 flex flex-col gap-4 h-[400px] lg:h-[calc(100vh-120px)] relative lg:sticky lg:top-24 mb-6 lg:mb-0 border-2 border-emerald-500/20 lg:border-zinc-800/50">
+        <div className="lg:col-span-1 glass-card rounded-2xl p-4 flex flex-col gap-4 h-[500px] lg:h-[calc(100vh-120px)] relative lg:sticky lg:top-24 mb-6 lg:mb-0 border-2 border-emerald-500/20 lg:border-zinc-800/50">
           <h2 className="text-sm font-bold text-emerald-400 lg:text-zinc-100 uppercase tracking-wider">Catálogo de Ejercicios</h2>
+          
+          <input 
+            type="text" 
+            placeholder="🔍 Buscar ejercicio..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-sm text-zinc-200 outline-none focus:border-blue-500"
+          />
+
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-thin">
+            {categories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap transition-all ${selectedCategory === cat ? 'bg-blue-600 text-white' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+
           <div className="flex-1 overflow-y-auto pr-2 flex flex-col gap-3">
-            {exercisesCatalog.map(ex => (
-              <div key={ex.id_ejercicio} className="p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl hover:border-blue-500/50 cursor-grab active:cursor-grabbing transition-all">
-                <p className="text-sm font-semibold text-zinc-200">{ex.nombre}</p>
-                <p className="text-xs text-zinc-500 mt-1 truncate">{ex.descripcion}</p>
-                <div className="mt-3 flex gap-2 flex-wrap">
+            {exercisesCatalog
+              .filter(ex => selectedCategory === 'Todos' || ex.categoria === selectedCategory)
+              .filter(ex => ex.nombre.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map(ex => (
+              <div key={ex.id_ejercicio} className="p-3 bg-zinc-900/60 border border-zinc-800 rounded-xl hover:border-blue-500/50 transition-all flex flex-col gap-2">
+                <div className="flex items-start gap-3">
+                  {ex.url_gif ? (
+                    <img src={ex.url_gif} alt={ex.nombre} className="w-12 h-12 rounded-lg object-cover bg-zinc-800 shrink-0" loading="lazy" />
+                  ) : (
+                    <div className="w-12 h-12 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
+                      <span className="text-[10px] text-zinc-500 font-bold uppercase text-center leading-tight">No GIF</span>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold text-zinc-200 leading-tight">{ex.nombre}</p>
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase">{ex.categoria || 'General'}</span>
+                  </div>
+                </div>
+                <div className="mt-1 flex gap-2 flex-wrap">
                   {/* Botones para agregar a días específicos */}
                   {days.map((day, idx) => (
                     <button 

@@ -119,7 +119,9 @@ class AlumnoOut(AlumnoBase):
 class EjercicioBase(BaseModel):
     nombre: str
     descripcion: Optional[str] = None
+    categoria: Optional[str] = "General"
     url_media: Optional[str] = None
+    url_gif: Optional[str] = None
 
 class EjercicioCreate(EjercicioBase):
     pass
@@ -127,7 +129,9 @@ class EjercicioCreate(EjercicioBase):
 class EjercicioUpdate(BaseModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
+    categoria: Optional[str] = None
     url_media: Optional[str] = None
+    url_gif: Optional[str] = None
 
 class EjercicioOut(EjercicioBase):
     id_ejercicio: UUID

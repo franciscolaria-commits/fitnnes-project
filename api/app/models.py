@@ -64,7 +64,9 @@ class Ejercicio(Base):
     id_ejercicio = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nombre = Column(String, nullable=False)
     descripcion = Column(String)
-    url_media = Column(String) # URL estática de Cloudflare R2
+    categoria = Column(String, default="General") # Pecho, Espalda, Piernas, etc.
+    url_media = Column(String) # URL de YouTube o similar (opcional)
+    url_gif = Column(String) # URL del GIF demostrativo en Cloudflare R2
     # Si es null, es un ejercicio global del sistema. Si tiene UUID, es custom del entrenador.
     id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=True)
 
@@ -73,7 +75,8 @@ class EjercicioMediaCoach(Base):
     id_override = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     id_ejercicio = Column(UUID(as_uuid=True), ForeignKey("ejercicios.id_ejercicio"), nullable=False)
     id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False)
-    url_media = Column(String, nullable=False)
+    url_media = Column(String, nullable=True) # Permitir null si solo sube GIF
+    url_gif = Column(String, nullable=True) # Override del GIF
 
 class Rutina(Base):
     __tablename__ = "rutinas"

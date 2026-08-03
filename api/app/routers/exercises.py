@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
-from typing import List
+from typing import List, Optional
 from uuid import UUID
 
 from app.database import get_db
@@ -57,16 +57,20 @@ def get_exercises(
     overrides = db.query(EjercicioMediaCoach).filter(
         EjercicioMediaCoach.id_entrenador == id_entrenador_target
     ).all()
-    override_map = {str(o.id_ejercicio): o.url_media for o in overrides}
+    override_map = {str(o.id_ejercicio): {"url_media": o.url_media, "url_gif": o.url_gif} for o in overrides}
 
-    # Inyectar el url_media sobrescrito (si existe) en los ejercicios globales
+    # Inyectar el url_media y url_gif sobrescrito (si existe) en los ejercicios globales
     result = []
     for ex in ejercicios:
+        omap = override_map.get(str(ex.id_ejercicio), {})
+        
         ex_dict = {
             "id_ejercicio": ex.id_ejercicio,
             "nombre": ex.nombre,
             "descripcion": ex.descripcion,
-            "url_media": override_map.get(str(ex.id_ejercicio), ex.url_media),
+            "categoria": ex.categoria,
+            "url_media": omap.get("url_media") if str(ex.id_ejercicio) in override_map and omap.get("url_media") is not None else ex.url_media,
+            "url_gif": omap.get("url_gif") if str(ex.id_ejercicio) in override_map and omap.get("url_gif") is not None else ex.url_gif,
             "id_entrenador": ex.id_entrenador
         }
         result.append(ex_dict)
@@ -93,7 +97,9 @@ def create_custom_exercise(
         nuevo_ejercicio = Ejercicio(
             nombre=exercise_data.nombre,
             descripcion=exercise_data.descripcion,
+            categoria=exercise_data.categoria,
             url_media=exercise_data.url_media,
+            url_gif=exercise_data.url_gif,
             id_entrenador=current_user.id_usuario
         )
         db.add(nuevo_ejercicio)
@@ -109,7 +115,8 @@ def create_custom_exercise(
         )
 
 class OverrideMediaRequest(BaseModel):
-    url_media: str
+    url_media: Optional[str] = None
+    url_gif: Optional[str] = None
 
 @router.post("/{id_ejercicio}/media", status_code=status.HTTP_200_OK)
 def override_exercise_media(
@@ -128,12 +135,16 @@ def override_exercise_media(
     
     try:
         if override:
-            override.url_media = payload.url_media
+            if payload.url_media is not None:
+                override.url_media = payload.url_media
+            if payload.url_gif is not None:
+                override.url_gif = payload.url_gif
         else:
             override = EjercicioMediaCoach(
                 id_ejercicio=id_ejercicio,
                 id_entrenador=current_user.id_usuario,
-                url_media=payload.url_media
+                url_media=payload.url_media,
+                url_gif=payload.url_gif
             )
             db.add(override)
         db.commit()
@@ -164,8 +175,12 @@ def update_custom_exercise(
         ejercicio.nombre = exercise_data.nombre
     if exercise_data.descripcion is not None:
         ejercicio.descripcion = exercise_data.descripcion
+    if exercise_data.categoria is not None:
+        ejercicio.categoria = exercise_data.categoria
     if exercise_data.url_media is not None:
         ejercicio.url_media = exercise_data.url_media
+    if exercise_data.url_gif is not None:
+        ejercicio.url_gif = exercise_data.url_gif
         
     db.commit()
     db.refresh(ejercicio)

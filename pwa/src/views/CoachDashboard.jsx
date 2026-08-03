@@ -80,10 +80,36 @@ export default function CoachDashboard() {
     const nombre = e.target.nombre.value.trim();
     const descripcion = e.target.descripcion.value.trim();
     const url_media = e.target.url_media.value.trim();
+    const categoria = e.target.categoria.value;
+    const fileInput = e.target.gif_file;
     
     setLoadingAction('create_exercise');
     try {
-      await api.post("/api/v1/exercises/custom", { nombre, descripcion, url_media });
+      let url_gif = undefined;
+      
+      if (fileInput.files.length > 0) {
+        const file = fileInput.files[0];
+        
+        // Solicitar firma a la API
+        const presignedRes = await api.post("/api/v1/storage/presigned", {
+          filename: file.name,
+          content_type: file.type
+        });
+        
+        // Subir directamente a Cloudflare R2 usando fetch PUT nativo
+        const uploadRes = await fetch(presignedRes.upload_url, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type
+          }
+        });
+        
+        if (!uploadRes.ok) throw new Error("Fallo la subida a Cloudflare R2");
+        url_gif = presignedRes.public_url;
+      }
+      
+      await api.post("/api/v1/exercises/custom", { nombre, descripcion, url_media, categoria, url_gif });
       await modal.alert("Ejercicio creado exitosamente.");
       e.target.reset();
       loadData();
@@ -350,8 +376,22 @@ export default function CoachDashboard() {
               <h3 className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Crear Ejercicio Personalizado</h3>
               <form onSubmit={handleCreateExercise} className="flex flex-col gap-3">
                 <input type="text" name="nombre" placeholder="Nombre del Ejercicio (Ej. Remo Pendlay)" required className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200" />
+                <select name="categoria" className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200 outline-none">
+                  <option value="Pecho">Pecho</option>
+                  <option value="Espalda">Espalda</option>
+                  <option value="Piernas">Piernas</option>
+                  <option value="Hombros">Hombros</option>
+                  <option value="Brazos">Brazos</option>
+                  <option value="Core">Core</option>
+                  <option value="General">General</option>
+                </select>
                 <textarea name="descripcion" placeholder="Instrucciones breves..." required className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200 h-20 resize-none"></textarea>
-                <input type="url" name="url_media" placeholder="URL de YouTube (Ej. https://youtube.com/watch?v=...)" className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200" />
+                <input type="url" name="url_media" placeholder="URL de YouTube (Opcional)" className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-4 py-2 text-sm text-zinc-200" />
+                
+                <div className="flex flex-col gap-1">
+                  <label className="text-xs text-zinc-400 font-bold">Subir GIF Demostrativo (Opcional)</label>
+                  <input type="file" name="gif_file" accept="image/gif" className="text-xs text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2" />
+                </div>
                 <button type="submit" disabled={loadingAction === 'create_exercise'} className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-widest text-white transition-all disabled:opacity-50">
                   {loadingAction === 'create_exercise' ? 'Procesando...' : 'Añadir al Catálogo'}
                 </button>
@@ -367,11 +407,18 @@ export default function CoachDashboard() {
                      </div>
                    )}
                    <div className="flex gap-4 w-full">
-                     <div className="h-16 w-16 bg-zinc-950 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-800 overflow-hidden shadow-inner text-2xl">
-                       {exe.url_media?.includes('youtube') ? '🎥' : exe.id_entrenador ? '🏋️‍♂️' : '🌐'}
-                     </div>
-                     <div className="pr-4 flex-1">
-                       <h3 className="text-sm font-semibold text-zinc-200">{exe.nombre}</h3>
+                      {exe.url_gif ? (
+                        <img src={exe.url_gif} alt={exe.nombre} className="h-16 w-16 rounded-lg object-cover bg-zinc-950 flex-shrink-0 border border-zinc-800 shadow-inner" loading="lazy" />
+                      ) : (
+                        <div className="h-16 w-16 bg-zinc-950 rounded-lg flex items-center justify-center flex-shrink-0 border border-zinc-800 overflow-hidden shadow-inner text-2xl">
+                          {exe.url_media?.includes('youtube') ? '🎥' : exe.id_entrenador ? '🏋️‍♂️' : '🌐'}
+                        </div>
+                      )}
+                      <div className="pr-4 flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-semibold text-zinc-200">{exe.nombre}</h3>
+                          <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase">{exe.categoria || 'General'}</span>
+                        </div>
                        <p className="text-xs text-zinc-400 mt-1 leading-relaxed line-clamp-2">{exe.descripcion}</p>
                      </div>
                    </div>
