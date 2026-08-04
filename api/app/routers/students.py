@@ -76,8 +76,32 @@ def update_student(
     except Exception as e:
         db.rollback()
         print(f"ERROR INTERNO (Assign Rutina a Estudiante): {str(e)}")
-        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor. Por favor, avise a soporte.")
 
+@router.delete("/{alumno_id}", status_code=status.HTTP_204_NO_CONTENT)
+def deactivate_student(
+    alumno_id: UUID,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Acceso exclusivo para entrenadores.")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == alumno_id,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado o no pertenece a este entrenador.")
+        
+    try:
+        alumno.estado_activo = False
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"ERROR INTERNO (Dar de baja Alumno): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor. Por favor, avise a soporte.")
 @router.get("/{alumno_id}/stats", response_model=schemas.StudentStatsOut)
 def get_student_stats(
     alumno_id: UUID,
