@@ -158,9 +158,9 @@ def create_invitation(
         nueva_invitacion = Invitacion(
             id_entrenador=current_user.id_usuario,
             codigo_unico=str(codigo_uuid),
-            email_destinatario=invitation_data.email_destinatario.lower() if invitation_data.email_destinatario else None,
+            email_destinatario=None,
             is_used=False,
-            fecha_expiracion=datetime.utcnow() + timedelta(days=7)
+            fecha_expiracion=datetime.utcnow() + timedelta(days=36500)
         )
         
         db.add(nueva_invitacion)

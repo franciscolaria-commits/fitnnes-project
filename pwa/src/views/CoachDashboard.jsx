@@ -4,7 +4,7 @@ import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
 import StudentProgress from './StudentProgress.jsx';
 import FinancesPanel from '../components/FinancesPanel.jsx';
-import { Menu, X } from "lucide-react";
+import { Menu, X, Copy } from "lucide-react";
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
@@ -174,11 +174,10 @@ export default function CoachDashboard() {
 
   const handleCreateInvitation = async (e) => {
     e.preventDefault();
-    const destEmail = e.target['invite-email'].value.trim();
     setLoadingAction('create_invitation');
     try {
-      const data = await api.post("/api/v1/coaches/invitations", { email_destinatario: destEmail || null });
-      await modal.alert(`¡Invitación creada con éxito!\nCódigo UUIDv4: ${data.codigo_unico}`);
+      const data = await api.post("/api/v1/coaches/invitations", {});
+      await modal.alert(`¡Código generado con éxito!\nCódigo UUIDv4: ${data.codigo_unico}`);
       e.target.reset();
       loadData();
     } catch (error) {
@@ -260,21 +259,33 @@ export default function CoachDashboard() {
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6 order-2 md:order-1">
               <div>
-                <h2 className="text-lg font-bold text-zinc-100">Crear Invitación</h2>
-                <p className="text-xs text-zinc-400 mt-1">Genera un código UUIDv4 para tus alumnos.</p>
+                <h2 className="text-lg font-bold text-zinc-100">Código de Vinculación</h2>
+                <p className="text-xs text-zinc-400 mt-2 leading-relaxed">Comparte tu código con tus alumnos. Ellos deberán ingresarlo al registrarse para quedar automáticamente vinculados a tu cuenta.</p>
+                <p className="text-xs text-emerald-500 font-semibold mt-1">Los códigos no caducan y pueden ser usados por múltiples alumnos.</p>
               </div>
               <form onSubmit={handleCreateInvitation} className="flex flex-col gap-3">
-                <input type="email" id="invite-email" placeholder="alumno@correo.com" className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-200" />
                 <button type="submit" disabled={loadingAction === 'create_invitation'} className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm disabled:opacity-50">
-                  {loadingAction === 'create_invitation' ? 'Procesando...' : 'Generar UUIDv4'}
+                  {loadingAction === 'create_invitation' ? 'Generando...' : 'Generar Nuevo Código'}
                 </button>
               </form>
               <div className="flex flex-col gap-3">
-                <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Historial de Códigos</h3>
+                <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Tus Códigos Activos</h3>
                 <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-                  {invitations.length === 0 ? <p className="text-xs text-zinc-500 italic">No hay códigos.</p> : invitations.map(inv => (
+                  {invitations.length === 0 ? <p className="text-xs text-zinc-500 italic">No tienes códigos generados.</p> : invitations.map(inv => (
                     <div key={inv.id_invitacion} className="p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/40 flex flex-col gap-2">
-                      <p className="text-xs font-mono break-all text-zinc-300 bg-zinc-950 p-2 rounded border border-zinc-850/60">{inv.codigo_unico}</p>
+                      <div className="flex items-center justify-between bg-zinc-950 p-2 rounded border border-zinc-850/60">
+                        <p className="text-xs font-mono truncate text-zinc-300 pr-2">{inv.codigo_unico}</p>
+                        <button 
+                          onClick={() => {
+                            navigator.clipboard.writeText(inv.codigo_unico);
+                            modal.alert("¡Código copiado al portapapeles!");
+                          }}
+                          className="text-zinc-500 hover:text-white transition-colors"
+                          title="Copiar Código"
+                        >
+                          <Copy size={16} />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>

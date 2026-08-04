@@ -95,12 +95,6 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
             detail="El código de invitación proporcionado es inválido o no existe."
         )
         
-    if invitacion.fecha_expiracion < datetime.utcnow():
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El código de invitación ha expirado y ya no es válido."
-        )
-        
     try:
         # 3. Crear usuario principal (Alumno)
         hashed_password = generar_hash_password(student_data.password)
