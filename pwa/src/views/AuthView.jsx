@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { api } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function AuthView({ onLoginSuccess }) {
   const [activePanel, setActivePanel] = useState('login'); // 'login', 'registerCoach', 'registerStudent'
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
   const modal = useModal();
@@ -95,7 +97,12 @@ export default function AuthView({ onLoginSuccess }) {
             </div>
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña</label>
-              <input type="password" id="login-password" required placeholder="••••••••" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} id="login-password" required placeholder="••••••••" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200 pr-10" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={loadingAction === 'login'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
               {loadingAction === 'login' ? 'Cargando...' : 'Entrar a la Plataforma'}
@@ -126,7 +133,12 @@ export default function AuthView({ onLoginSuccess }) {
             </div>
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
-              <input type="password" id="reg-coach-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} id="reg-coach-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200 pr-10" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <button type="submit" disabled={loadingAction === 'registerCoach'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
               {loadingAction === 'registerCoach' ? 'Cargando...' : 'Registrarse como Entrenador'}
@@ -158,7 +170,12 @@ export default function AuthView({ onLoginSuccess }) {
             </div>
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
-              <input type="password" id="reg-student-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
+              <div className="relative">
+                <input type={showPassword ? "text" : "password"} id="reg-student-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200 pr-10" />
+                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>

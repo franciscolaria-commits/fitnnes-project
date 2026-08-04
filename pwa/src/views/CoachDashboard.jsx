@@ -165,7 +165,7 @@ export default function CoachDashboard() {
     if (!(await modal.confirm("¿Estás seguro de dar de baja a este alumno?"))) return;
     try {
       await api.delete(`/api/v1/coaches/students/${id}`);
-      await modal.alert("Alumno dado de baja lógicamente con éxito.");
+      await modal.alert("Alumno dado de baja con éxito.");
       loadData();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
