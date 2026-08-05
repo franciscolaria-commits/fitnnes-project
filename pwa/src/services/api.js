@@ -119,6 +119,20 @@ export const api = {
     return res.json();
   },
   
+  patch: async (endpoint, body) => {
+    const isFormData = body instanceof FormData;
+    const res = await request(endpoint, {
+      method: "PATCH",
+      headers: isFormData ? {} : { "Content-Type": "application/json" },
+      body: body ? (isFormData ? body : JSON.stringify(body)) : undefined
+    });
+    if (!res.ok) {
+      const errData = await res.json().catch(() => ({}));
+      throw new Error(errData.detail || "Error en petición de escritura (PATCH)");
+    }
+    return res.status !== 204 ? res.json().catch(() => ({})) : null;
+  },
+
   delete: async (endpoint) => {
     const res = await request(endpoint, { method: "DELETE" });
     if (!res.ok) {
