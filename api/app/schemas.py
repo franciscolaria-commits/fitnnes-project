@@ -150,6 +150,7 @@ class RutinaEjercicioCreate(BaseModel):
     reps_esperadas: int
     descanso_segundos: Optional[int] = None
     orden: int
+    nota_entrenador: Optional[str] = None
 
 class RutinaDiaCreate(BaseModel):
     nombre_dia: str
@@ -168,6 +169,7 @@ class RutinaEjercicioOut(BaseModel):
     reps_esperadas: int
     descanso_segundos: Optional[int] = None
     orden: int
+    nota_entrenador: Optional[str] = None
     ejercicio: Optional[EjercicioOut] = None
 
     class Config:

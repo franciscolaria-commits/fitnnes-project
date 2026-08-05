@@ -2,6 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../services/api.js';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Legend } from 'recharts';
+import SessionHistory from '../components/SessionHistory.jsx';
 
 // Helper para obtener estilo visual según el nivel
 const getTierStyle = (tier) => {
@@ -47,6 +48,11 @@ export default function StudentProgress({ studentId }) {
     queryKey: ['studentAttendance', studentId],
     queryFn: () => api.get(`/api/v1/coaches/students/${studentId}/attendance`),
     enabled: !!studentId
+  });
+
+  const { data: historyData, isLoading: loadingHistory } = useQuery({
+    queryKey: ['studentHistory', studentId || 'me'],
+    queryFn: () => api.get(studentId ? `/api/v1/coaches/students/${studentId}/history` : '/api/v1/students/me/history')
   });
 
   const availableExercises = chartData ? [...new Set(chartData.map(d => d.ejercicio_nombre))] : [];
@@ -282,6 +288,16 @@ export default function StudentProgress({ studentId }) {
               </div>
             ))}
           </div>
+        )}
+      </div>
+
+      {/* HISTORIAL DETALLADO */}
+      <div className="lg:col-span-12 border border-zinc-800 bg-zinc-900 p-6 md:p-10">
+        <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-8 border-b border-zinc-800 pb-4">HISTORIAL DE SESIONES</h3>
+        {loadingHistory ? (
+          <p className="text-zinc-700 font-black text-2xl uppercase tracking-tighter">CARGANDO HISTORIAL...</p>
+        ) : (
+          <SessionHistory sessions={historyData} />
         )}
       </div>
 

@@ -108,6 +108,7 @@ class RutinaEjercicio(Base):
     reps_esperadas = Column(Integer, nullable=False)
     descanso_segundos = Column(Integer)
     orden = Column(Integer, nullable=False)
+    nota_entrenador = Column(String, nullable=True)
 
     ejercicio = relationship("Ejercicio")
 

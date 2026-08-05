@@ -190,6 +190,11 @@ export default function StudentDashboard() {
                           <div>
                             <h4 className="text-sm font-bold text-zinc-200">{ex.ejercicio?.nombre || `ID: ${ex.id_ejercicio}`}</h4>
                             <p className="text-xs text-zinc-500 font-mono mt-1">{ex.series_esperadas} Series x {ex.reps_esperadas} Reps</p>
+                            {ex.nota_entrenador && (
+                              <p className="text-[10px] text-indigo-400 font-bold mt-2 bg-indigo-500/10 inline-block px-2 py-1 rounded border border-indigo-500/20">
+                                💬 Profe: {ex.nota_entrenador}
+                              </p>
+                            )}
                           </div>
                           {ex.ejercicio && (
                             <button 

@@ -269,6 +269,33 @@ def get_student_league(
         
     return result
 
+@router.get("/{alumno_id}/history", response_model=List[schemas.EntrenamientoSesionOut])
+def get_student_history(
+    alumno_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    from sqlalchemy.orm import joinedload
+    
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Acceso exclusivo para entrenadores.")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == alumno_id,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado o no pertenece a este entrenador.")
+        
+    sesiones = db.query(models.EntrenamientoSesion).options(
+        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.ejercicio)
+    ).filter(
+        models.EntrenamientoSesion.id_alumno == alumno_id,
+        models.EntrenamientoSesion.estado == "completado"
+    ).order_by(models.EntrenamientoSesion.fecha_fin.desc()).all()
+    
+    return sesiones
+
 @router.get("/me/routine", response_model=schemas.RutinaOut)
 def get_my_routine(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     """

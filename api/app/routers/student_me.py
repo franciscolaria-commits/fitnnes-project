@@ -52,13 +52,16 @@ def get_my_routine(db: Session = Depends(get_db), current_user: models.Usuario =
 
 from typing import List
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 @router.get("/me/history", response_model=List[schemas.EntrenamientoSesionOut])
 def get_my_history(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Sólo alumnos")
     
-    sesiones = db.query(models.EntrenamientoSesion).filter(
+    sesiones = db.query(models.EntrenamientoSesion).options(
+        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.ejercicio)
+    ).filter(
         models.EntrenamientoSesion.id_alumno == current_user.id_usuario,
         models.EntrenamientoSesion.estado == "completado"
     ).order_by(models.EntrenamientoSesion.fecha_fin.desc()).all()

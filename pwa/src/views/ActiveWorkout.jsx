@@ -141,8 +141,18 @@ export default function ActiveWorkout({ routine, onComplete, onCancel }) {
                 <p className="text-xs text-zinc-500">{ex.descanso_segundos || 60}s descanso</p>
               </div>
             </div>
+
+            {ex.nota_entrenador && (
+              <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-lg p-3 mb-4 flex gap-3 items-start">
+                <span className="text-lg">💬</span>
+                <div>
+                  <p className="text-[10px] text-indigo-400 font-bold uppercase tracking-widest mb-0.5">Nota del Entrenador</p>
+                  <p className="text-sm text-indigo-100 font-medium italic">"{ex.nota_entrenador}"</p>
+                </div>
+              </div>
+            )}
             
-            <div className="flex gap-3 items-center mt-6">
+            <div className="flex gap-3 items-center mt-2">
               <div className="flex-1">
                 <label className="text-[10px] text-zinc-500 font-bold uppercase ml-1 block mb-1">Peso (kg)</label>
                 <input type="number" className="w-full bg-zinc-950 border border-zinc-800 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl p-3 text-white transition-all" id={`peso-${ex.id_rutina_ejercicio}`} />

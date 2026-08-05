@@ -22,7 +22,8 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
       nombre: "Ejercicio (Cargado)", // Idealmente mapeado del catálogo
       series_esperadas: ex.series_esperadas,
       reps_esperadas: ex.reps_esperadas,
-      descanso_segundos: ex.descanso_segundos || 60
+      descanso_segundos: ex.descanso_segundos || 60,
+      nota_entrenador: ex.nota_entrenador || ''
     }))
   })) : [
     { id: 'dia-1', name: 'Día 1 (Ej: Piernas)', exercises: [] }
@@ -68,7 +69,8 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
       nombre: exerciseFromCatalog.nombre,
       series_esperadas: 4,
       reps_esperadas: 10,
-      descanso_segundos: 60
+      descanso_segundos: 60,
+      nota_entrenador: ''
     });
     setDays(updated);
   };
@@ -100,6 +102,7 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
             series_esperadas: parseInt(ex.series_esperadas),
             reps_esperadas: parseInt(ex.reps_esperadas),
             descanso_segundos: ex.descanso_segundos ? parseInt(ex.descanso_segundos) : null,
+            nota_entrenador: ex.nota_entrenador || null,
             orden: exIndex + 1
           }))
         }))
@@ -262,6 +265,11 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
                           <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 truncate">Descanso (s)</label>
                           <input type="number" step="15" min="0" value={ex.descanso_segundos} onChange={e => updateExercise(dIndex, exIndex, 'descanso_segundos', e.target.value)} className="w-full sm:w-20 bg-zinc-950 border border-zinc-700 rounded-lg px-2 py-1.5 text-sm text-center text-zinc-200 focus:border-blue-500 outline-none" />
                         </div>
+                      </div>
+
+                      <div className="w-full mt-3 sm:mt-0 sm:flex-1">
+                        <label className="text-[10px] text-zinc-500 uppercase font-bold mb-1 truncate">Nota de Profe (Opcional)</label>
+                        <input type="text" value={ex.nota_entrenador || ''} onChange={e => updateExercise(dIndex, exIndex, 'nota_entrenador', e.target.value)} placeholder="Ej: Tira con 90kg" className="w-full bg-zinc-950 border border-zinc-700 rounded-lg px-3 py-1.5 text-xs text-zinc-200 focus:border-blue-500 outline-none" />
                       </div>
 
                       <button onClick={() => removeExercise(dIndex, exIndex)} className="p-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg sm:opacity-0 sm:group-hover:opacity-100 transition-opacity self-start sm:self-center">
