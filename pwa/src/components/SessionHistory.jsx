@@ -60,7 +60,10 @@ export default function SessionHistory({ sessions }) {
               className="w-full p-4 flex items-center justify-between hover:bg-zinc-800/50 transition-colors text-left"
             >
               <div>
-                <p className="text-sm font-bold text-zinc-100 capitalize">{dateStr}</p>
+                <p className="text-sm font-bold text-zinc-100 capitalize">
+                  {dateStr}
+                  {session.nombre_dia && <span className="ml-2 text-indigo-400 font-medium">({session.nombre_dia})</span>}
+                </p>
                 <p className="text-xs text-zinc-500 mt-1">{timeStr} • {session.sets.length} series totales</p>
               </div>
               <div className="flex items-center gap-4">

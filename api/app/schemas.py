@@ -252,6 +252,7 @@ class EntrenamientoSesionOut(BaseModel):
     fecha_inicio: datetime
     fecha_fin: Optional[datetime] = None
     estado: str
+    nombre_dia: Optional[str] = None
     sets: List[EntrenamientoSetRealOut] = []
     nuevos_prs: List[str] = []
 

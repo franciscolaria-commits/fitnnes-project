@@ -350,12 +350,17 @@ def get_student_history(
         raise HTTPException(status_code=404, detail="Alumno no encontrado o no pertenece a este entrenador.")
         
     sesiones = db.query(models.EntrenamientoSesion).options(
-        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.ejercicio)
+        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.ejercicio),
+        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.dia)
     ).filter(
         models.EntrenamientoSesion.id_alumno == alumno_id,
         models.EntrenamientoSesion.estado == "completado"
     ).order_by(models.EntrenamientoSesion.fecha_fin.desc()).all()
     
+    for sesion in sesiones:
+        if sesion.sets and sesion.sets[0].rutina_ejercicio and sesion.sets[0].rutina_ejercicio.dia:
+            sesion.nombre_dia = sesion.sets[0].rutina_ejercicio.dia.nombre_dia
+            
     return sesiones
 
 @router.get("/me/routine", response_model=schemas.RutinaOut)

@@ -60,11 +60,17 @@ def get_my_history(db: Session = Depends(get_db), current_user: models.Usuario =
         raise HTTPException(status_code=403, detail="Sólo alumnos")
     
     sesiones = db.query(models.EntrenamientoSesion).options(
-        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.ejercicio)
+        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.ejercicio),
+        joinedload(models.EntrenamientoSesion.sets).joinedload(models.EntrenamientoSetReal.rutina_ejercicio).joinedload(models.RutinaEjercicio.dia)
     ).filter(
         models.EntrenamientoSesion.id_alumno == current_user.id_usuario,
         models.EntrenamientoSesion.estado == "completado"
     ).order_by(models.EntrenamientoSesion.fecha_fin.desc()).all()
+    
+    for sesion in sesiones:
+        if sesion.sets and sesion.sets[0].rutina_ejercicio and sesion.sets[0].rutina_ejercicio.dia:
+            sesion.nombre_dia = sesion.sets[0].rutina_ejercicio.dia.nombre_dia
+            
     return sesiones
 
 @router.get("/me/stats", response_model=schemas.StudentStatsOut)
