@@ -133,6 +133,8 @@ class EntrenamientoSetReal(Base):
     reps_logradas = Column(Integer, nullable=False)
     rpe = Column(Integer, nullable=True)
 
+    rutina_ejercicio = relationship("RutinaEjercicio")
+
 class HistorialEjercicioAlumno(Base):
     __tablename__ = "historial_ejercicios_alumnos"
     id_historial = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
