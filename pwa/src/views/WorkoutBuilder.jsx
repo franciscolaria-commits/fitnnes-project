@@ -211,7 +211,7 @@ export default function WorkoutBuilder({ initialData, onClose, onSaveSuccess }) 
                       onClick={() => addExerciseToDay(idx, ex)}
                       className="px-2 py-1 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 text-[10px] rounded border border-blue-500/20"
                     >
-                      + {day.name}
+                      {`+ ${day.name || 'Sin nombre'}`}
                     </button>
                   ))}
                 </div>
