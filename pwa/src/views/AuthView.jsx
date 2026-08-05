@@ -24,7 +24,10 @@ export default function AuthView({ onLoginSuccess }) {
       localStorage.setItem("fitness_jwt", data.access_token);
       const userData = { email: data.email, rol: data.rol, id_usuario: data.id_usuario };
       localStorage.setItem("fitness_user", JSON.stringify(userData));
-      onLoginSuccess();
+      try {
+        window.indexedDB.deleteDatabase("keyval-store");
+      } catch (e) {}
+      window.location.href = "/";
     } catch (err) {
       setError(err.message);
     } finally {

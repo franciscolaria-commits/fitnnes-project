@@ -5,12 +5,16 @@ function getToken() {
   return localStorage.getItem("fitness_jwt") || sessionStorage.getItem("fitness_jwt");
 }
 
-// Cerrar sesión limpiando credenciales
 export function logout() {
   localStorage.removeItem("fitness_jwt");
   sessionStorage.removeItem("fitness_jwt");
   localStorage.removeItem("fitness_user");
   sessionStorage.removeItem("fitness_user");
+  
+  try {
+    window.indexedDB.deleteDatabase("keyval-store");
+  } catch(e) {}
+  
   window.location.reload();
 }
 
@@ -52,12 +56,12 @@ async function request(endpoint, options = {}) {
       throw new Error("Sesión expirada. Por favor inicia sesión nuevamente.");
     }
 
-    // Si recibimos un 403 Forbidden (Interceptor Financiero B2B)
+    // Si recibimos un 403 Forbidden (Interceptor Financiero B2B o Suspensión)
     if (response.status === 403) {
       const errorData = await response.clone().json().catch(() => ({}));
       const detail = errorData.detail || "";
-      if (detail.includes("Pago") || detail.includes("temporalmente") || detail.includes("suspendido")) {
-        console.warn("[API] Bloqueo financiero detectado.");
+      if (detail.includes("Pago") || detail.includes("temporalmente") || detail.includes("suspendido") || detail.includes("suspendida")) {
+        console.warn("[API] Bloqueo o suspensión detectada.");
         // Guardar el mensaje para que la vista de bloqueo lo lea
         sessionStorage.setItem("fitness_blocked_reason", detail);
         window.location.href = "/blocked";
