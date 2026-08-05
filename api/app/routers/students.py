@@ -152,13 +152,27 @@ def hard_delete_student(
         raise HTTPException(status_code=404, detail="Alumno no encontrado.")
         
     try:
-        # TODO: Al eliminar al alumno "duro", la DB debe manejar ON DELETE CASCADE
-        # O podemos eliminar el usuario base que cascadeará.
+        # 1. PagoAlumno
+        db.query(models.PagoAlumno).filter(models.PagoAlumno.id_alumno == alumno_id).delete(synchronize_session=False)
+        
+        # 2. HistorialEjercicioAlumno
+        db.query(models.HistorialEjercicioAlumno).filter(models.HistorialEjercicioAlumno.id_alumno == alumno_id).delete(synchronize_session=False)
+        
+        # 3. EntrenamientoSesion and EntrenamientoSetReal
+        sesiones = db.query(models.EntrenamientoSesion).filter(models.EntrenamientoSesion.id_alumno == alumno_id).all()
+        sesion_ids = [s.id_sesion for s in sesiones]
+        if sesion_ids:
+            db.query(models.EntrenamientoSetReal).filter(models.EntrenamientoSetReal.id_sesion.in_(sesion_ids)).delete(synchronize_session=False)
+            db.query(models.EntrenamientoSesion).filter(models.EntrenamientoSesion.id_sesion.in_(sesion_ids)).delete(synchronize_session=False)
+            
+        # 4. Alumno
+        db.delete(alumno)
+        
+        # 5. Usuario
         usuario = db.query(models.Usuario).filter(models.Usuario.id_usuario == alumno_id).first()
         if usuario:
             db.delete(usuario)
-        else:
-            db.delete(alumno)
+            
         db.commit()
     except Exception as e:
         db.rollback()
