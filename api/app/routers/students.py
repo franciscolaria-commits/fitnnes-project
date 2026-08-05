@@ -68,6 +68,10 @@ def update_student(
         alumno.altura = alumno_update.altura
     if alumno_update.objetivo is not None:
         alumno.objetivo = alumno_update.objetivo
+    if alumno_update.estado_activo is not None:
+        alumno.estado_activo = alumno_update.estado_activo
+    if alumno_update.clasificacion is not None:
+        alumno.clasificacion = alumno_update.clasificacion
 
     try:
         db.commit()
@@ -102,6 +106,64 @@ def deactivate_student(
         db.rollback()
         print(f"ERROR INTERNO (Dar de baja Alumno): {str(e)}")
         raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor. Por favor, avise a soporte.")
+
+@router.patch("/{alumno_id}/reactivate", response_model=AlumnoOut)
+def reactivate_student(
+    alumno_id: UUID,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Acceso exclusivo para entrenadores.")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == alumno_id,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado.")
+        
+    try:
+        alumno.estado_activo = True
+        db.commit()
+        db.refresh(alumno)
+        return alumno
+    except Exception as e:
+        db.rollback()
+        print(f"ERROR INTERNO (Reactivar Alumno): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno.")
+
+@router.delete("/{alumno_id}/hard", status_code=status.HTTP_204_NO_CONTENT)
+def hard_delete_student(
+    alumno_id: UUID,
+    current_user: Usuario = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Acceso exclusivo para entrenadores.")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == alumno_id,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado.")
+        
+    try:
+        # TODO: Al eliminar al alumno "duro", la DB debe manejar ON DELETE CASCADE
+        # O podemos eliminar el usuario base que cascadeará.
+        usuario = db.query(models.Usuario).filter(models.Usuario.id_usuario == alumno_id).first()
+        if usuario:
+            db.delete(usuario)
+        else:
+            db.delete(alumno)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        print(f"ERROR INTERNO (Eliminar Definitivamente Alumno): {str(e)}")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno.")
 @router.get("/{alumno_id}/stats", response_model=schemas.StudentStatsOut)
 def get_student_stats(
     alumno_id: UUID,

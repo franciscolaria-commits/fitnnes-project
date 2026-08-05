@@ -36,6 +36,7 @@ class Alumno(Base):
     objetivo = Column(String)
     estado_activo = Column(Boolean, default=True, index=True)
     id_rutina_activa = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=True)
+    clasificacion = Column(String, nullable=True)
     
     usuario = relationship("Usuario")
     entrenador = relationship("Entrenador")

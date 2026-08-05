@@ -90,14 +90,20 @@ class InvitacionOut(BaseModel):
 class AlumnoBase(BaseModel):
     peso_corporal_actual: Optional[float] = None
     objetivo: Optional[str] = None
+    id_rutina_activa: Optional[UUID] = None
+    clasificacion: Optional[str] = None
 
 class AlumnoCreate(AlumnoBase):
     email: EmailStr
     password: str = Field(..., min_length=6)
     codigo_invitacion: UUID = Field(..., description="UUIDv4 único de invitación provisto por el entrenador")
 
-class AlumnoUpdate(AlumnoBase):
+class AlumnoUpdate(BaseModel):
+    peso: Optional[float] = None
+    altura: Optional[float] = None # Deprecated?
+    objetivo: Optional[str] = None
     estado_activo: Optional[bool] = None
+    clasificacion: Optional[str] = None
 
 class AlumnoOut(AlumnoBase):    
     id_usuario: UUID

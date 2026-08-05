@@ -11,6 +11,7 @@ export default function CoachDashboard() {
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [isBuildingRoutine, setIsBuildingRoutine] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
   const [email, setEmail] = useState('');
   const [students, setStudents] = useState([]);
   const [invitations, setInvitations] = useState([]);
@@ -37,7 +38,7 @@ export default function CoachDashboard() {
   const loadData = async () => {
     try {
       const stdData = await api.get("/api/v1/coaches/students");
-      setStudents(stdData.filter(s => s.estado_activo));
+      setStudents(stdData);
       
       const invData = await api.get("/api/v1/coaches/invitations");
       setInvitations(invData);
@@ -172,6 +173,38 @@ export default function CoachDashboard() {
     }
   };
 
+  const handleReactivateStudent = async (id) => {
+    try {
+      await api.patch(`/api/v1/coaches/students/${id}/reactivate`);
+      await modal.alert("Alumno reactivado con éxito.");
+      loadData();
+    } catch (error) {
+      await modal.alert(`Error: ${error.message}`);
+    }
+  };
+
+  const handleHardDeleteStudent = async (id) => {
+    if (!(await modal.confirm("¿ESTÁS SEGURO? Esta acción borrará permanentemente todo el historial del alumno y no se puede deshacer."))) return;
+    try {
+      await api.delete(`/api/v1/coaches/students/${id}/hard`);
+      await modal.alert("Alumno eliminado definitivamente.");
+      loadData();
+    } catch (error) {
+      await modal.alert(`Error: ${error.message}`);
+    }
+  };
+
+  const handleUpdateClasificacion = async (id) => {
+    const clas = await modal.prompt("Ingresa la clasificación para el alumno (ej: Principiante, Competición):");
+    if (clas === null) return;
+    try {
+      await api.put(`/api/v1/coaches/students/${id}`, { clasificacion: clas.trim() || null });
+      loadData();
+    } catch (error) {
+      await modal.alert(`Error: ${error.message}`);
+    }
+  };
+
   const handleCreateInvitation = async (e) => {
     e.preventDefault();
     setLoadingAction('create_invitation');
@@ -292,21 +325,60 @@ export default function CoachDashboard() {
               </div>
             </div>
             <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-2 flex flex-col gap-6 order-1 md:order-2">
-              <div>
-                <h2 className="text-lg font-bold text-zinc-100">Mis Alumnos Activos</h2>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <h2 className="text-lg font-bold text-zinc-100">Mis Alumnos</h2>
+                <input 
+                  type="text" 
+                  placeholder="Buscar por nombre, correo o etiqueta..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-zinc-900 border border-zinc-700 text-sm text-zinc-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 w-full sm:w-64"
+                />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {students.length === 0 ? <p className="col-span-2 text-center text-zinc-500 text-sm">No tienes alumnos vinculados actualmente.</p> : students.map(alumno => (
-                  <div key={alumno.id_usuario} className="p-4 rounded-xl bg-zinc-900/60 border border-zinc-800/40 flex flex-col justify-between gap-3">
+                {students.filter(alumno => {
+                  const search = searchTerm.toLowerCase();
+                  const nameEmailMatch = alumno.usuario.email.toLowerCase().includes(search);
+                  const tagMatch = alumno.clasificacion && alumno.clasificacion.toLowerCase().includes(search);
+                  return nameEmailMatch || tagMatch;
+                }).length === 0 ? <p className="col-span-2 text-center text-zinc-500 text-sm">No se encontraron alumnos.</p> : students.filter(alumno => {
+                  const search = searchTerm.toLowerCase();
+                  const nameEmailMatch = alumno.usuario.email.toLowerCase().includes(search);
+                  const tagMatch = alumno.clasificacion && alumno.clasificacion.toLowerCase().includes(search);
+                  return nameEmailMatch || tagMatch;
+                }).map(alumno => (
+                  <div key={alumno.id_usuario} className={`p-4 rounded-xl border flex flex-col justify-between gap-3 ${alumno.estado_activo ? 'bg-zinc-900/60 border-zinc-800/40' : 'bg-red-950/10 border-red-900/40 opacity-75'}`}>
                     <div>
-                      <h3 className="text-sm font-bold text-zinc-100">{alumno.usuario.email.split('@')[0]}</h3>
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-sm font-bold text-zinc-100">{alumno.usuario.email.split('@')[0]}</h3>
+                        {!alumno.estado_activo && <span className="text-[10px] bg-red-900/40 text-red-400 px-2 py-0.5 rounded-full uppercase tracking-wider font-bold">Suspendido</span>}
+                      </div>
                       <p className="text-[10px] text-zinc-500">{alumno.usuario.email}</p>
-                      <p className="text-xs text-zinc-400 mt-2 font-medium">Objetivo: <span className="text-blue-400">{alumno.objetivo || "No definido"}</span></p>
-                      <p className="text-xs text-zinc-400 mt-1 font-medium">Rutina: <span className={alumno.rutina_nombre ? "text-emerald-400" : "text-zinc-500"}>{alumno.rutina_nombre || "Ninguna asignada"}</span></p>
+                      
+                      <div className="mt-3 space-y-1">
+                        <p className="text-xs text-zinc-400 font-medium flex items-center gap-2">
+                          Clasificación: 
+                          <span className={alumno.clasificacion ? "text-amber-400 font-bold" : "text-zinc-600 italic"}>{alumno.clasificacion || "Sin asignar"}</span>
+                          <button onClick={() => handleUpdateClasificacion(alumno.id_usuario)} className="text-zinc-500 hover:text-blue-400 ml-auto">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                          </button>
+                        </p>
+                        <p className="text-xs text-zinc-400 font-medium">Objetivo: <span className="text-blue-400">{alumno.objetivo || "No definido"}</span></p>
+                        <p className="text-xs text-zinc-400 font-medium">Rutina: <span className={alumno.rutina_nombre ? "text-emerald-400" : "text-zinc-500"}>{alumno.rutina_nombre || "Ninguna asignada"}</span></p>
+                      </div>
                     </div>
                     <div className="flex gap-2 w-full mt-2">
-                      <button onClick={() => setSelectedStudentId(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors border border-indigo-500/20">Ver Progreso</button>
-                      <button onClick={() => handleDeactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-red-950/20 hover:bg-red-900/40 text-red-400 border border-red-500/10 font-semibold transition-colors">Dar Baja</button>
+                      {alumno.estado_activo ? (
+                        <>
+                          <button onClick={() => setSelectedStudentId(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors border border-indigo-500/20">Progreso</button>
+                          <button onClick={() => handleDeactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-red-950/20 hover:bg-red-900/40 text-red-400 border border-red-500/10 font-semibold transition-colors">Suspender</button>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => handleReactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors">Reactivar</button>
+                          <button onClick={() => handleHardDeleteStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-red-600 hover:bg-red-500 text-white font-semibold transition-colors">Eliminar Def.</button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}
