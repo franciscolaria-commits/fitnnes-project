@@ -313,14 +313,14 @@ export default function CoachDashboard() {
                       <p className="text-[11px] text-zinc-500">Muestra este QR en persona. El alumno entrará directo al registro.</p>
                       <div className="bg-white p-2 rounded-lg mx-auto w-32 h-32 mt-2 relative group">
                         <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "?coachCode=" + invitations[0].codigo_unico)}`} 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico)}`} 
                           alt="QR Code" 
                           className="w-full h-full object-contain"
                         />
                         <button
                           onClick={async () => {
                             try {
-                              const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "?coachCode=" + invitations[0].codigo_unico)}`);
+                              const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico)}`);
                               const blob = await response.blob();
                               const url = window.URL.createObjectURL(blob);
                               const link = document.createElement('a');
@@ -346,11 +346,11 @@ export default function CoachDashboard() {
                       <p className="text-[11px] text-zinc-500">Envíalo por WhatsApp o redes sociales.</p>
                       <div className="flex items-center justify-between bg-zinc-950 p-2 rounded border border-zinc-800">
                         <p className="text-[10px] font-mono truncate text-zinc-400 pr-2">
-                          {window.location.origin}?coachCode={invitations[0].codigo_unico.substring(0, 8)}...
+                          {window.location.origin}/login?coachCode={invitations[0].codigo_unico.substring(0, 8)}...
                         </p>
                         <button 
                           onClick={() => {
-                            navigator.clipboard.writeText(window.location.origin + "?coachCode=" + invitations[0].codigo_unico);
+                            navigator.clipboard.writeText(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico);
                             modal.alert("¡Enlace copiado al portapapeles!");
                           }}
                           className="text-zinc-500 hover:text-white transition-colors"
