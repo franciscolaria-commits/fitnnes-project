@@ -15,6 +15,9 @@ export default function StudentDashboard() {
   const [activeTab, setActiveTab] = useState('home'); // home, routine, league, history
   const [isWorkingOut, setIsWorkingOut] = useState(false);
   const [demoExercise, setDemoExercise] = useState(null);
+  
+  const [phoneInput, setPhoneInput] = useState('');
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
 
   const { data: profile, isLoading: loadingProfile } = useQuery({
     queryKey: ['studentProfile', 'v2'],
@@ -39,7 +42,7 @@ export default function StudentDashboard() {
     return <div className="min-h-screen bg-zinc-950 flex items-center justify-center text-zinc-400 font-mono uppercase tracking-widest">Cargando...</div>;
   }
 
-  if (profile?.data && profile.data.estado_activo === false) {
+  if (profile?.estado_activo === false || (profile?.data && profile.data.estado_activo === false)) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-200 font-sans p-4">
         <div className="bg-red-900/20 border border-red-900/50 p-8 rounded-2xl max-w-md w-full text-center flex flex-col items-center gap-6">
@@ -55,9 +58,6 @@ export default function StudentDashboard() {
       </div>
     );
   }
-
-  const [phoneInput, setPhoneInput] = useState('');
-  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
 
   const handleUpdatePhone = async () => {
     if (!phoneInput) return;
