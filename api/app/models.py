@@ -24,8 +24,23 @@ class Entrenador(Base):
     limite_alumnos = Column(Integer, default=10, nullable=False)
     fecha_vencimiento = Column(DateTime, nullable=True)
     estado_financiero = Column(String, default="activo", nullable=False) # 'activo', 'suspendido'
+    estado_activo = Column(Boolean, default=True, nullable=False, index=True) # Soft delete
+    modelo_pago = Column(String, default="por_alumno", nullable=False) # 'fijo', 'por_alumno'
+    monto_fijo = Column(Float, nullable=True)
     
     usuario = relationship("Usuario")
+
+class PagoEntrenador(Base):
+    __tablename__ = "pagos_entrenadores"
+    id_pago = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False)
+    anio_mes = Column(String, nullable=False, index=True) # ej: '2026-08'
+    fecha_pago = Column(DateTime, default=datetime.utcnow)
+    monto = Column(Float, nullable=False)
+    metodo_pago = Column(String, nullable=True)
+    notas = Column(String, nullable=True)
+    
+    entrenador = relationship("Entrenador")
 
 class Alumno(Base):
     __tablename__ = "alumnos"

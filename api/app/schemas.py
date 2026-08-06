@@ -307,13 +307,38 @@ class CoachAdminOut(BaseModel):
     email: str
     limite_alumnos: int
     estado_financiero: str
+    estado_activo: bool
+    modelo_pago: str
+    monto_fijo: Optional[float] = None
     fecha_vencimiento: Optional[datetime] = None
     total_alumnos: int
+    deuda_estimada_mes: float = 0.0
+    pago_mes_registrado: bool = False
 
 class CoachAdminUpdate(BaseModel):
     limite_alumnos: Optional[int] = None
     estado_financiero: Optional[str] = None
+    estado_activo: Optional[bool] = None
+    modelo_pago: Optional[str] = None
+    monto_fijo: Optional[float] = None
     fecha_vencimiento: Optional[datetime] = None
+
+class PagoEntrenadorCreate(BaseModel):
+    monto: float
+    metodo_pago: Optional[str] = None
+    notas: Optional[str] = None
+
+class PagoEntrenadorOut(BaseModel):
+    id_pago: UUID
+    id_entrenador: UUID
+    anio_mes: str
+    fecha_pago: datetime
+    monto: float
+    metodo_pago: Optional[str] = None
+    notas: Optional[str] = None
+
+    class Config:
+        from_attributes = True
 
 # ==========================================
 # ESQUEMAS PAGOS Y ESTADO DE ALUMNO

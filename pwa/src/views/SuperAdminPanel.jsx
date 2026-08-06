@@ -1,19 +1,36 @@
 import React, { useState, useEffect } from "react";
 import { api, logout } from "../services/api";
-import { LogOut, Users, Settings, Activity } from "lucide-react";
+import { LogOut, Users, Settings, Activity, DollarSign, BarChart2, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
 export default function SuperAdminPanel() {
+  const [activeTab, setActiveTab] = useState('coaches');
   const [coaches, setCoaches] = useState([]);
+  const [finances, setFinances] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // Payment Modal State
+  const [showPayModal, setShowPayModal] = useState(false);
+  const [selectedCoachForPay, setSelectedCoachForPay] = useState(null);
+  const [payAmount, setPayAmount] = useState("");
+  const [payMethod, setPayMethod] = useState("transferencia");
+  const [payNotes, setPayNotes] = useState("");
+  const [submittingPay, setSubmittingPay] = useState(false);
 
   useEffect(() => {
-    fetchCoaches();
-  }, []);
+    fetchData();
+  }, [activeTab]);
 
-  const fetchCoaches = async () => {
+  const fetchData = async () => {
+    setLoading(true);
     try {
-      const data = await api.get("/api/v1/admin/coaches");
-      setCoaches(data);
+      if (activeTab === 'coaches') {
+        const data = await api.get("/api/v1/admin/coaches");
+        setCoaches(data);
+      } else {
+        const data = await api.get("/api/v1/admin/finances");
+        setFinances(data);
+      }
     } catch (err) {
       console.error(err);
       if (err.message.includes("Acceso denegado")) {
@@ -34,7 +51,46 @@ export default function SuperAdminPanel() {
     }
   };
 
-  if (loading) {
+  const deleteCoach = async (coachId) => {
+    if (!window.confirm("¿Estás seguro de que deseas borrar (soft-delete) a este entrenador? Sus alumnos quedarán inaccesibles.")) return;
+    try {
+      await api.delete(`/api/v1/admin/coaches/${coachId}`);
+      setCoaches(coaches.filter(c => c.id_usuario !== coachId));
+    } catch (err) {
+      alert("Error al borrar: " + err.message);
+    }
+  };
+
+  const handleRegisterPayment = async (e) => {
+    e.preventDefault();
+    if (!selectedCoachForPay || !payAmount) return;
+    
+    setSubmittingPay(true);
+    try {
+      await api.post(`/api/v1/admin/coaches/${selectedCoachForPay.id_usuario}/pagos`, {
+        monto: parseFloat(payAmount),
+        metodo_pago: payMethod,
+        notas: payNotes
+      });
+      alert("Pago registrado exitosamente");
+      setShowPayModal(false);
+      fetchData(); // Refresh list to update badge
+    } catch (err) {
+      alert("Error al registrar pago: " + err.message);
+    } finally {
+      setSubmittingPay(false);
+    }
+  };
+
+  const openPayModal = (coach) => {
+    setSelectedCoachForPay(coach);
+    setPayAmount(coach.deuda_estimada_mes.toString());
+    setPayMethod("transferencia");
+    setPayNotes("");
+    setShowPayModal(true);
+  };
+
+  if (loading && coaches.length === 0 && !finances) {
     return <div className="min-h-screen bg-gray-900 flex items-center justify-center text-white">Cargando panel...</div>;
   }
 
@@ -46,87 +102,268 @@ export default function SuperAdminPanel() {
             <Settings className="w-6 h-6 text-emerald-500" />
             <h1 className="text-xl font-bold text-white">Panel SuperAdmin</h1>
           </div>
-          <button
-            onClick={logout}
-            className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-            <span className="hidden sm:inline">Salir</span>
-          </button>
+          <div className="flex items-center gap-4">
+            <div className="flex bg-gray-900 rounded-lg p-1 border border-gray-700">
+              <button 
+                onClick={() => setActiveTab('coaches')}
+                className={`px-4 py-1.5 text-sm rounded-md transition-colors ${activeTab === 'coaches' ? 'bg-emerald-600/20 text-emerald-400 font-medium' : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                <div className="flex items-center gap-2"><Users className="w-4 h-4"/> Entrenadores</div>
+              </button>
+              <button 
+                onClick={() => setActiveTab('finances')}
+                className={`px-4 py-1.5 text-sm rounded-md transition-colors ${activeTab === 'finances' ? 'bg-emerald-600/20 text-emerald-400 font-medium' : 'text-gray-400 hover:text-gray-200'}`}
+              >
+                <div className="flex items-center gap-2"><BarChart2 className="w-4 h-4"/> Finanzas</div>
+              </button>
+            </div>
+            <button
+              onClick={logout}
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-300 hover:text-white hover:bg-gray-700 rounded-lg transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Salir</span>
+            </button>
+          </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 mt-8">
-        <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
-          <div className="p-6 border-b border-gray-700">
-            <h2 className="text-lg font-medium text-white flex items-center gap-2">
-              <Users className="w-5 h-5 text-emerald-500" />
-              Gestión de Entrenadores B2B
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-gray-300">
-              <thead className="bg-gray-900/50 text-xs uppercase text-gray-400">
-                <tr>
-                  <th className="px-6 py-4">Email</th>
-                  <th className="px-6 py-4 text-center">Estado Financiero</th>
-                  <th className="px-6 py-4 text-center">Límite Alumnos</th>
-                  <th className="px-6 py-4 text-center">Alumnos Actuales</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-700">
-                {coaches.map(coach => (
-                  <tr key={coach.id_usuario} className="hover:bg-gray-750">
-                    <td className="px-6 py-4 font-medium text-white">
-                      {coach.email}
-                      <div className="text-xs text-gray-500 font-normal">{coach.nombre || "Sin nombre"}</div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <select
-                        value={coach.estado_financiero}
-                        onChange={(e) => updateCoach(coach.id_usuario, { estado_financiero: e.target.value })}
-                        className={`bg-gray-900 border text-sm rounded-lg block w-full p-2.5 ${
-                          coach.estado_financiero === 'activo' 
-                            ? 'border-emerald-500/30 text-emerald-400' 
-                            : 'border-red-500/30 text-red-400'
-                        }`}
-                      >
-                        <option value="activo">Activo</option>
-                        <option value="suspendido">Suspendido</option>
-                      </select>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <input
-                        type="number"
-                        min="1"
-                        value={coach.limite_alumnos}
-                        onChange={(e) => setCoaches(coaches.map(c => c.id_usuario === coach.id_usuario ? { ...c, limite_alumnos: parseInt(e.target.value) || 1 } : c))}
-                        onBlur={(e) => updateCoach(coach.id_usuario, { limite_alumnos: parseInt(e.target.value) || 1 })}
-                        className="bg-gray-900 border border-gray-600 text-gray-300 text-sm rounded-lg block w-full p-2.5 text-center focus:ring-emerald-500 focus:border-emerald-500"
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Activity className="w-4 h-4 text-gray-400" />
-                        <span className={`font-medium ${coach.total_alumnos >= coach.limite_alumnos ? 'text-orange-400' : 'text-emerald-400'}`}>
-                          {coach.total_alumnos}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {coaches.length === 0 && (
+        
+        {/* TAB ENTRENADORES */}
+        {activeTab === 'coaches' && (
+          <div className="bg-gray-800 rounded-xl shadow-lg border border-gray-700 overflow-hidden">
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+              <h2 className="text-lg font-medium text-white flex items-center gap-2">
+                <Users className="w-5 h-5 text-emerald-500" />
+                Gestión de Entrenadores B2B
+              </h2>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-gray-300">
+                <thead className="bg-gray-900/50 text-xs uppercase text-gray-400">
                   <tr>
-                    <td colSpan="4" className="px-6 py-8 text-center text-gray-500">
-                      No hay entrenadores registrados
-                    </td>
+                    <th className="px-4 py-4">Coach</th>
+                    <th className="px-4 py-4 text-center">Modelo de Pago</th>
+                    <th className="px-4 py-4 text-center">Estimado Mes</th>
+                    <th className="px-4 py-4 text-center">Estado Financiero</th>
+                    <th className="px-4 py-4 text-center">Acciones</th>
                   </tr>
-                )}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-gray-700">
+                  {coaches.map(coach => (
+                    <tr key={coach.id_usuario} className="hover:bg-gray-750">
+                      <td className="px-4 py-4">
+                        <div className="font-medium text-white">{coach.email}</div>
+                        <div className="text-xs text-gray-500">{coach.nombre || "Sin nombre"} • {coach.total_alumnos}/{coach.limite_alumnos} Alumnos</div>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex flex-col gap-2 items-center">
+                          <select
+                            value={coach.modelo_pago}
+                            onChange={(e) => updateCoach(coach.id_usuario, { modelo_pago: e.target.value })}
+                            className="bg-gray-900 border border-gray-600 text-xs rounded block w-full p-1.5 focus:border-emerald-500"
+                          >
+                            <option value="por_alumno">Por Alumno</option>
+                            <option value="fijo">Monto Fijo</option>
+                          </select>
+                          {coach.modelo_pago === 'fijo' && (
+                            <input
+                              type="number"
+                              placeholder="$ Fijo"
+                              defaultValue={coach.monto_fijo || ""}
+                              onBlur={(e) => updateCoach(coach.id_usuario, { monto_fijo: parseFloat(e.target.value) || 0 })}
+                              className="bg-gray-900 border border-gray-600 text-xs rounded block w-full p-1.5 text-center focus:border-emerald-500"
+                            />
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="text-emerald-400 font-bold text-lg">${coach.deuda_estimada_mes}</div>
+                        {coach.pago_mes_registrado ? (
+                          <div className="text-xs text-emerald-500 flex items-center justify-center gap-1 mt-1"><CheckCircle className="w-3 h-3"/> Pagado</div>
+                        ) : (
+                          <div className="text-xs text-orange-400 flex items-center justify-center gap-1 mt-1"><XCircle className="w-3 h-3"/> Pendiente</div>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <select
+                          value={coach.estado_financiero}
+                          onChange={(e) => updateCoach(coach.id_usuario, { estado_financiero: e.target.value })}
+                          className={`bg-gray-900 border text-xs rounded block w-full p-1.5 ${
+                            coach.estado_financiero === 'activo' 
+                              ? 'border-emerald-500/30 text-emerald-400' 
+                              : 'border-red-500/30 text-red-400'
+                          }`}
+                        >
+                          <option value="activo">Activo</option>
+                          <option value="suspendido">Suspendido</option>
+                        </select>
+                      </td>
+                      <td className="px-4 py-4">
+                        <div className="flex justify-center gap-2">
+                           <button 
+                             onClick={() => openPayModal(coach)}
+                             disabled={coach.pago_mes_registrado}
+                             className={`p-2 rounded-lg transition-colors ${coach.pago_mes_registrado ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/40'}`}
+                             title="Registrar Pago"
+                           >
+                             <DollarSign className="w-4 h-4" />
+                           </button>
+                           <button 
+                             onClick={() => deleteCoach(coach.id_usuario)}
+                             className="p-2 bg-red-600/20 text-red-400 rounded-lg hover:bg-red-600/40 transition-colors"
+                             title="Borrar Entrenador"
+                           >
+                             <Trash2 className="w-4 h-4" />
+                           </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {coaches.length === 0 && !loading && (
+                    <tr>
+                      <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                        No hay entrenadores registrados o activos
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* TAB FINANZAS */}
+        {activeTab === 'finances' && finances && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                <div className="text-gray-400 text-sm font-medium mb-1">Entrenadores Activos</div>
+                <div className="text-3xl font-black text-white">{finances.kpis.total_entrenadores}</div>
+              </div>
+              <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                <div className="text-gray-400 text-sm font-medium mb-1">Alumnos Globales</div>
+                <div className="text-3xl font-black text-emerald-400">{finances.kpis.total_alumnos_plataforma}</div>
+              </div>
+              <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-emerald-500/10 rounded-bl-full -mr-4 -mt-4"></div>
+                <div className="text-gray-400 text-sm font-medium mb-1">Recaudado (Mes)</div>
+                <div className="text-3xl font-black text-emerald-400">${finances.kpis.ingreso_real_mes.toLocaleString()}</div>
+              </div>
+              <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-bl-full -mr-4 -mt-4"></div>
+                <div className="text-gray-400 text-sm font-medium mb-1">Pendiente de Cobro</div>
+                <div className="text-3xl font-black text-orange-400">${finances.kpis.deuda_pendiente.toLocaleString()}</div>
+              </div>
+            </div>
+
+            <div className="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+              <h3 className="text-lg font-medium text-white mb-6 flex items-center gap-2">
+                <BarChart2 className="w-5 h-5 text-emerald-500" />
+                Historial de Ingresos Mensuales
+              </h3>
+              <div className="h-72 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={finances.chart_data}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" vertical={false} />
+                    <XAxis dataKey="mes" stroke="#9CA3AF" tick={{fill: '#9CA3AF'}} />
+                    <YAxis stroke="#9CA3AF" tick={{fill: '#9CA3AF'}} tickFormatter={(v) => `$${v}`} />
+                    <Tooltip 
+                      contentStyle={{ backgroundColor: '#1F2937', borderColor: '#374151', borderRadius: '0.5rem', color: '#fff' }}
+                      itemStyle={{ color: '#34D399', fontWeight: 'bold' }}
+                      formatter={(value) => [`$${value}`, 'Ingresos']}
+                    />
+                    <Bar dataKey="ingresos" fill="#10B981" radius={[4, 4, 0, 0]} barSize={40} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+              {finances.chart_data.length === 0 && (
+                <div className="text-center text-gray-500 mt-4">No hay datos históricos suficientes.</div>
+              )}
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Modal Registrar Pago */}
+      {showPayModal && selectedCoachForPay && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-gray-800 rounded-2xl w-full max-w-md border border-gray-700 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            <div className="px-6 py-4 border-b border-gray-700 flex justify-between items-center bg-gray-900/50">
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-emerald-500" />
+                Registrar Pago Mensual
+              </h3>
+              <button onClick={() => setShowPayModal(false)} className="text-gray-400 hover:text-white transition-colors">
+                <XCircle className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="p-6">
+              <div className="mb-6">
+                <p className="text-sm text-gray-400">Entrenador:</p>
+                <p className="text-base font-semibold text-white">{selectedCoachForPay.email}</p>
+                <div className="mt-2 inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 text-emerald-400 text-sm font-medium rounded-lg">
+                  Deuda Estimada: ${selectedCoachForPay.deuda_estimada_mes}
+                </div>
+              </div>
+              
+              <form onSubmit={handleRegisterPayment} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Monto Pagado ($)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    required
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Método de Pago</label>
+                  <select
+                    value={payMethod}
+                    onChange={(e) => setPayMethod(e.target.value)}
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all"
+                  >
+                    <option value="transferencia">Transferencia Bancaria</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="cripto">Cripto (USDT)</option>
+                    <option value="otro">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">Notas Adicionales (Opcional)</label>
+                  <textarea
+                    value={payNotes}
+                    onChange={(e) => setPayNotes(e.target.value)}
+                    rows="2"
+                    placeholder="Comprobante #12345..."
+                    className="w-full bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 text-white focus:ring-2 focus:ring-emerald-500 focus:border-transparent outline-none transition-all resize-none"
+                  ></textarea>
+                </div>
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowPayModal(false)}
+                    className="flex-1 px-4 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-medium transition-colors"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submittingPay}
+                    className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                  >
+                    {submittingPay ? "Registrando..." : "Confirmar Pago"}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
-      </main>
+      )}
     </div>
   );
 }

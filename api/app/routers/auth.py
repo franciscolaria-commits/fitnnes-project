@@ -161,14 +161,20 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
             headers={"WWW-Authenticate": "Bearer"},
         )
         
-    # Verificar si es entrenador y está suspendido
+    # Verificar si es entrenador y está suspendido o eliminado
     if usuario.rol == "entrenador":
         entrenador = db.query(Entrenador).filter(Entrenador.id_usuario == usuario.id_usuario).first()
-        if entrenador and entrenador.estado_financiero == "suspendido":
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Tu cuenta está suspendida porque todavía no se ha dado de alta o por falta de pago."
-            )
+        if entrenador:
+            if not entrenador.estado_activo:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Tu cuenta de entrenador ha sido eliminada. Contacta al administrador."
+                )
+            if entrenador.estado_financiero == "suspendido":
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Tu cuenta está suspendida porque todavía no se ha dado de alta o por falta de pago."
+                )
         
     # Crear token JWT
     access_token = crear_token_acceso(data={"sub": usuario.email, "rol": usuario.rol})
