@@ -292,36 +292,63 @@ export default function CoachDashboard() {
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-1 flex flex-col gap-6 order-2 md:order-1">
               <div>
-                <h2 className="text-lg font-bold text-zinc-100">Código de Vinculación</h2>
-                <p className="text-xs text-zinc-400 mt-2 leading-relaxed">Comparte tu código con tus alumnos. Ellos deberán ingresarlo al registrarse para quedar automáticamente vinculados a tu cuenta.</p>
-                <p className="text-xs text-emerald-500 font-semibold mt-1">Los códigos no caducan y pueden ser usados por múltiples alumnos.</p>
+                <h2 className="text-lg font-bold text-zinc-100">Formas de invitar a tus alumnos</h2>
+                <p className="text-xs text-zinc-400 mt-2 leading-relaxed">Tus alumnos quedarán vinculados a tu cuenta de manera automática con cualquiera de estos métodos. (Los códigos no expiran).</p>
               </div>
-              <form onSubmit={handleCreateInvitation} className="flex flex-col gap-3">
-                <button type="submit" disabled={loadingAction === 'create_invitation'} className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-sm disabled:opacity-50">
-                  {loadingAction === 'create_invitation' ? 'Generando...' : 'Generar Nuevo Código'}
-                </button>
-              </form>
-              <div className="flex flex-col gap-3">
-                <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold">Tus Códigos Activos</h3>
-                <div className="flex flex-col gap-2 max-h-60 overflow-y-auto pr-1">
-                  {invitations.length === 0 ? <p className="text-xs text-zinc-500 italic">No tienes códigos generados.</p> : invitations.map(inv => (
-                    <div key={inv.id_invitacion} className="p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/40 flex flex-col gap-2">
-                      <div className="flex items-center justify-between bg-zinc-950 p-2 rounded border border-zinc-850/60">
-                        <p className="text-xs font-mono truncate text-zinc-300 pr-2">{inv.codigo_unico}</p>
+              
+              <div className="flex flex-col gap-5 border border-zinc-800 bg-zinc-900/30 p-4 rounded-xl">
+                {invitations.length === 0 ? (
+                  <div className="text-center">
+                    <p className="text-xs text-zinc-500 italic mb-3">No tienes códigos generados.</p>
+                    <form onSubmit={handleCreateInvitation}>
+                      <button type="submit" disabled={loadingAction === 'create_invitation'} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-xs disabled:opacity-50">
+                        {loadingAction === 'create_invitation' ? 'Generando...' : 'Generar Mi Enlace'}
+                      </button>
+                    </form>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex flex-col gap-2">
+                      <span className="text-xs font-bold text-zinc-300">1. Escanear Código QR</span>
+                      <p className="text-[11px] text-zinc-500">Muestra este QR en persona. El alumno entrará directo al registro.</p>
+                      <div className="bg-white p-2 rounded-lg mx-auto w-32 h-32 mt-2">
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "?coachCode=" + invitations[0].codigo_unico)}`} 
+                          alt="QR Code" 
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div className="flex flex-col gap-2 mt-2">
+                      <span className="text-xs font-bold text-zinc-300">2. Link Mágico</span>
+                      <p className="text-[11px] text-zinc-500">Envíalo por WhatsApp o redes sociales.</p>
+                      <div className="flex items-center justify-between bg-zinc-950 p-2 rounded border border-zinc-800">
+                        <p className="text-[10px] font-mono truncate text-zinc-400 pr-2">
+                          {window.location.origin}?coachCode={invitations[0].codigo_unico.substring(0, 8)}...
+                        </p>
                         <button 
                           onClick={() => {
-                            navigator.clipboard.writeText(inv.codigo_unico);
-                            modal.alert("¡Código copiado al portapapeles!");
+                            navigator.clipboard.writeText(window.location.origin + "?coachCode=" + invitations[0].codigo_unico);
+                            modal.alert("¡Enlace copiado al portapapeles!");
                           }}
                           className="text-zinc-500 hover:text-white transition-colors"
-                          title="Copiar Código"
+                          title="Copiar Enlace"
                         >
-                          <Copy size={16} />
+                          <Copy size={14} />
                         </button>
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="flex flex-col gap-2 mt-2">
+                      <span className="text-xs font-bold text-zinc-300">3. Con tu Email</span>
+                      <p className="text-[11px] text-zinc-500">El alumno se registra en {window.location.origin} y en el campo de vinculación escribe tu correo:</p>
+                      <p className="text-xs font-mono font-bold text-blue-400 bg-blue-900/20 px-2 py-1.5 rounded text-center">
+                        {profile?.usuario?.email}
+                      </p>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
             <div className="glass-card rounded-2xl p-6 shadow-lg md:col-span-2 flex flex-col gap-6 order-1 md:order-2">

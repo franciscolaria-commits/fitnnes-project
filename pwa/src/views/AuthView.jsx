@@ -4,7 +4,11 @@ import { useModal } from '../components/ModalProvider.jsx';
 import { Eye, EyeOff } from 'lucide-react';
 
 export default function AuthView({ onLoginSuccess }) {
-  const [activePanel, setActivePanel] = useState('login'); // 'login', 'registerCoach', 'registerStudent'
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialCoachCode = urlParams.get('coachCode') || '';
+  const initialActivePanel = initialCoachCode ? 'registerStudent' : 'login';
+
+  const [activePanel, setActivePanel] = useState(initialActivePanel); // 'login', 'registerCoach', 'registerStudent'
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
@@ -68,6 +72,8 @@ export default function AuthView({ onLoginSuccess }) {
         objetivo: goal || null
       });
       await modal.alert("¡Registro completado exitosamente! Inicia sesión.");
+      // Limpiar URL si venia de link
+      window.history.replaceState({}, document.title, window.location.pathname);
       setActivePanel('login');
     } catch (err) {
       setError(err.message);
@@ -161,11 +167,11 @@ export default function AuthView({ onLoginSuccess }) {
             <span className="h-2.5 w-2.5 rounded-full bg-indigo-500 animate-ping"></span>
             <h2 className="text-lg font-bold text-zinc-100">Registro de Alumnos</h2>
           </div>
-          <p className="text-xs text-zinc-400 leading-relaxed">Requerís obligatoriamente el código de invitación UUIDv4 brindado por tu coach.</p>
+          <p className="text-xs text-zinc-400 leading-relaxed">Vincula tu cuenta usando el código o email de tu entrenador.</p>
           <form onSubmit={handleRegisterStudent} className="flex flex-col gap-3">
             <div>
-              <label className="text-xs text-zinc-400 font-semibold block mb-1">Código de Invitación (UUIDv4)</label>
-              <input type="text" id="reg-student-code" required placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx" className="w-full border rounded-xl px-4 py-3 text-xs font-mono text-zinc-200" />
+              <label className="text-xs text-zinc-400 font-semibold block mb-1">Email o Código de Invitación del Coach</label>
+              <input type="text" id="reg-student-code" required defaultValue={initialCoachCode} placeholder="entrenador@correo.com o UUID" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
             </div>
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Email</label>

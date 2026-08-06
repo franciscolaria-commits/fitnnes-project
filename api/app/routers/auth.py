@@ -87,13 +87,32 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
             detail="El correo electrónico ya está registrado."
         )
         
-    # 2. Validar el código de invitación (Debe ser UUIDv4 estricto)
-    invitacion = db.query(Invitacion).filter(Invitacion.codigo_unico == str(student_data.codigo_invitacion)).first()
-    if not invitacion:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="El código de invitación proporcionado es inválido o no existe."
-        )
+    # 2. Validar el código de invitación o el email del entrenador
+    input_coach = student_data.codigo_invitacion.strip()
+    id_entrenador = None
+    
+    if "@" in input_coach:
+        # Buscar por email
+        coach_user = db.query(Usuario).filter(Usuario.email == input_coach.lower(), Usuario.rol == "entrenador").first()
+        if coach_user:
+            entrenador_obj = db.query(Entrenador).filter(Entrenador.id_usuario == coach_user.id_usuario).first()
+            if entrenador_obj:
+                id_entrenador = entrenador_obj.id_entrenador
+        
+        if not id_entrenador:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se encontró un entrenador con ese correo electrónico."
+            )
+    else:
+        # Buscar por UUID de invitación
+        invitacion = db.query(Invitacion).filter(Invitacion.codigo_unico == input_coach).first()
+        if not invitacion:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El código de invitación proporcionado es inválido o no existe."
+            )
+        id_entrenador = invitacion.id_entrenador
         
     try:
         # 3. Crear usuario principal (Alumno)
@@ -106,10 +125,10 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
         db.add(nuevo_usuario)
         db.flush()
         
-        # 4. Crear perfil de Alumno asociado al entrenador de la invitación
+        # 4. Crear perfil de Alumno asociado al entrenador
         nuevo_alumno = Alumno(
             id_usuario=nuevo_usuario.id_usuario,
-            id_entrenador=invitacion.id_entrenador,
+            id_entrenador=id_entrenador,
             peso_corporal_actual=student_data.peso_corporal_actual,
             objetivo=student_data.objetivo,
             estado_activo=True

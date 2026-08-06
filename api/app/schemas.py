@@ -99,7 +99,7 @@ class AlumnoBase(BaseModel):
 class AlumnoCreate(AlumnoBase):
     email: EmailStr
     password: str = Field(..., min_length=6)
-    codigo_invitacion: UUID = Field(..., description="UUIDv4 único de invitación provisto por el entrenador")
+    codigo_invitacion: str = Field(..., description="UUIDv4 de invitación o Email del Entrenador")
 
 class AlumnoUpdate(BaseModel):
     peso: Optional[float] = None
