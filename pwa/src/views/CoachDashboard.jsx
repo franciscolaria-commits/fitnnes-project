@@ -311,12 +311,33 @@ export default function CoachDashboard() {
                     <div className="flex flex-col gap-2">
                       <span className="text-xs font-bold text-zinc-300">1. Escanear Código QR</span>
                       <p className="text-[11px] text-zinc-500">Muestra este QR en persona. El alumno entrará directo al registro.</p>
-                      <div className="bg-white p-2 rounded-lg mx-auto w-32 h-32 mt-2">
+                      <div className="bg-white p-2 rounded-lg mx-auto w-32 h-32 mt-2 relative group">
                         <img 
                           src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "?coachCode=" + invitations[0].codigo_unico)}`} 
                           alt="QR Code" 
                           className="w-full h-full object-contain"
                         />
+                        <button
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "?coachCode=" + invitations[0].codigo_unico)}`);
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const link = document.createElement('a');
+                              link.href = url;
+                              link.download = `QR_Invitacion_Coach.png`;
+                              document.body.appendChild(link);
+                              link.click();
+                              document.body.removeChild(link);
+                              window.URL.revokeObjectURL(url);
+                            } catch (e) {
+                              modal.alert("Error al descargar el QR.");
+                            }
+                          }}
+                          className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
+                        >
+                          <span className="text-white text-xs font-bold">Descargar QR</span>
+                        </button>
                       </div>
                     </div>
                     
@@ -346,6 +367,29 @@ export default function CoachDashboard() {
                       <p className="text-xs font-mono font-bold text-blue-400 bg-blue-900/20 px-2 py-1.5 rounded text-center">
                         {profile?.usuario?.email}
                       </p>
+                    </div>
+
+                    {/* Códigos antiguos / Historial */}
+                    <div className="mt-4 pt-4 border-t border-zinc-800">
+                      <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-2">Historial de Códigos UUID</h3>
+                      <p className="text-[10px] text-zinc-500 mb-2">Tus códigos antiguos generados previamente, por si los necesitas.</p>
+                      <div className="flex flex-col gap-2 max-h-32 overflow-y-auto pr-1">
+                        {invitations.map(inv => (
+                          <div key={inv.id_invitacion} className="p-2 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-between">
+                            <p className="text-[10px] font-mono truncate text-zinc-400 pr-2">{inv.codigo_unico}</p>
+                            <button 
+                              onClick={() => {
+                                navigator.clipboard.writeText(inv.codigo_unico);
+                                modal.alert("¡Código copiado al portapapeles!");
+                              }}
+                              className="text-zinc-500 hover:text-white transition-colors"
+                              title="Copiar Código UUID"
+                            >
+                              <Copy size={12} />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </>
                 )}
