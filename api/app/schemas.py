@@ -199,7 +199,7 @@ class RutinaOut(BaseModel):
     version_id: int
     is_active: bool
     fecha_creacion: datetime
-    frecuencia_semanal: int
+    frecuencia_semanal: Optional[int] = 3
     dias: List[RutinaDiaOut] = []
 
     class Config:
