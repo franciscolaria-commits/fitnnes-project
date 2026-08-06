@@ -670,9 +670,12 @@ export default function CoachDashboard() {
                 const biografia = e.target.biografia.value.trim() || null;
                 const aniosRaw = e.target.anios.value.trim();
                 const anios_experiencia = aniosRaw ? parseInt(aniosRaw) : null;
+                const tipo_cobro_alumnos = e.target.tipo_cobro.value || null;
+                const precioRaw = e.target.precio_cobro.value.trim();
+                const precio_cobro_alumnos = precioRaw ? parseFloat(precioRaw) : null;
                 
                 try {
-                  await api.put('/api/v1/coaches/profile', { nombre, especialidad, biografia, anios_experiencia });
+                  await api.put('/api/v1/coaches/profile', { nombre, especialidad, biografia, anios_experiencia, tipo_cobro_alumnos, precio_cobro_alumnos });
                   await modal.alert("Perfil actualizado correctamente.");
                   loadData();
                 } catch (error) {
@@ -685,14 +688,35 @@ export default function CoachDashboard() {
                 <label className="text-xs text-zinc-400 font-semibold">Nombre Completo</label>
                 <input name="nombre" defaultValue={profile.nombre || ""} placeholder="Ej. Juan Pérez" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400 font-semibold">Años de Experiencia</label>
-                <input name="anios" type="number" min="0" defaultValue={profile.anios_experiencia || ""} placeholder="Ej. 5" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
+              <div className="flex flex-col sm:flex-row gap-4">
+                <div className="flex flex-col gap-1 w-full">
+                  <label className="text-xs text-zinc-400 font-semibold">Años de Experiencia</label>
+                  <input name="anios" type="number" min="0" defaultValue={profile.anios_experiencia || ""} placeholder="Ej. 5" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
+                </div>
+                <div className="flex flex-col gap-1 w-full">
+                  <label className="text-xs text-zinc-400 font-semibold">Especialidad</label>
+                  <input name="especialidad" defaultValue={profile.especialidad || ""} placeholder="Ej. Hipertrofia y Fuerza" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
+                </div>
               </div>
-              <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400 font-semibold">Especialidad</label>
-                <input name="especialidad" defaultValue={profile.especialidad || ""} placeholder="Ej. Hipertrofia y Fuerza" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
+              
+              <div className="p-4 border border-zinc-800 bg-zinc-900/50 rounded-xl flex flex-col gap-4">
+                 <h3 className="text-sm font-bold text-emerald-400">Configuración Financiera (Alumnos)</h3>
+                 <p className="text-xs text-zinc-500">Define cómo cobras a tus alumnos para que el panel financiero calcule tus ingresos esperados.</p>
+                 <div className="flex flex-col sm:flex-row gap-4">
+                   <div className="flex flex-col gap-1 w-full">
+                     <label className="text-xs text-zinc-400 font-semibold">Modelo de Cobro</label>
+                     <select name="tipo_cobro" defaultValue={profile.tipo_cobro_alumnos || "por_alumno"} className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none">
+                       <option value="por_alumno">Mensualidad por Alumno</option>
+                       <option value="fijo">Ingreso Fijo Global</option>
+                     </select>
+                   </div>
+                   <div className="flex flex-col gap-1 w-full">
+                     <label className="text-xs text-zinc-400 font-semibold">Tarifa ($)</label>
+                     <input name="precio_cobro" type="number" step="0.01" min="0" defaultValue={profile.precio_cobro_alumnos || ""} placeholder="Ej. 1500" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
+                   </div>
+                 </div>
               </div>
+
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-400 font-semibold">Biografía / Descripción</label>
                 <textarea name="biografia" defaultValue={profile.biografia || ""} placeholder="Cuéntale a tus alumnos sobre ti..." className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white h-24 resize-none" />

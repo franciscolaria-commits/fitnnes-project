@@ -12,6 +12,7 @@ class Usuario(Base):
     password_hash = Column(String, nullable=False)
     rol = Column(String, nullable=False) # 'entrenador' o 'alumno'
     fecha_creacion = Column(DateTime, default=datetime.utcnow)
+    telefono = Column(String, nullable=True) # WhatsApp number
 
 class Entrenador(Base):
     __tablename__ = "entrenadores"
@@ -27,6 +28,8 @@ class Entrenador(Base):
     estado_activo = Column(Boolean, default=True, nullable=False, index=True) # Soft delete
     modelo_pago = Column(String, default="por_alumno", nullable=False) # 'fijo', 'por_alumno'
     monto_fijo = Column(Float, nullable=True)
+    tipo_cobro_alumnos = Column(String, nullable=True) # 'fijo' o 'por_clase' etc.
+    precio_cobro_alumnos = Column(Float, nullable=True)
     
     usuario = relationship("Usuario")
 

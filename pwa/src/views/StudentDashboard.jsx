@@ -56,9 +56,49 @@ export default function StudentDashboard() {
     );
   }
 
+  const [phoneInput, setPhoneInput] = useState('');
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+
+  const handleUpdatePhone = async () => {
+    if (!phoneInput) return;
+    setIsUpdatingPhone(true);
+    try {
+      await api.put("/api/v1/students/profile/phone", { telefono: phoneInput });
+      window.location.reload();
+    } catch (e) {
+      alert("Error al guardar el teléfono.");
+    } finally {
+      setIsUpdatingPhone(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500 selection:text-zinc-950">
       
+      {profile?.usuario && !profile.usuario.telefono && (
+        <div className="bg-orange-500/10 border-b border-orange-500/30 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-orange-400 text-sm">
+            <strong className="font-bold">¡Atención!</strong> Es necesario que ingreses tu número de WhatsApp para recibir notificaciones y avisos importantes.
+          </p>
+          <div className="flex gap-2 w-full sm:w-auto">
+            <input 
+              type="text" 
+              placeholder="Ej: +5491123456789"
+              value={phoneInput}
+              onChange={(e) => setPhoneInput(e.target.value)}
+              className="bg-zinc-900 border border-zinc-700 rounded px-3 py-1.5 text-sm w-full sm:w-48 text-white focus:outline-none focus:border-orange-500"
+            />
+            <button 
+              onClick={handleUpdatePhone}
+              disabled={isUpdatingPhone}
+              className="bg-orange-500 hover:bg-orange-400 text-zinc-950 font-bold px-4 py-1.5 rounded text-sm whitespace-nowrap transition-colors disabled:opacity-50"
+            >
+              {isUpdatingPhone ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Brutalist Top Navbar */}
       <header className="sticky top-0 z-50 bg-zinc-950 border-b border-zinc-800 flex flex-col md:flex-row items-center justify-between px-6 py-4 gap-4 md:gap-0">
         <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">

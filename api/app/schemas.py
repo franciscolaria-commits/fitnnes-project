@@ -18,6 +18,7 @@ class UsuarioOut(UsuarioBase):
     id_usuario: UUID
     rol: str
     fecha_creacion: datetime
+    telefono: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -51,6 +52,8 @@ class EntrenadorBase(BaseModel):
     limite_alumnos: Optional[int] = 10
     fecha_vencimiento: Optional[datetime] = None
     estado_financiero: Optional[str] = "activo"
+    tipo_cobro_alumnos: Optional[str] = None
+    precio_cobro_alumnos: Optional[float] = None
 
 class EntrenadorUpdate(EntrenadorBase):
     pass
@@ -341,6 +344,13 @@ class PagoEntrenadorOut(BaseModel):
         from_attributes = True
 
 # ==========================================
+# ESQUEMAS ALUMNOS
+# ==========================================
+
+class PhoneUpdate(BaseModel):
+    telefono: str
+
+# ==========================================
 # ESQUEMAS PAGOS Y ESTADO DE ALUMNO
 # ==========================================
 
@@ -368,9 +378,19 @@ class EstadoPagoAlumnoResponse(BaseModel):
     id_alumno: UUID
     nombre_alumno: str
     email_alumno: str
+    telefono_alumno: Optional[str] = None
     estado_activo: bool
     pagado: bool
     pago: Optional[PagoAlumnoOut] = None
+
+class CoachFinanceSummary(BaseModel):
+    ingreso_real_mes: float
+    ingreso_esperado_mes: Optional[float] = None
+    deuda_pendiente: Optional[float] = None
+    alumnos_pagados: int
+    alumnos_pendientes: int
+    cant_alumnos: int
+    historial: list # List of dicts {mes: str, ingresos: float}
 
 class SuspensionUpdate(BaseModel):
     estado_activo: bool

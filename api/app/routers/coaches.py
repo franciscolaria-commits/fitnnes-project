@@ -73,6 +73,10 @@ def update_coach_profile(
             perfil.anios_experiencia = profile_data.anios_experiencia
         if profile_data.url_foto_perfil is not None:
             perfil.url_foto_perfil = profile_data.url_foto_perfil
+        if profile_data.tipo_cobro_alumnos is not None:
+            perfil.tipo_cobro_alumnos = profile_data.tipo_cobro_alumnos
+        if profile_data.precio_cobro_alumnos is not None:
+            perfil.precio_cobro_alumnos = profile_data.precio_cobro_alumnos
             
         db.commit()
         db.refresh(perfil)
@@ -474,12 +478,85 @@ def get_payments_status(
             "id_alumno": al.id_usuario,
             "nombre_alumno": usuario_al.email.split("@")[0] if usuario_al else "Alumno",
             "email_alumno": usuario_al.email if usuario_al else "",
+            "telefono_alumno": usuario_al.telefono if usuario_al else None,
             "estado_activo": al.estado_activo,
             "pagado": True if pago else False,
             "pago": pago
         })
         
     return result
+
+@router.get("/finances/summary", response_model=schemas.CoachFinanceSummary)
+def get_finances_summary(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    current_anio_mes = datetime.utcnow().strftime("%Y-%m")
+    
+    entrenador = db.query(models.Entrenador).filter(models.Entrenador.id_usuario == current_user.id_usuario).first()
+    alumnos_activos = db.query(models.Alumno).filter(
+        models.Alumno.id_entrenador == current_user.id_usuario, 
+        models.Alumno.estado_activo == True
+    ).all()
+    
+    cant_alumnos = len(alumnos_activos)
+    
+    pagos_mes = db.query(models.PagoAlumno).filter(
+        models.PagoAlumno.id_entrenador == current_user.id_usuario,
+        models.PagoAlumno.anio_mes == current_anio_mes
+    ).all()
+    
+    alumnos_pagados_ids = {p.id_alumno for p in pagos_mes}
+    alumnos_pagados = len(alumnos_pagados_ids)
+    
+    # Pendientes son los activos que NO pagaron
+    alumnos_pendientes = 0
+    for al in alumnos_activos:
+        if al.id_usuario not in alumnos_pagados_ids:
+            alumnos_pendientes += 1
+            
+    ingreso_real = sum([p.monto or 0 for p in pagos_mes])
+    
+    ingreso_esperado = None
+    deuda_pendiente = None
+    if entrenador.tipo_cobro_alumnos == "por_alumno" and entrenador.precio_cobro_alumnos is not None:
+        ingreso_esperado = cant_alumnos * entrenador.precio_cobro_alumnos
+        deuda_pendiente = ingreso_esperado - ingreso_real
+        if deuda_pendiente < 0: deuda_pendiente = 0
+    elif entrenador.tipo_cobro_alumnos == "fijo" and entrenador.precio_cobro_alumnos is not None:
+        ingreso_esperado = entrenador.precio_cobro_alumnos
+        deuda_pendiente = ingreso_esperado - ingreso_real
+        if deuda_pendiente < 0: deuda_pendiente = 0
+
+    # Historial últimos 12 meses
+    historial = []
+    from sqlalchemy import func
+    meses_anteriores = db.query(
+        models.PagoAlumno.anio_mes, 
+        func.sum(models.PagoAlumno.monto).label('total')
+    ).filter(models.PagoAlumno.id_entrenador == current_user.id_usuario)\
+     .group_by(models.PagoAlumno.anio_mes)\
+     .order_by(models.PagoAlumno.anio_mes.desc())\
+     .limit(12).all()
+     
+    for anio_mes, total in reversed(meses_anteriores):
+        historial.append({
+            "mes": anio_mes,
+            "ingresos": total or 0
+        })
+        
+    return {
+        "ingreso_real_mes": ingreso_real,
+        "ingreso_esperado_mes": ingreso_esperado,
+        "deuda_pendiente": deuda_pendiente,
+        "alumnos_pagados": alumnos_pagados,
+        "alumnos_pendientes": alumnos_pendientes,
+        "cant_alumnos": cant_alumnos,
+        "historial": historial
+    }
 
 @router.post("/payments", response_model=schemas.PagoAlumnoOut)
 def register_payment(

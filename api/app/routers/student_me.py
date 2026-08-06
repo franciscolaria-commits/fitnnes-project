@@ -23,6 +23,13 @@ def get_my_profile(db: Session = Depends(get_db), current_user: models.Usuario =
         
     return alumno
 
+@router.put("/profile/phone", response_model=schemas.UsuarioOut)
+def update_my_phone(phone_data: schemas.PhoneUpdate, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
+    current_user.telefono = phone_data.telefono
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
 @router.get("/me/routine", response_model=schemas.RutinaOut)
 def get_my_routine(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     if current_user.rol != "alumno":
