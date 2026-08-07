@@ -4,7 +4,7 @@ import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
 import StudentProgress from './StudentProgress.jsx';
 import FinancesPanel from '../components/FinancesPanel.jsx';
-import { Menu, X, Copy } from "lucide-react";
+import { Menu, X, Copy, Download } from "lucide-react";
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
@@ -308,41 +308,81 @@ export default function CoachDashboard() {
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-col gap-2">
-                      <span className="text-xs font-bold text-zinc-300">1. Escanear Código QR</span>
-                      <p className="text-[11px] text-zinc-500">Muestra este QR en persona. El alumno entrará directo al registro.</p>
-                      <div className="bg-white p-2 rounded-lg mx-auto w-32 h-32 mt-2 relative group">
-                        <img 
-                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico)}`} 
-                          alt="QR Code" 
-                          className="w-full h-full object-contain"
-                        />
-                        <button
-                          onClick={async () => {
-                            try {
-                              const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico)}`);
-                              const blob = await response.blob();
-                              const url = window.URL.createObjectURL(blob);
-                              const link = document.createElement('a');
-                              link.href = url;
-                              link.download = `QR_Invitacion_Coach.png`;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              window.URL.revokeObjectURL(url);
-                            } catch (e) {
-                              modal.alert("Error al descargar el QR.");
-                            }
-                          }}
-                          className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-lg"
-                        >
-                          <span className="text-white text-xs font-bold">Descargar QR</span>
-                        </button>
+                    <div className="flex flex-col gap-4">
+                      {/* QR Registro */}
+                      <div className="flex flex-col gap-2">
+                        <span className="text-xs font-bold text-zinc-300">1. QR para Registrarse (Alumnos Nuevos)</span>
+                        <p className="text-[11px] text-zinc-500">Muestra este QR para que el alumno cree su cuenta y se vincule a ti automáticamente.</p>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-1 bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60">
+                          <div className="bg-white p-2 rounded-xl w-28 h-28 flex-shrink-0 shadow-lg">
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico)}`} 
+                              alt="QR Registro" 
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico)}`);
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = `QR_Registro_Coach.png`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(url);
+                              } catch (e) {
+                                modal.alert("Error al descargar el QR.");
+                              }
+                            }}
+                            className="w-full sm:w-auto py-2.5 px-5 bg-zinc-800/80 hover:bg-blue-600 text-zinc-300 hover:text-white rounded-full transition-all text-xs font-semibold shadow-sm flex items-center justify-center gap-2 border border-zinc-700/50 hover:border-transparent active:scale-95"
+                          >
+                            <Download size={14} /> Descargar QR
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* QR Login */}
+                      <div className="flex flex-col gap-2">
+                        <span className="text-xs font-bold text-zinc-300">2. QR para Iniciar Sesión (Alumnos Activos)</span>
+                        <p className="text-[11px] text-zinc-500">Para alumnos que ya tienen cuenta. Escanean este QR y entran directo.</p>
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-1 bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60">
+                          <div className="bg-white p-2 rounded-xl w-28 h-28 flex-shrink-0 shadow-lg">
+                            <img 
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(window.location.origin)}`} 
+                              alt="QR Login" 
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <button
+                            onClick={async () => {
+                              try {
+                                const response = await fetch(`https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(window.location.origin)}`);
+                                const blob = await response.blob();
+                                const url = window.URL.createObjectURL(blob);
+                                const link = document.createElement('a');
+                                link.href = url;
+                                link.download = `QR_Login_Syncro.png`;
+                                document.body.appendChild(link);
+                                link.click();
+                                document.body.removeChild(link);
+                                window.URL.revokeObjectURL(url);
+                              } catch (e) {
+                                modal.alert("Error al descargar el QR.");
+                              }
+                            }}
+                            className="w-full sm:w-auto py-2.5 px-5 bg-zinc-800/80 hover:bg-emerald-600 text-zinc-300 hover:text-white rounded-full transition-all text-xs font-semibold shadow-sm flex items-center justify-center gap-2 border border-zinc-700/50 hover:border-transparent active:scale-95"
+                          >
+                            <Download size={14} /> Descargar QR
+                          </button>
+                        </div>
                       </div>
                     </div>
-                    
                     <div className="flex flex-col gap-2 mt-2">
-                      <span className="text-xs font-bold text-zinc-300">2. Link Mágico</span>
+                      <span className="text-xs font-bold text-zinc-300">3. Link Mágico</span>
                       <p className="text-[11px] text-zinc-500">Envíalo por WhatsApp o redes sociales.</p>
                       <div className="flex items-center justify-between bg-zinc-950 p-2 rounded border border-zinc-800">
                         <p className="text-[10px] font-mono truncate text-zinc-400 pr-2">
@@ -362,7 +402,7 @@ export default function CoachDashboard() {
                     </div>
 
                     <div className="flex flex-col gap-2 mt-2">
-                      <span className="text-xs font-bold text-zinc-300">3. Con tu Email</span>
+                      <span className="text-xs font-bold text-zinc-300">4. Con tu Email</span>
                       <p className="text-[11px] text-zinc-500">El alumno se registra en {window.location.origin} y en el campo de vinculación escribe tu correo:</p>
                       <p className="text-xs font-mono font-bold text-blue-400 bg-blue-900/20 px-2 py-1.5 rounded text-center">
                         {profile?.usuario?.email}
