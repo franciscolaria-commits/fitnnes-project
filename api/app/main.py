@@ -4,7 +4,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy import text
 import os
 
-from app.database import get_db
+from app.database import get_db, engine
+from app import models
+
+# Crear las tablas en la base de datos automáticamente si no existen
+models.Base.metadata.create_all(bind=engine)
 from app.routers.storage import router as storage_router
 from app.routers.auth import router as auth_router
 from app.routers.coaches import router as coaches_router
@@ -14,6 +18,7 @@ from app.routers.exercises import router as exercises_router
 from app.routers.routines import router as routines_router
 from app.routers.sessions import router as sessions_router
 from app.routers.superadmin import router as superadmin_router
+from app.routers.cron import router as cron_router
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -48,6 +53,7 @@ app.include_router(routines_router)
 app.include_router(sessions_router)
 app.include_router(storage_router)
 app.include_router(superadmin_router)
+app.include_router(cron_router)
 
 
 
