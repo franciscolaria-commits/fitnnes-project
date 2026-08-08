@@ -54,6 +54,11 @@ class EntrenadorBase(BaseModel):
     estado_financiero: Optional[str] = "activo"
     tipo_cobro_alumnos: Optional[str] = None
     precio_cobro_alumnos: Optional[float] = None
+    config_estado_alumno_default: Optional[str] = "activo"
+    config_vencimiento_tipo: Optional[str] = "individual"
+    config_vencimiento_dia: Optional[int] = None
+    config_bloqueo_morosos: Optional[str] = "nunca"
+    config_bloqueo_dias: Optional[int] = 0
 
 class EntrenadorUpdate(EntrenadorBase):
     pass
@@ -114,12 +119,16 @@ class AlumnoOut(AlumnoBase):
     id_entrenador: UUID
     estado_activo: bool
     fecha_ultimo_peso: Optional[datetime] = None
+    fecha_vencimiento_pago: Optional[datetime] = None
     usuario: UsuarioOut
     entrenador: Optional[EntrenadorOut] = None
     rutina_nombre: Optional[str] = None
 
     class Config:
         from_attributes = True
+
+class UpdatePaymentDate(BaseModel):
+    dia_vencimiento_personalizado: int
 
 
 # ==========================================
@@ -383,6 +392,9 @@ class EstadoPagoAlumnoResponse(BaseModel):
     estado_activo: bool
     pagado: bool
     pago: Optional[PagoAlumnoOut] = None
+    fecha_vencimiento_pago: Optional[datetime] = None
+    dias_para_vencer: Optional[int] = None
+    bloqueado_por_pago: Optional[bool] = False
 
 class CoachFinanceSummary(BaseModel):
     ingreso_real_mes: float
@@ -395,3 +407,4 @@ class CoachFinanceSummary(BaseModel):
 
 class SuspensionUpdate(BaseModel):
     estado_activo: bool
+    dia_vencimiento_personalizado: Optional[int] = None

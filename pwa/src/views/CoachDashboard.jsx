@@ -24,6 +24,7 @@ export default function CoachDashboard() {
   const [loadingAction, setLoadingAction] = useState(null);
   const [assignMenuOpenId, setAssignMenuOpenId] = useState(null);
   const [selectedStudentsForAssign, setSelectedStudentsForAssign] = useState([]);
+  const [formConfigEstado, setFormConfigEstado] = useState(null);
   const modal = useModal();
 
   useEffect(() => {
@@ -174,8 +175,28 @@ export default function CoachDashboard() {
   };
 
   const handleReactivateStudent = async (id) => {
+    let dia_vencimiento_personalizado = null;
+    
+    // Si la config es fijo_por_alumno y el alumno no tiene fecha, pedimos el día
+    if (profile?.config_vencimiento_tipo === "fijo_por_alumno") {
+       const student = students.find(s => s.id_usuario === id);
+       if (student && !student.fecha_vencimiento_pago) {
+         const diaStr = window.prompt("Configuración: Día distinto por alumno.\n\nIngresa el DÍA DEL MES (1-31) en que este alumno debe pagar siempre:");
+         if (!diaStr) {
+            await modal.alert("Debes ingresar un día para poder activar a este alumno.");
+            return;
+         }
+         const dia = parseInt(diaStr);
+         if (isNaN(dia) || dia < 1 || dia > 31) {
+            await modal.alert("Día inválido. Debe ser un número entre 1 y 31.");
+            return;
+         }
+         dia_vencimiento_personalizado = dia;
+       }
+    }
+    
     try {
-      await api.patch(`/api/v1/coaches/students/${id}/reactivate`);
+      await api.patch(`/api/v1/coaches/students/${id}/reactivate`, { dia_vencimiento_personalizado });
       await modal.alert("Alumno reactivado con éxito.");
       loadData();
     } catch (error) {
@@ -202,6 +223,22 @@ export default function CoachDashboard() {
       loadData();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
+    }
+  };
+
+  const handleUpdatePaymentDate = async (id) => {
+    const diaStr = window.prompt("Ingresa el nuevo DÍA DEL MES (1-31) en que este alumno debe pagar siempre:");
+    if (!diaStr) return;
+    const dia = parseInt(diaStr);
+    if (isNaN(dia) || dia < 1 || dia > 31) {
+       await modal.alert("Día inválido. Debe ser un número entre 1 y 31.");
+       return;
+    }
+    try {
+      await api.patch(`/api/v1/coaches/students/${id}/payment_date`, { dia_vencimiento_personalizado: dia });
+      loadData();
+    } catch (error) {
+      await modal.alert(`Error al actualizar el día de pago: ${error.message}`);
     }
   };
 
@@ -476,6 +513,18 @@ export default function CoachDashboard() {
                         </p>
                         <p className="text-xs text-zinc-400 font-medium">Objetivo: <span className="text-blue-400">{alumno.objetivo || "No definido"}</span></p>
                         <p className="text-xs text-zinc-400 font-medium">Rutina: <span className={alumno.rutina_nombre ? "text-emerald-400" : "text-zinc-500"}>{alumno.rutina_nombre || "Ninguna asignada"}</span></p>
+                        
+                        {profile?.config_vencimiento_tipo === "fijo_por_alumno" && (
+                          <p className="text-xs text-zinc-400 font-medium flex items-center gap-2 mt-1 border-t border-zinc-800 pt-1">
+                            Día de pago: 
+                            <span className="text-emerald-400 font-bold">
+                              {alumno.fecha_vencimiento_pago ? new Date(alumno.fecha_vencimiento_pago).getDate() : "No asignado"}
+                            </span>
+                            <button onClick={() => handleUpdatePaymentDate(alumno.id_usuario)} className="text-zinc-500 hover:text-emerald-400 ml-auto" title="Editar día de pago">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
+                            </button>
+                          </p>
+                        )}
                       </div>
                     </div>
                     <div className="flex gap-2 w-full mt-2">
@@ -730,7 +779,7 @@ export default function CoachDashboard() {
         )}
 
         {activePanel === 'finances' && (
-          <FinancesPanel students={students} api={api} loadStudents={loadData} modal={modal} />
+          <FinancesPanel students={students} api={api} loadStudents={loadData} modal={modal} profile={profile} />
         )}
 
         {activePanel === 'profile' && (
@@ -785,8 +834,17 @@ export default function CoachDashboard() {
                 const precioRaw = e.target.precio_cobro.value.trim();
                 const precio_cobro_alumnos = precioRaw ? parseFloat(precioRaw) : null;
                 
+                const config_estado_alumno_default = e.target.config_estado_alumno_default.value;
+                const config_vencimiento_tipo = e.target.config_vencimiento_tipo.value;
+                const configVencDiaRaw = e.target.config_vencimiento_dia.value.trim();
+                const config_vencimiento_dia = configVencDiaRaw ? parseInt(configVencDiaRaw) : null;
+                
                 try {
-                  await api.put('/api/v1/coaches/profile', { nombre, especialidad, biografia, anios_experiencia, tipo_cobro_alumnos, precio_cobro_alumnos });
+                  await api.put('/api/v1/coaches/profile', { 
+                    nombre, especialidad, biografia, anios_experiencia, 
+                    tipo_cobro_alumnos, precio_cobro_alumnos,
+                    config_estado_alumno_default, config_vencimiento_tipo, config_vencimiento_dia
+                  });
                   await modal.alert("Perfil actualizado correctamente.");
                   loadData();
                 } catch (error) {
@@ -826,6 +884,58 @@ export default function CoachDashboard() {
                      <input name="precio_cobro" type="number" step="0.01" min="0" defaultValue={profile.precio_cobro_alumnos || ""} placeholder="Ej. 1500" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
                    </div>
                  </div>
+              </div>
+
+              <div className="p-4 border border-zinc-800 bg-zinc-900/50 rounded-xl flex flex-col gap-4">
+                 <h3 className="text-sm font-bold text-blue-400">Reglas Automáticas de Alumnos</h3>
+                 <p className="text-xs text-zinc-500">Configura qué pasa cuando un alumno nuevo ingresa y cómo se calculan sus vencimientos.</p>
+                 <div className="flex flex-col sm:flex-row gap-4">
+                   <div className="flex flex-col gap-1 w-full">
+                     <label className="text-xs text-zinc-400 font-semibold">Estado inicial por defecto</label>
+                     <select 
+                       name="config_estado_alumno_default" 
+                       defaultValue={profile.config_estado_alumno_default || "activo"} 
+                       onChange={(e) => setFormConfigEstado(e.target.value)}
+                       className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none"
+                     >
+                       <option value="activo">Activo (Puede usar la app al instante)</option>
+                       <option value="suspendido">Suspendido (Debes activarlo manualmente)</option>
+                     </select>
+                   </div>
+                 </div>
+                 <div className="flex flex-col sm:flex-row gap-4 mt-2">
+                   <div className="flex flex-col gap-1 w-full">
+                     <label className="text-xs text-zinc-400 font-semibold">Cálculo de Vencimiento de Pago</label>
+                     <select 
+                       name="config_vencimiento_tipo" 
+                       defaultValue={profile.config_vencimiento_tipo || "individual"} 
+                       className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none"
+                     >
+                       <option value="individual">Individual (30 días desde que paga o se registra)</option>
+                       <option value="fijo">Fijo para todos (Un día específico del mes)</option>
+                       <option 
+                         value="fijo_por_alumno" 
+                         disabled={(formConfigEstado || profile.config_estado_alumno_default || "activo") === "activo"}
+                       >
+                         Día distinto por alumno (Requiere suspender alumnos nuevos)
+                       </option>
+                     </select>
+                   </div>
+                   <div className="flex flex-col gap-1 w-full">
+                     <label className="text-xs text-zinc-400 font-semibold">Día de vencimiento (si es fijo)</label>
+                     <input 
+                       name="config_vencimiento_dia" 
+                       type="number" 
+                       min="1" max="31" 
+                       defaultValue={profile.config_vencimiento_dia || ""} 
+                       placeholder="Ej. 10" 
+                       className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" 
+                     />
+                   </div>
+                 </div>
+                 <p className="text-xs text-orange-400/80 mt-2">
+                   * Si eliges "Día distinto por alumno", el estado inicial por defecto <strong>debe ser Suspendido</strong>. El sistema te pedirá ingresar el día de cobro de cada alumno al momento de activarlo por primera vez.
+                 </p>
               </div>
 
               <div className="flex flex-col gap-1">
