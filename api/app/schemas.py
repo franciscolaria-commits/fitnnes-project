@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+﻿from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from datetime import datetime
 from uuid import UUID
@@ -11,7 +11,7 @@ class UsuarioBase(BaseModel):
     email: EmailStr
 
 class UsuarioCreate(UsuarioBase):
-    password: str = Field(..., min_length=6, description="Contraseña de al menos 6 caracteres")
+    password: str = Field(..., min_length=6, description="ContraseÃ±a de al menos 6 caracteres")
     rol: str = Field(..., pattern="^(entrenador|alumno)$", description="El rol debe ser 'entrenador' o 'alumno'")
 
 class UsuarioOut(UsuarioBase):
@@ -25,7 +25,7 @@ class UsuarioOut(UsuarioBase):
 
 
 # ==========================================
-# ESQUEMAS DE AUTENTICACIÓN / TOKENS
+# ESQUEMAS DE AUTENTICACIÃ“N / TOKENS
 # ==========================================
 
 class Token(BaseModel):
@@ -72,7 +72,7 @@ class EntrenadorOut(EntrenadorBase):
 
 
 # ==========================================
-# ESQUEMAS DE INVITACIÓN
+# ESQUEMAS DE INVITACIÃ“N
 # ==========================================
 
 class InvitacionCreate(BaseModel):
@@ -104,8 +104,8 @@ class AlumnoBase(BaseModel):
 class AlumnoCreate(AlumnoBase):
     email: EmailStr
     password: str = Field(..., min_length=6)
-    codigo_invitacion: str = Field(..., description="UUIDv4 de invitación o Email del Entrenador")
-    telefono: str = Field(..., description="WhatsApp con código de país")
+    codigo_invitacion: str = Field(..., description="UUIDv4 de invitaciÃ³n o Email del Entrenador")
+    telefono: str = Field(..., description="WhatsApp con cÃ³digo de paÃ­s")
 
 class AlumnoUpdate(BaseModel):
     peso: Optional[float] = None
@@ -143,6 +143,7 @@ class EjercicioBase(BaseModel):
     url_gif: Optional[str] = None
     es_con_peso: Optional[bool] = True
     tipo_banda: Optional[str] = None
+    has_custom_media: Optional[bool] = False
 
 class EjercicioCreate(EjercicioBase):
     pass
@@ -155,6 +156,7 @@ class EjercicioUpdate(BaseModel):
     url_gif: Optional[str] = None
     es_con_peso: Optional[bool] = None
     tipo_banda: Optional[str] = None
+    has_custom_media: Optional[bool] = False
 
 class EjercicioOut(EjercicioBase):
     id_ejercicio: UUID
@@ -220,7 +222,7 @@ class RutinaOut(BaseModel):
         from_attributes = True
 
 # ==========================================
-# ESQUEMAS DE ASIGNACIÓN
+# ESQUEMAS DE ASIGNACIÃ“N
 # ==========================================
 
 class AsignacionCreate(BaseModel):
@@ -416,3 +418,4 @@ class CoachFinanceSummary(BaseModel):
 class SuspensionUpdate(BaseModel):
     estado_activo: bool
     dia_vencimiento_personalizado: Optional[int] = None
+
