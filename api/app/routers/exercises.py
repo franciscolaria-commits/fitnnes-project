@@ -73,7 +73,8 @@ def get_exercises(
             "url_gif": omap.get("url_gif") if str(ex.id_ejercicio) in override_map and omap.get("url_gif") is not None else ex.url_gif,
             "es_con_peso": ex.es_con_peso,
             "tipo_banda": ex.tipo_banda,
-            "id_entrenador": ex.id_entrenador,`n            "has_custom_media": str(ex.id_ejercicio) in override_map
+            "id_entrenador": ex.id_entrenador,
+            "has_custom_media": str(ex.id_ejercicio) in override_map
         }
         result.append(ex_dict)
         
@@ -216,4 +217,5 @@ def delete_custom_exercise(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail="No se pudo eliminar el ejercicio. Es posible que estÃ© en uso en alguna rutina.")
+
 
