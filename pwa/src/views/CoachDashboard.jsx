@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+﻿import React, { useState, useEffect, useRef } from 'react';
 import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
@@ -67,11 +67,11 @@ export default function CoachDashboard() {
   };
 
   const handleResolveAudit = async (id, action) => {
-    if (!(await modal.confirm(`¿Seguro que deseas ${action} este récord?`))) return;
+    if (!(await modal.confirm(`Â¿Seguro que deseas ${action} este rÃ©cord?`))) return;
     setLoadingAction(`audit-${id}-${action}`);
     try {
       await api.post(`/api/v1/coaches/audits/${id}/resolve`, { action });
-      await modal.alert(`Récord ${action} exitosamente.`);
+      await modal.alert(`RÃ©cord ${action} exitosamente.`);
       loadData();
     } catch (err) {
       await modal.alert("Error: " + err.message);
@@ -131,7 +131,7 @@ export default function CoachDashboard() {
   };
 
   const handleOverrideMedia = async (id_ejercicio) => {
-    const url = await modal.prompt("Ingresa la URL de YouTube para este ejercicio global (Solo lo verán tus alumnos):");
+    const url = await modal.prompt("Ingresa la URL de YouTube para este ejercicio global (Solo lo verÃ¡n tus alumnos):");
     if (!url) return; 
     try {
       await api.post(`/api/v1/exercises/${id_ejercicio}/media`, { url_media: url.trim() });
@@ -161,21 +161,21 @@ export default function CoachDashboard() {
   };
 
   const handleDeleteCustomExercise = async (id_ejercicio) => {
-    if (!(await modal.confirm("¿Estás seguro de eliminar este ejercicio personalizado? Esta acción no se puede deshacer."))) return;
+    if (!(await modal.confirm("Â¿EstÃ¡s seguro de eliminar este ejercicio personalizado? Esta acciÃ³n no se puede deshacer."))) return;
     try {
       await api.delete(`/api/v1/exercises/${id_ejercicio}`);
       await modal.alert("Ejercicio eliminado exitosamente.");
       loadData();
     } catch (err) {
-      await modal.alert("Error al eliminar: Es posible que esté en uso en alguna rutina.");
+      await modal.alert("Error al eliminar: Es posible que estÃ© en uso en alguna rutina.");
     }
   };
 
   const handleDeactivateStudent = async (id) => {
-    if (!(await modal.confirm("¿Estás seguro de dar de baja a este alumno?"))) return;
+    if (!(await modal.confirm("Â¿EstÃ¡s seguro de dar de baja a este alumno?"))) return;
     try {
       await api.delete(`/api/v1/coaches/students/${id}`);
-      await modal.alert("Alumno dado de baja con éxito.");
+      await modal.alert("Alumno dado de baja con Ã©xito.");
       loadData();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
@@ -185,18 +185,18 @@ export default function CoachDashboard() {
   const handleReactivateStudent = async (id) => {
     let dia_vencimiento_personalizado = null;
     
-    // Si la config es fijo_por_alumno y el alumno no tiene fecha, pedimos el día
+    // Si la config es fijo_por_alumno y el alumno no tiene fecha, pedimos el dÃ­a
     if (profile?.config_vencimiento_tipo === "fijo_por_alumno") {
        const student = students.find(s => s.id_usuario === id);
        if (student && !student.fecha_vencimiento_pago) {
-         const diaStr = window.prompt("Configuración: Día distinto por alumno.\n\nIngresa el DÍA DEL MES (1-31) en que este alumno debe pagar siempre:");
+         const diaStr = window.prompt("ConfiguraciÃ³n: DÃ­a distinto por alumno.\n\nIngresa el DÃA DEL MES (1-31) en que este alumno debe pagar siempre:");
          if (!diaStr) {
-            await modal.alert("Debes ingresar un día para poder activar a este alumno.");
+            await modal.alert("Debes ingresar un dÃ­a para poder activar a este alumno.");
             return;
          }
          const dia = parseInt(diaStr);
          if (isNaN(dia) || dia < 1 || dia > 31) {
-            await modal.alert("Día inválido. Debe ser un número entre 1 y 31.");
+            await modal.alert("DÃ­a invÃ¡lido. Debe ser un nÃºmero entre 1 y 31.");
             return;
          }
          dia_vencimiento_personalizado = dia;
@@ -205,7 +205,7 @@ export default function CoachDashboard() {
     
     try {
       await api.patch(`/api/v1/coaches/students/${id}/reactivate`, { dia_vencimiento_personalizado });
-      await modal.alert("Alumno reactivado con éxito.");
+      await modal.alert("Alumno reactivado con Ã©xito.");
       loadData();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
@@ -213,7 +213,7 @@ export default function CoachDashboard() {
   };
 
   const handleHardDeleteStudent = async (id) => {
-    if (!(await modal.confirm("¿ESTÁS SEGURO? Esta acción borrará permanentemente todo el historial del alumno y no se puede deshacer."))) return;
+    if (!(await modal.confirm("Â¿ESTÃS SEGURO? Esta acciÃ³n borrarÃ¡ permanentemente todo el historial del alumno y no se puede deshacer."))) return;
     try {
       await api.delete(`/api/v1/coaches/students/${id}/hard`);
       await modal.alert("Alumno eliminado definitivamente.");
@@ -224,7 +224,7 @@ export default function CoachDashboard() {
   };
 
   const handleUpdateClasificacion = async (id) => {
-    const clas = await modal.prompt("Ingresa la clasificación para el alumno (ej: Principiante, Competición):");
+    const clas = await modal.prompt("Ingresa la clasificaciÃ³n para el alumno (ej: Principiante, CompeticiÃ³n):");
     if (clas === null) return;
     try {
       await api.put(`/api/v1/coaches/students/${id}`, { clasificacion: clas.trim() || null });
@@ -235,18 +235,18 @@ export default function CoachDashboard() {
   };
 
   const handleUpdatePaymentDate = async (id) => {
-    const diaStr = window.prompt("Ingresa el nuevo DÍA DEL MES (1-31) en que este alumno debe pagar siempre:");
+    const diaStr = window.prompt("Ingresa el nuevo DÃA DEL MES (1-31) en que este alumno debe pagar siempre:");
     if (!diaStr) return;
     const dia = parseInt(diaStr);
     if (isNaN(dia) || dia < 1 || dia > 31) {
-       await modal.alert("Día inválido. Debe ser un número entre 1 y 31.");
+       await modal.alert("DÃ­a invÃ¡lido. Debe ser un nÃºmero entre 1 y 31.");
        return;
     }
     try {
       await api.patch(`/api/v1/coaches/students/${id}/payment_date`, { dia_vencimiento_personalizado: dia });
       loadData();
     } catch (error) {
-      await modal.alert(`Error al actualizar el día de pago: ${error.message}`);
+      await modal.alert(`Error al actualizar el dÃ­a de pago: ${error.message}`);
     }
   };
 
@@ -255,7 +255,7 @@ export default function CoachDashboard() {
     setLoadingAction('create_invitation');
     try {
       const data = await api.post("/api/v1/coaches/invitations", {});
-      await modal.alert(`¡Código generado con éxito!\nCódigo UUIDv4: ${data.codigo_unico}`);
+      await modal.alert(`Â¡CÃ³digo generado con Ã©xito!\nCÃ³digo UUIDv4: ${data.codigo_unico}`);
       e.target.reset();
       loadData();
     } catch (error) {
@@ -287,12 +287,12 @@ export default function CoachDashboard() {
           <button onClick={() => setActivePanel('routines')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Mis Rutinas</button>
           <button onClick={() => setActivePanel('finances')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'finances' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Finanzas</button>
           <button onClick={() => setActivePanel('audits')} className={`relative px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>
-            Auditoría
+            AuditorÃ­a
             {audits.length > 0 && (
               <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg animate-pulse">{audits.length}</span>
             )}
           </button>
-          <button onClick={() => setActivePanel('tutorial')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'tutorial' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'} ml-2`}>Cómo usar</button>
+          <button onClick={() => setActivePanel('tutorial')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'tutorial' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'} ml-2`}>CÃ³mo usar</button>
           <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); }} className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 ml-2">Crear Rutina</button>
           <button onClick={() => setActivePanel('profile')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'profile' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'} ml-2`}>Perfil</button>
           <button onClick={logout} className="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10 ml-2">Salir</button>
@@ -315,9 +315,9 @@ export default function CoachDashboard() {
             <button onClick={() => { setActivePanel('routines'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Mis Rutinas</button>
             <button onClick={() => { setActivePanel('finances'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'finances' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Finanzas</button>
             <button onClick={() => { setActivePanel('audits'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>
-              Auditoría {audits.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{audits.length}</span>}
+              AuditorÃ­a {audits.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{audits.length}</span>}
             </button>
-            <button onClick={() => { setActivePanel('tutorial'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'tutorial' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Cómo usar</button>
+            <button onClick={() => { setActivePanel('tutorial'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'tutorial' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>CÃ³mo usar</button>
             <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white">Crear Rutina</button>
             <button onClick={() => { setActivePanel('profile'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'profile' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Perfil</button>
             <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold text-red-400 hover:bg-red-500/10">Salir</button>
@@ -344,7 +344,7 @@ export default function CoachDashboard() {
               >
                 <div>
                   <h2 className="text-lg font-bold text-zinc-100">Formas de invitar a tus alumnos</h2>
-                  <p className="text-xs text-zinc-400 mt-1 leading-relaxed">Tus alumnos quedarán vinculados a tu cuenta automáticamente (los códigos no expiran).</p>
+                  <p className="text-xs text-zinc-400 mt-1 leading-relaxed">Tus alumnos quedarÃ¡n vinculados a tu cuenta automÃ¡ticamente (los cÃ³digos no expiran).</p>
                 </div>
                 {isInviteOpen ? <ChevronUp className="text-zinc-400 flex-shrink-0 ml-2" /> : <ChevronDown className="text-zinc-400 flex-shrink-0 ml-2" />}
               </div>
@@ -353,7 +353,7 @@ export default function CoachDashboard() {
                 <div className="flex flex-col gap-5 border border-zinc-800 bg-zinc-900/30 p-4 rounded-xl animate-in fade-in duration-300">
                 {invitations.length === 0 ? (
                   <div className="text-center">
-                    <p className="text-xs text-zinc-500 italic mb-3">No tienes códigos generados.</p>
+                    <p className="text-xs text-zinc-500 italic mb-3">No tienes cÃ³digos generados.</p>
                     <form onSubmit={handleCreateInvitation}>
                       <button type="submit" disabled={loadingAction === 'create_invitation'} className="w-full py-2.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold text-xs disabled:opacity-50">
                         {loadingAction === 'create_invitation' ? 'Generando...' : 'Generar Mi Enlace'}
@@ -366,7 +366,7 @@ export default function CoachDashboard() {
                       {/* QR Registro */}
                       <div className="flex flex-col gap-2">
                         <span className="text-xs font-bold text-zinc-300">1. QR para Registrarse (Alumnos Nuevos)</span>
-                        <p className="text-[11px] text-zinc-500">Muestra este QR para que el alumno cree su cuenta y se vincule a ti automáticamente.</p>
+                        <p className="text-[11px] text-zinc-500">Muestra este QR para que el alumno cree su cuenta y se vincule a ti automÃ¡ticamente.</p>
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-1 bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60">
                           <div className="bg-white p-2 rounded-xl w-28 h-28 flex-shrink-0 shadow-lg">
                             <img 
@@ -401,7 +401,7 @@ export default function CoachDashboard() {
 
                       {/* QR Login */}
                       <div className="flex flex-col gap-2">
-                        <span className="text-xs font-bold text-zinc-300">2. QR para Iniciar Sesión (Alumnos Activos)</span>
+                        <span className="text-xs font-bold text-zinc-300">2. QR para Iniciar SesiÃ³n (Alumnos Activos)</span>
                         <p className="text-[11px] text-zinc-500">Para alumnos que ya tienen cuenta. Escanean este QR y entran directo.</p>
                         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-1 bg-zinc-900/40 p-4 rounded-2xl border border-zinc-800/60">
                           <div className="bg-white p-2 rounded-xl w-28 h-28 flex-shrink-0 shadow-lg">
@@ -436,8 +436,8 @@ export default function CoachDashboard() {
                       </div>
                     </div>
                     <div className="flex flex-col gap-2 mt-2">
-                      <span className="text-xs font-bold text-zinc-300">3. Link Mágico</span>
-                      <p className="text-[11px] text-zinc-500">Envíalo por WhatsApp o redes sociales.</p>
+                      <span className="text-xs font-bold text-zinc-300">3. Link MÃ¡gico</span>
+                      <p className="text-[11px] text-zinc-500">EnvÃ­alo por WhatsApp o redes sociales.</p>
                       <div className="flex items-center justify-between bg-zinc-950 p-2 rounded border border-zinc-800">
                         <p className="text-[10px] font-mono truncate text-zinc-400 pr-2">
                           {window.location.origin}/login?coachCode={invitations[0].codigo_unico.substring(0, 8)}...
@@ -445,7 +445,7 @@ export default function CoachDashboard() {
                         <button 
                           onClick={() => {
                             navigator.clipboard.writeText(window.location.origin + "/login?coachCode=" + invitations[0].codigo_unico);
-                            modal.alert("¡Enlace copiado al portapapeles!");
+                            modal.alert("Â¡Enlace copiado al portapapeles!");
                           }}
                           className="text-zinc-500 hover:text-white transition-colors"
                           title="Copiar Enlace"
@@ -457,16 +457,16 @@ export default function CoachDashboard() {
 
                     <div className="flex flex-col gap-2 mt-2">
                       <span className="text-xs font-bold text-zinc-300">4. Con tu Email</span>
-                      <p className="text-[11px] text-zinc-500">El alumno se registra en {window.location.origin} y en el campo de vinculación escribe tu correo:</p>
+                      <p className="text-[11px] text-zinc-500">El alumno se registra en {window.location.origin} y en el campo de vinculaciÃ³n escribe tu correo:</p>
                       <p className="text-xs font-mono font-bold text-blue-400 bg-blue-900/20 px-2 py-1.5 rounded text-center">
                         {profile?.usuario?.email}
                       </p>
                     </div>
 
-                    {/* Códigos antiguos / Historial */}
+                    {/* CÃ³digos antiguos / Historial */}
                     <div className="mt-4 pt-4 border-t border-zinc-800">
-                      <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-2">Historial de Códigos UUID</h3>
-                      <p className="text-[10px] text-zinc-500 mb-2">Tus códigos antiguos generados previamente, por si los necesitas.</p>
+                      <h3 className="text-xs text-zinc-400 uppercase tracking-wider font-semibold mb-2">Historial de CÃ³digos UUID</h3>
+                      <p className="text-[10px] text-zinc-500 mb-2">Tus cÃ³digos antiguos generados previamente, por si los necesitas.</p>
                       <div className="flex flex-col gap-2 max-h-32 overflow-y-auto pr-1">
                         {invitations.map(inv => (
                           <div key={inv.id_invitacion} className="p-2 rounded-lg bg-zinc-950 border border-zinc-800 flex items-center justify-between">
@@ -474,10 +474,10 @@ export default function CoachDashboard() {
                             <button 
                               onClick={() => {
                                 navigator.clipboard.writeText(inv.codigo_unico);
-                                modal.alert("¡Código copiado al portapapeles!");
+                                modal.alert("Â¡CÃ³digo copiado al portapapeles!");
                               }}
                               className="text-zinc-500 hover:text-white transition-colors"
-                              title="Copiar Código UUID"
+                              title="Copiar CÃ³digo UUID"
                             >
                               <Copy size={12} />
                             </button>
@@ -536,7 +536,7 @@ export default function CoachDashboard() {
                       
                       <div className="mt-3 space-y-1">
                         <p className="text-xs text-zinc-400 font-medium flex items-center gap-2">
-                          Clasificación: 
+                          ClasificaciÃ³n: 
                           <span className={alumno.clasificacion ? "text-amber-400 font-bold" : "text-zinc-600 italic"}>{alumno.clasificacion || "Sin asignar"}</span>
                           <button onClick={() => handleUpdateClasificacion(alumno.id_usuario)} className="text-zinc-500 hover:text-blue-400 ml-auto">
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
@@ -547,11 +547,11 @@ export default function CoachDashboard() {
                         
                         {profile?.config_vencimiento_tipo === "fijo_por_alumno" && (
                           <p className="text-xs text-zinc-400 font-medium flex items-center gap-2 mt-1 border-t border-zinc-800 pt-1">
-                            Día de pago: 
+                            DÃ­a de pago: 
                             <span className="text-emerald-400 font-bold">
                               {alumno.fecha_vencimiento_pago ? new Date(alumno.fecha_vencimiento_pago).getDate() : "No asignado"}
                             </span>
-                            <button onClick={() => handleUpdatePaymentDate(alumno.id_usuario)} className="text-zinc-500 hover:text-emerald-400 ml-auto" title="Editar día de pago">
+                            <button onClick={() => handleUpdatePaymentDate(alumno.id_usuario)} className="text-zinc-500 hover:text-emerald-400 ml-auto" title="Editar dÃ­a de pago">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
                             </button>
                           </p>
@@ -583,11 +583,11 @@ export default function CoachDashboard() {
         {activePanel === 'audits' && (
           <section className="glass-card rounded-2xl p-6 shadow-lg flex flex-col gap-6">
             <div>
-              <h2 className="text-lg font-bold text-amber-500 flex items-center gap-2">⚠️ Red Flags (Auditoría)</h2>
-              <p className="text-xs text-zinc-400 mt-1">Récords sospechosos o de nivel Élite que requieren tu validación manual.</p>
+              <h2 className="text-lg font-bold text-amber-500 flex items-center gap-2">âš ï¸ Red Flags (AuditorÃ­a)</h2>
+              <p className="text-xs text-zinc-400 mt-1">RÃ©cords sospechosos o de nivel Ã‰lite que requieren tu validaciÃ³n manual.</p>
             </div>
             <div className="grid grid-cols-1 gap-4">
-              {audits.length === 0 ? <p className="text-zinc-500 text-sm">No hay auditorías pendientes.</p> : audits.map(audit => (
+              {audits.length === 0 ? <p className="text-zinc-500 text-sm">No hay auditorÃ­as pendientes.</p> : audits.map(audit => (
                 <div key={audit.id_log} className="p-4 rounded-xl bg-amber-950/20 border border-amber-500/20 flex flex-col sm:flex-row justify-between gap-4 items-center">
                   <div>
                     <h3 className="text-sm font-bold text-zinc-200">Alumno: <span className="text-blue-400">{audit.alumno_nombre}</span></h3>
@@ -609,7 +609,7 @@ export default function CoachDashboard() {
             </div>
 
             <div className="mt-6 border-t border-zinc-800 pt-6">
-              <h2 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-1">🚨 Alertas de Baja Asistencia</h2>
+              <h2 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-1">ðŸš¨ Alertas de Baja Asistencia</h2>
               <p className="text-xs text-zinc-400 mb-4">Alumnos que asistieron menos del 50% de su objetivo la semana pasada.</p>
               
               <div className="grid grid-cols-1 gap-4">
@@ -622,7 +622,7 @@ export default function CoachDashboard() {
                       <div>
                         <h3 className="text-sm font-bold text-zinc-200">Alumno: <span className="text-blue-400">{alert.alumno_nombre}</span></h3>
                         <p className="text-xs text-zinc-400 mt-1">
-                          Semana del {dateStr}: Asistió <span className="text-red-400 font-bold">{alert.asistencias}</span> vez/veces, pero su objetivo era <span className="text-white font-semibold">{alert.frecuencia_objetivo}</span>.
+                          Semana del {dateStr}: AsistiÃ³ <span className="text-red-400 font-bold">{alert.asistencias}</span> vez/veces, pero su objetivo era <span className="text-white font-semibold">{alert.frecuencia_objetivo}</span>.
                         </p>
                       </div>
                       <div className="flex gap-2 w-full sm:w-auto">
@@ -642,7 +642,7 @@ export default function CoachDashboard() {
           <section className="glass-card rounded-2xl p-6 shadow-lg flex flex-col gap-6">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div>
-                <h2 className="text-lg font-bold text-zinc-100">Catálogo de Ejercicios</h2>
+                <h2 className="text-lg font-bold text-zinc-100">CatÃ¡logo de Ejercicios</h2>
                 <p className="text-xs text-zinc-400 mt-1">Ejercicios globales y tus ejercicios personalizados.</p>
               </div>
             </div>
@@ -670,7 +670,7 @@ export default function CoachDashboard() {
 
                 <div className="flex items-center gap-2 mt-2">
                   <input type="checkbox" id="es_con_peso" checked={esConPeso} onChange={(e) => setEsConPeso(e.target.checked)} className="w-4 h-4 text-emerald-600 bg-zinc-900 border-zinc-700 rounded focus:ring-emerald-500" />
-                  <label htmlFor="es_con_peso" className="text-sm text-zinc-200">Ejercicio con peso libre/máquina</label>
+                  <label htmlFor="es_con_peso" className="text-sm text-zinc-200">Ejercicio con peso libre/mÃ¡quina</label>
                 </div>
                 
                 {!esConPeso && (
@@ -683,7 +683,7 @@ export default function CoachDashboard() {
                 )}
 
                 <button type="submit" disabled={loadingAction === 'create_exercise'} className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-widest text-white transition-all disabled:opacity-50">
-                  {loadingAction === 'create_exercise' ? 'Procesando...' : 'Añadir al Catálogo'}
+                  {loadingAction === 'create_exercise' ? 'Procesando...' : 'AÃ±adir al CatÃ¡logo'}
                 </button>
               </form>
             </div>
@@ -712,7 +712,7 @@ export default function CoachDashboard() {
                    </div>
                    {!exe.id_entrenador ? (
                      <button onClick={() => handleOverrideMedia(exe.id_ejercicio)} className="w-full mt-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs py-2 rounded-lg font-bold border border-zinc-700/50 transition-colors">
-                       {exe.url_media?.includes('youtube') ? 'Editar mi Video 🎥' : 'Añadir mi Video 🎥'}
+                       {exe.url_media ? 'Editar mi Video ðŸŽ¥' : 'AÃ±adir mi Video ðŸŽ¥'}
                      </button>
                    ) : (
                      <div className="flex gap-2 w-full mt-2">
@@ -750,7 +750,7 @@ export default function CoachDashboard() {
                        </button>
                        <button 
                          onClick={async () => {
-                           if (!(await modal.confirm(`¿Duplicar la rutina "${rut.nombre_rutina}"?`))) return;
+                           if (!(await modal.confirm(`Â¿Duplicar la rutina "${rut.nombre_rutina}"?`))) return;
                            try {
                              await api.post(`/api/v1/routines/${rut.id_rutina}/duplicate`);
                              await modal.alert("Rutina duplicada exitosamente.");
@@ -858,7 +858,7 @@ export default function CoachDashboard() {
                        const file = e.target.files[0];
                        if (!file) return;
                        if (file.size > 5 * 1024 * 1024) {
-                         await modal.alert("El archivo es demasiado grande. Máximo 5MB.");
+                         await modal.alert("El archivo es demasiado grande. MÃ¡ximo 5MB.");
                          return;
                        }
                        const formData = new FormData();
@@ -911,11 +911,11 @@ export default function CoachDashboard() {
             >
               <div className="flex flex-col gap-1">
                 <label className="text-xs text-zinc-400 font-semibold">Nombre Completo</label>
-                <input name="nombre" defaultValue={profile.nombre || ""} placeholder="Ej. Juan Pérez" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
+                <input name="nombre" defaultValue={profile.nombre || ""} placeholder="Ej. Juan PÃ©rez" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex flex-col gap-1 w-full">
-                  <label className="text-xs text-zinc-400 font-semibold">Años de Experiencia</label>
+                  <label className="text-xs text-zinc-400 font-semibold">AÃ±os de Experiencia</label>
                   <input name="anios" type="number" min="0" defaultValue={profile.anios_experiencia || ""} placeholder="Ej. 5" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
                 </div>
                 <div className="flex flex-col gap-1 w-full">
@@ -925,8 +925,8 @@ export default function CoachDashboard() {
               </div>
               
               <div className="p-4 border border-zinc-800 bg-zinc-900/50 rounded-xl flex flex-col gap-4">
-                 <h3 className="text-sm font-bold text-emerald-400">Configuración Financiera (Alumnos)</h3>
-                 <p className="text-xs text-zinc-500">Define cómo cobras a tus alumnos para que el panel financiero calcule tus ingresos esperados.</p>
+                 <h3 className="text-sm font-bold text-emerald-400">ConfiguraciÃ³n Financiera (Alumnos)</h3>
+                 <p className="text-xs text-zinc-500">Define cÃ³mo cobras a tus alumnos para que el panel financiero calcule tus ingresos esperados.</p>
                  <div className="flex flex-col sm:flex-row gap-4">
                    <div className="flex flex-col gap-1 w-full">
                      <label className="text-xs text-zinc-400 font-semibold">Modelo de Cobro</label>
@@ -943,8 +943,8 @@ export default function CoachDashboard() {
               </div>
 
               <div className="p-4 border border-zinc-800 bg-zinc-900/50 rounded-xl flex flex-col gap-4">
-                 <h3 className="text-sm font-bold text-blue-400">Reglas Automáticas de Alumnos</h3>
-                 <p className="text-xs text-zinc-500">Configura qué pasa cuando un alumno nuevo ingresa y cómo se calculan sus vencimientos.</p>
+                 <h3 className="text-sm font-bold text-blue-400">Reglas AutomÃ¡ticas de Alumnos</h3>
+                 <p className="text-xs text-zinc-500">Configura quÃ© pasa cuando un alumno nuevo ingresa y cÃ³mo se calculan sus vencimientos.</p>
                  <div className="flex flex-col sm:flex-row gap-4">
                    <div className="flex flex-col gap-1 w-full">
                      <label className="text-xs text-zinc-400 font-semibold">Estado inicial por defecto</label>
@@ -960,21 +960,21 @@ export default function CoachDashboard() {
                  </div>
                  <div className="flex flex-col sm:flex-row gap-4 mt-2">
                    <div className="flex flex-col gap-1 w-full">
-                     <label className="text-xs text-zinc-400 font-semibold">Cálculo de Vencimiento de Pago</label>
+                     <label className="text-xs text-zinc-400 font-semibold">CÃ¡lculo de Vencimiento de Pago</label>
                      <select 
                        name="config_vencimiento_tipo" 
                        defaultValue={profile.config_vencimiento_tipo || "individual"} 
                        className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white outline-none"
                      >
-                       <option value="individual">Individual (30 días desde que paga o se registra)</option>
-                       <option value="fijo">Fijo para todos (Un día específico del mes)</option>
+                       <option value="individual">Individual (30 dÃ­as desde que paga o se registra)</option>
+                       <option value="fijo">Fijo para todos (Un dÃ­a especÃ­fico del mes)</option>
                        <option value="fijo_por_alumno">
-                         Día distinto por alumno
+                         DÃ­a distinto por alumno
                        </option>
                      </select>
                    </div>
                    <div className="flex flex-col gap-1 w-full">
-                     <label className="text-xs text-zinc-400 font-semibold">Día de vencimiento (si es fijo)</label>
+                     <label className="text-xs text-zinc-400 font-semibold">DÃ­a de vencimiento (si es fijo)</label>
                      <input 
                        name="config_vencimiento_dia" 
                        type="number" 
@@ -988,8 +988,8 @@ export default function CoachDashboard() {
               </div>
 
               <div className="flex flex-col gap-1">
-                <label className="text-xs text-zinc-400 font-semibold">Biografía / Descripción</label>
-                <textarea name="biografia" defaultValue={profile.biografia || ""} placeholder="Cuéntale a tus alumnos sobre ti..." className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white h-24 resize-none" />
+                <label className="text-xs text-zinc-400 font-semibold">BiografÃ­a / DescripciÃ³n</label>
+                <textarea name="biografia" defaultValue={profile.biografia || ""} placeholder="CuÃ©ntale a tus alumnos sobre ti..." className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white h-24 resize-none" />
               </div>
               <button type="submit" className="w-full py-3 mt-2 rounded-lg bg-blue-600 hover:bg-blue-500 font-bold text-xs uppercase tracking-widest text-white transition-all shadow-lg shadow-blue-500/20">
                 Guardar Cambios
@@ -1009,3 +1009,5 @@ export default function CoachDashboard() {
     </div>
   );
 }
+
+
