@@ -1,4 +1,4 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Optional
@@ -12,7 +12,7 @@ from app.utils.auth import get_current_user
 
 router = APIRouter(
     prefix="/api/v1/exercises",
-    tags=["catÃ¡logo de ejercicios"]
+    tags=["catálogo de ejercicios"]
 )
 
 @router.get("", response_model=List[EjercicioOut])
@@ -21,11 +21,11 @@ def get_exercises(
     db: Session = Depends(get_db)
 ):
     """
-    Obtiene el catÃ¡logo maestro de ejercicios.
+    Obtiene el catálogo maestro de ejercicios.
     Retorna tanto los ejercicios globales del sistema (id_entrenador es NULL)
     como los ejercicios personalizados creados por el entrenador autenticado.
     """
-    # Determinar quÃ© id_entrenador buscar para overrides
+    # Determinar qué id_entrenador buscar para overrides
     id_entrenador_target = None
 
     if current_user.rol == "alumno":
@@ -42,7 +42,7 @@ def get_exercises(
     else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Rol de usuario invÃ¡lido."
+            detail="Rol de usuario inválido."
         )
 
     # Buscar ejercicios globales y del entrenador
@@ -87,7 +87,7 @@ def create_custom_exercise(
     db: Session = Depends(get_db)
 ):
     """
-    Permite a un entrenador crear un ejercicio personalizado en su catÃ¡logo.
+    Permite a un entrenador crear un ejercicio personalizado en su catálogo.
     Guarda el registro vinculando su id_entrenador y la URL multimedia de R2.
     """
     if current_user.rol != "entrenador":
@@ -116,7 +116,7 @@ def create_custom_exercise(
         print(f"ERROR INTERNO (Crear Ejercicio Custom): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="OcurriÃ³ un error interno en el servidor."
+            detail="Ocurrió un error interno en el servidor."
         )
 
 class OverrideMediaRequest(BaseModel):
@@ -157,7 +157,7 @@ def override_exercise_media(
     except Exception as e:
         db.rollback()
         print(f"ERROR INTERNO (Guardar Video Override): {str(e)}")
-        raise HTTPException(status_code=500, detail="OcurriÃ³ un error interno en el servidor.")
+        raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
 @router.put("/{ejercicio_id}", response_model=EjercicioOut)
 def update_custom_exercise(
@@ -167,7 +167,7 @@ def update_custom_exercise(
     db: Session = Depends(get_db)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores pueden modificar ejercicios.")
+        raise HTTPException(status_code=403, detail="Sólo entrenadores pueden modificar ejercicios.")
         
     ejercicio = db.query(Ejercicio).filter(Ejercicio.id_ejercicio == ejercicio_id).first()
     if not ejercicio:
@@ -202,7 +202,7 @@ def delete_custom_exercise(
     db: Session = Depends(get_db)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores pueden eliminar ejercicios.")
+        raise HTTPException(status_code=403, detail="Sólo entrenadores pueden eliminar ejercicios.")
         
     ejercicio = db.query(Ejercicio).filter(Ejercicio.id_ejercicio == ejercicio_id).first()
     if not ejercicio:
@@ -216,6 +216,4 @@ def delete_custom_exercise(
         db.commit()
     except Exception as e:
         db.rollback()
-        raise HTTPException(status_code=500, detail="No se pudo eliminar el ejercicio. Es posible que estÃ© en uso en alguna rutina.")
-
-
+        raise HTTPException(status_code=500, detail="No se pudo eliminar el ejercicio. Es posible que esté en uso en alguna rutina.")
