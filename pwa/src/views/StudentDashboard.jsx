@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { api, logout } from '../services/api.js';
 import ActiveWorkout from './ActiveWorkout.jsx';
 import StudentProgress from './StudentProgress.jsx';
+import StudentEvaluations from './StudentEvaluations.jsx';
 import ExerciseAnimations from '../components/ExerciseAnimations.jsx';
 
 const getYouTubeEmbedUrl = (url) => {
@@ -119,12 +120,54 @@ export default function StudentDashboard() {
             <div className="h-5 w-5 bg-emerald-500 rounded-sm"></div>
             <h1 className="text-xl font-black tracking-tighter uppercase text-white">ATLETA PANEL</h1>
           </div>
-          <button onClick={logout} className="text-xs font-black uppercase text-zinc-500 hover:text-red-500 transition-colors md:hidden">
-            SALIR
-          </button>
+          <div className="flex items-center md:hidden">
+            <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-zinc-400 hover:text-white p-2">
+              {isMobileMenuOpen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+              )}
+            </button>
+          </div>
         </div>
         
-        <nav className="flex gap-1 md:gap-4 border border-zinc-800 p-1 bg-zinc-900 w-full md:w-auto overflow-x-auto scrollbar-hide">
+        {/* Mobile Navigation Dropdown */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-[70px] left-4 right-4 z-50">
+            <div className="bg-zinc-900/95 backdrop-blur-xl border border-zinc-800 rounded-2xl p-4 flex flex-col gap-2 shadow-xl">
+              <button 
+                onClick={() => { setActiveTab('home'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'home' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Entrenar
+              </button>
+              <button 
+                onClick={() => { setActiveTab('routine'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'routine' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Mi Rutina
+              </button>
+              <button 
+                onClick={() => { setActiveTab('league'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'league' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Mi Liga
+              </button>
+              <button 
+                onClick={() => { setActiveTab('evolution'); setIsMobileMenuOpen(false); }} 
+                className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'evolution' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+              >
+                Mi Evolución
+              </button>
+              <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest text-red-500 hover:text-red-400">
+                SALIR
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Desktop Navigation */}
+        <nav className="hidden md:flex gap-1 md:gap-4 border border-zinc-800 p-1 bg-zinc-900 w-full md:w-auto">
           <button 
             onClick={() => setActiveTab('home')} 
             className={`flex-1 md:flex-none whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'home' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
@@ -142,6 +185,12 @@ export default function StudentDashboard() {
             className={`flex-1 md:flex-none whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'league' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
             Mi Liga
+          </button>
+          <button 
+            onClick={() => setActiveTab('evolution')} 
+            className={`flex-1 md:flex-none whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'evolution' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+          >
+            Mi Evolución
           </button>
         </nav>
 
@@ -292,6 +341,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
+        {activeTab === 'evolution' && (<StudentEvaluations />)}
         {activeTab === 'league' && (
           <StudentProgress />
         )}
