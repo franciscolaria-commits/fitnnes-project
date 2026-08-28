@@ -17,6 +17,7 @@ export default function StudentDashboard() {
   const [isWorkingOut, setIsWorkingOut] = useState(false);
   const [demoExercise, setDemoExercise] = useState(null);
   const [selectedDayIdx, setSelectedDayIdx] = useState(null);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   const [phoneInput, setPhoneInput] = useState('');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
