@@ -177,7 +177,7 @@ const StudentEvaluations = ({ providedStudentId }) => {
           <label className="text-xs text-zinc-400">% Músculo <input name="porcentaje_musculo" type="number" step="0.1" onChange={handleChange} className="w-full bg-zinc-800 p-2 mt-1 rounded text-white" /></label>
           <label className="text-xs text-zinc-400">% Agua <input name="porcentaje_agua" type="number" step="0.1" onChange={handleChange} className="w-full bg-zinc-800 p-2 mt-1 rounded text-white" /></label>
           
-          <label className="text-xs text-zinc-400">Masa Ósea <input name="masa_osea" type="number" step="0.1" onChange={handleChange} className="w-full bg-zinc-800 p-2 mt-1 rounded text-white" /></label>
+          <label className="text-xs text-zinc-400">Masa ÓÓsea <input name="masa_oÓsea" type="number" step="0.1" onChange={handleChange} className="w-full bg-zinc-800 p-2 mt-1 rounded text-white" /></label>
           <label className="text-xs text-zinc-400">BMI <input name="bmi" type="number" step="0.1" onChange={handleChange} className="w-full bg-zinc-800 p-2 mt-1 rounded text-white" /></label>
           
           <h4 className="col-span-full font-bold text-emerald-400 mt-2 border-b border-zinc-700 pb-1">Perímetros (cm)</h4>
@@ -382,13 +382,13 @@ const StudentEvaluations = ({ providedStudentId }) => {
             {selectedRecord.type === 'cuerpo' && (
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <h4 className="font-bold text-zinc-500 mb-2">Índices Generales</h4>
+                  <h4 className="font-bold text-zinc-500 mb-2">ÍÍndices Generales</h4>
                   <ul className="space-y-1">
                     <li><span className="text-zinc-400">Peso:</span> {selectedRecord.data.peso || '-'} kg</li>
                     <li><span className="text-zinc-400">% Grasa:</span> {selectedRecord.data.porcentaje_grasa || '-'} %</li>
                     <li><span className="text-zinc-400">% Músculo:</span> {selectedRecord.data.porcentaje_musculo || '-'} %</li>
                     <li><span className="text-zinc-400">% Agua:</span> {selectedRecord.data.porcentaje_agua || '-'} %</li>
-                    <li><span className="text-zinc-400">Masa Ósea:</span> {selectedRecord.data.masa_osea || '-'} kg</li>
+                    <li><span className="text-zinc-400">Masa ÓÓsea:</span> {selectedRecord.data.masa_oÓsea || '-'} kg</li>
                     <li><span className="text-zinc-400">BMI:</span> {selectedRecord.data.bmi || '-'}</li>
                   </ul>
                 </div>

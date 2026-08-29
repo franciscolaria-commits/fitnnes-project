@@ -51,7 +51,7 @@ export default function StudentDashboard() {
   const isBlockedByPayment = profile?.bloqueado_por_pago || (profile?.data && profile.data.bloqueado_por_pago);
 
   if (!profile && !loadingProfile) {
-    return <div className="text-white p-10">ERROR: Profile no cargÃ³. Â¿Error 500 del backend?</div>;
+    return <div className="text-white p-10">ERROR: Profile no cargó. ¿Error 500 del backend?</div>;
   }
 
   if (isSuspended) {
@@ -64,12 +64,12 @@ export default function StudentDashboard() {
           <h1 className="text-2xl font-black uppercase tracking-tighter text-red-400">Acceso Suspendido</h1>
           <p className="text-sm text-zinc-400">
             {isBlockedByPayment 
-              ? "Tu cuenta ha sido suspendida automÃ¡ticamente por falta de pago. Por favor, comunÃ­cate con tu entrenador para regularizar tu situaciÃ³n mensual y reactivar tu acceso."
-              : "Tu cuenta ha sido suspendida temporalmente por tu entrenador. Por favor, comunÃ­cate con Ã©l para regularizar tu situaciÃ³n y reactivar tu acceso a las rutinas."
+              ? "Tu cuenta ha sido suspendida automáticamente por falta de pago. Por favor, comunícate con tu entrenador para regularizar tu situación mensual y reactivar tu acceso."
+              : "Tu cuenta ha sido suspendida temporalmente por tu entrenador. Por favor, comunícate con él para regularizar tu situación y reactivar tu acceso a las rutinas."
             }
           </p>
           <button onClick={logout} className="mt-4 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-colors w-full">
-            Cerrar SesiÃ³n
+            Cerrar Sesión
           </button>
         </div>
       </div>
@@ -83,7 +83,7 @@ export default function StudentDashboard() {
       await api.put("/api/v1/students/profile/phone", { telefono: phoneInput });
       window.location.reload();
     } catch (e) {
-      alert("Error al guardar el telÃ©fono.");
+      alert("Error al guardar el teléfono.");
     } finally {
       setIsUpdatingPhone(false);
     }
@@ -95,7 +95,7 @@ export default function StudentDashboard() {
       {profile?.usuario && !profile.usuario.telefono && (
         <div className="bg-orange-500/10 border-b border-orange-500/30 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-orange-400 text-sm">
-            <strong className="font-bold">Â¡AtenciÃ³n!</strong> Es necesario que ingreses tu nÃºmero de WhatsApp para recibir notificaciones y avisos importantes.
+            <strong className="font-bold">¡Atención!</strong> Es necesario que ingreses tu número de WhatsApp para recibir notificaciones y avisos importantes.
           </p>
           <div className="flex gap-2 w-full sm:w-auto">
             <input 
@@ -160,7 +160,7 @@ export default function StudentDashboard() {
                 onClick={() => { setActiveTab('evolution'); setIsMobileMenuOpen(false); }} 
                 className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest transition-all ${activeTab === 'evolution' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
               >
-                Mi EvoluciÃ³n
+                Mi Evolución
               </button>
               <button onClick={() => { logout(); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold uppercase tracking-widest text-red-500 hover:text-red-400">
                 SALIR
@@ -193,7 +193,7 @@ export default function StudentDashboard() {
             onClick={() => setActiveTab('evolution')} 
             className={`flex-1 md:flex-none whitespace-nowrap px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors ${activeTab === 'evolution' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
           >
-            Mi EvoluciÃ³n
+            Mi Evolución
           </button>
         </nav>
 
@@ -220,7 +220,7 @@ export default function StudentDashboard() {
                 ) : routine ? (
                   <>
                     <h3 className="text-5xl md:text-7xl lg:text-8xl font-black text-white tracking-tighter uppercase leading-none mb-6 break-words">{routine.nombre_rutina}</h3>
-                    <p className="text-xl md:text-2xl text-emerald-500 font-mono font-bold">{routine.dias?.length || 0} DÃAS ASIGNADOS</p>
+                    <p className="text-xl md:text-2xl text-emerald-500 font-mono font-bold">{routine.dias?.length || 0} DÍAS ASIGNADOS</p>
                   </>
                 ) : (
                   <h3 className="text-5xl md:text-7xl lg:text-8xl font-black text-zinc-800 tracking-tighter uppercase leading-none break-words">SIN RUTINA<br/>ACTIVA.</h3>
@@ -235,7 +235,7 @@ export default function StudentDashboard() {
                   return (
                     <div className="flex flex-col gap-3">
                       <div className="bg-zinc-950/80 border border-emerald-500/30 p-4 rounded-xl">
-                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 block">DÃ­a de Entrenamiento</label>
+                        <label className="text-xs font-bold text-zinc-400 uppercase tracking-widest mb-2 block">Día de Entrenamiento</label>
                         <select 
                           value={activeIdx}
                           onChange={(e) => setSelectedDayIdx(parseInt(e.target.value))}
@@ -243,7 +243,7 @@ export default function StudentDashboard() {
                         >
                           {routine.dias?.map((dia, idx) => (
                             <option key={dia.id_dia} value={idx}>
-                              DÃ­a {dia.orden}: {dia.nombre_dia} {idx === storedDay ? '(Sugerido)' : ''}
+                              Día {dia.orden}: {dia.nombre_dia} {idx === storedDay ? '(Sugerido)' : ''}
                             </option>
                           ))}
                         </select>
@@ -253,7 +253,7 @@ export default function StudentDashboard() {
                         className="w-full bg-emerald-500 text-zinc-950 font-black text-xl md:text-3xl uppercase tracking-tighter py-6 md:py-8 hover:bg-emerald-400 transition-all border-4 border-emerald-500 hover:border-white flex justify-between items-center px-6 md:px-10 mt-2 rounded-xl"
                       >
                         <span>ENTRENAR</span>
-                        <span className="text-4xl md:text-5xl">â†’</span>
+                        <span className="text-4xl md:text-5xl">→</span>
                       </button>
                     </div>
                   );
@@ -294,7 +294,7 @@ export default function StudentDashboard() {
                   <p className="text-sm font-black text-emerald-400 uppercase">{profile?.entrenador?.nombre || "COACH VINCULADO"}</p>
                 </div>
                 <div className="h-10 w-10 bg-emerald-500 text-zinc-950 flex items-center justify-center font-black text-xl border-2 border-emerald-400">
-                  âœ“
+                  ✓
                 </div>
               </div>
 
@@ -312,7 +312,7 @@ export default function StudentDashboard() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {routine.dias?.map((dia, idx) => (
                   <div key={idx} className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 flex flex-col gap-4">
-                    <h3 className="text-xl font-bold text-emerald-400 uppercase tracking-tight">DÃ­a {dia.orden}: {dia.nombre_dia}</h3>
+                    <h3 className="text-xl font-bold text-emerald-400 uppercase tracking-tight">Día {dia.orden}: {dia.nombre_dia}</h3>
                     <div className="flex flex-col gap-3">
                       {dia.ejercicios?.map((ex, i) => (
                         <div key={i} className="bg-zinc-950 border border-zinc-800/50 p-4 rounded-xl flex justify-between items-center">
@@ -321,7 +321,7 @@ export default function StudentDashboard() {
                             <p className="text-xs text-zinc-500 font-mono mt-1">{ex.series_esperadas} Series x {ex.reps_esperadas} Reps</p>
                             {ex.nota_entrenador && (
                               <p className="text-[10px] text-indigo-400 font-bold mt-2 bg-indigo-500/10 inline-block px-2 py-1 rounded border border-indigo-500/20">
-                                ðŸ’¬ Profe: {ex.nota_entrenador}
+                                💬 Profe: {ex.nota_entrenador}
                               </p>
                             )}
                           </div>
@@ -329,7 +329,7 @@ export default function StudentDashboard() {
                             <button 
                               onClick={() => setDemoExercise(ex.ejercicio)}
                               className="text-emerald-500 hover:text-emerald-400 p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20 transition-colors ml-4"
-                              title="Ver TÃ©cnica"
+                              title="Ver Técnica"
                             >
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                                 <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -389,9 +389,9 @@ export default function StudentDashboard() {
                     ></iframe>
                   ) : (
                     <div className="flex flex-col items-center gap-4 text-center p-6">
-                      <span className="text-zinc-400 text-sm">El entrenador proporcionÃ³ un enlace externo para este ejercicio.</span>
+                      <span className="text-zinc-400 text-sm">El entrenador proporcionó un enlace externo para este ejercicio.</span>
                       <a href={demoExercise.url_media} target="_blank" rel="noopener noreferrer" className="px-6 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-lg uppercase tracking-widest text-xs transition-colors">
-                        Abrir Enlace Externo ðŸš€
+                        Abrir Enlace Externo 🚀
                       </a>
                     </div>
                   )}
