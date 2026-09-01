@@ -155,7 +155,17 @@ export default function SuperAdminPanel() {
                     <tr key={coach.id_usuario} className="hover:bg-gray-750">
                       <td className="px-4 py-4">
                         <div className="font-medium text-white">{coach.email}</div>
-                        <div className="text-xs text-gray-500 mb-1">{coach.nombre || "Sin nombre"} • {coach.total_alumnos}/{coach.limite_alumnos} Alumnos</div>
+                        <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
+                          <span>{coach.nombre || "Sin nombre"} • {coach.total_alumnos} /</span>
+                          <input 
+                            type="number" 
+                            min="1"
+                            defaultValue={coach.limite_alumnos}
+                            onBlur={(e) => updateCoach(coach.id_usuario, { limite_alumnos: parseInt(e.target.value) || 1 })}
+                            className="bg-gray-800 border border-gray-600 rounded px-1 py-0.5 text-white w-12 text-center focus:border-emerald-500 outline-none"
+                          />
+                          <span>Alumnos</span>
+                        </div>
                         {(() => {
                            if (!coach.en_periodo_prueba) return null;
                            if (!coach.fecha_fin_prueba) return <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400">Prueba Activa</div>;
