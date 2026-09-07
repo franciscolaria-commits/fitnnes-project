@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { api, logout } from "../services/api";
 import { LogOut, Users, Settings, Activity, DollarSign, BarChart2, Trash2, CheckCircle, XCircle } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -52,7 +52,7 @@ export default function SuperAdminPanel() {
   };
 
   const deleteCoach = async (coachId) => {
-    if (!window.confirm("¿Estás seguro de que deseas borrar (soft-delete) a este entrenador? Sus alumnos quedarán inaccesibles.")) return;
+    if (!window.confirm("Â¿EstÃ¡s seguro de que deseas borrar (soft-delete) a este entrenador? Sus alumnos quedarÃ¡n inaccesibles.")) return;
     try {
       await api.delete(`/api/v1/admin/coaches/${coachId}`);
       setCoaches(coaches.filter(c => c.id_usuario !== coachId));
@@ -136,7 +136,7 @@ export default function SuperAdminPanel() {
             <div className="p-6 border-b border-gray-700 flex justify-between items-center">
               <h2 className="text-lg font-medium text-white flex items-center gap-2">
                 <Users className="w-5 h-5 text-emerald-500" />
-                Gestión de Entrenadores B2B
+                GestiÃ³n de Entrenadores B2B
               </h2>
             </div>
             <div className="overflow-x-auto">
@@ -155,17 +155,7 @@ export default function SuperAdminPanel() {
                     <tr key={coach.id_usuario} className="hover:bg-gray-750">
                       <td className="px-4 py-4">
                         <div className="font-medium text-white">{coach.email}</div>
-                        <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                          <span>{coach.nombre || "Sin nombre"} • {coach.total_alumnos} /</span>
-                          <input 
-                            type="number" 
-                            min="1"
-                            defaultValue={coach.limite_alumnos}
-                            onBlur={(e) => updateCoach(coach.id_usuario, { limite_alumnos: parseInt(e.target.value) || 1 })}
-                            className="bg-gray-800 border border-gray-600 rounded px-1 py-0.5 text-white w-12 text-center focus:border-emerald-500 outline-none"
-                          />
-                          <span>Alumnos</span>
-                        </div>
+                        <div className="text-xs text-gray-500 mb-1">{coach.nombre || "Sin nombre"} • {coach.total_alumnos}/{coach.limite_alumnos} Alumnos</div>
                         {(() => {
                            if (!coach.en_periodo_prueba) return null;
                            if (!coach.fecha_fin_prueba) return <div className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-blue-500/10 text-blue-400">Prueba Activa</div>;
@@ -230,7 +220,7 @@ export default function SuperAdminPanel() {
                             />
                             Periodo Prueba
                           </label>
-                          {coach.en_periodo_prueba && (
+                          {coach.en_periodo_prueba ? (
                             <div className="w-full mt-2 border-t border-gray-700 pt-2">
                               <label className="text-[10px] text-gray-300 block mb-1 font-medium">Días de prueba restantes:</label>
                               <input 
@@ -255,6 +245,25 @@ export default function SuperAdminPanel() {
                                 className="w-full bg-gray-800 border border-gray-600 text-[11px] rounded p-1.5 text-white focus:border-emerald-500"
                               />
                               <p className="text-[9px] text-gray-500 mt-1 leading-tight">Ingresá el número de días. La fecha exacta de corte se calculará sola.</p>
+                            </div>
+                          ) : (
+                            <div className="w-full mt-2 border-t border-gray-700 pt-2">
+                              <label className="text-[10px] text-gray-300 block mb-1 font-medium">Fecha de pago (Vencimiento):</label>
+                              <input 
+                                type="date"
+                                defaultValue={coach.fecha_vencimiento ? coach.fecha_vencimiento.split('T')[0] : ''}
+                                onBlur={(e) => {
+                                  if (e.target.value) {
+                                    updateCoach(coach.id_usuario, { fecha_vencimiento: new Date(e.target.value).toISOString() });
+                                  } else {
+                                    updateCoach(coach.id_usuario, { fecha_vencimiento: null });
+                                  }
+                                }}
+                                className="w-full bg-gray-800 border border-gray-600 text-[11px] rounded p-1.5 text-white focus:border-emerald-500"
+                              />
+                              <div className={`mt-2 text-[10px] flex items-center gap-1 font-medium ${coach.pago_mes_registrado ? 'text-emerald-400' : 'text-orange-400'}`}>
+                                {coach.pago_mes_registrado ? '✅ Mes Pagado' : '⚠️ Mes Pendiente'}
+                              </div>
                             </div>
                           )}
                         </div>
@@ -338,7 +347,7 @@ export default function SuperAdminPanel() {
                 </ResponsiveContainer>
               </div>
               {finances.chart_data.length === 0 && (
-                <div className="text-center text-gray-500 mt-4">No hay datos históricos suficientes.</div>
+                <div className="text-center text-gray-500 mt-4">No hay datos histÃ³ricos suficientes.</div>
               )}
             </div>
           </div>
@@ -380,7 +389,7 @@ export default function SuperAdminPanel() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-400 mb-1">Método de Pago</label>
+                  <label className="block text-xs font-semibold text-gray-400 mb-1">MÃ©todo de Pago</label>
                   <select
                     value={payMethod}
                     onChange={(e) => setPayMethod(e.target.value)}
