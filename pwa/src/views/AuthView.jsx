@@ -107,7 +107,7 @@ export default function AuthView({ onLoginSuccess }) {
               <input type="email" id="login-email" required placeholder="entrenador@correo.com o alumno@correo.com" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
             </div>
             <div>
-              <label className="text-xs text-zinc-400 font-semibold block mb-1">ContraseÃ±a</label>
+              <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} id="login-password" required placeholder="••••••••" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200 pr-10" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
@@ -143,7 +143,7 @@ export default function AuthView({ onLoginSuccess }) {
               <input type="email" id="reg-coach-email" required placeholder="coach@profesional.com" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
             </div>
             <div>
-              <label className="text-xs text-zinc-400 font-semibold block mb-1">ContraseÃ±a (mínimo 6 caracteres)</label>
+              <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} id="reg-coach-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200 pr-10" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
@@ -184,7 +184,7 @@ export default function AuthView({ onLoginSuccess }) {
               <input type="text" id="reg-student-phone" required placeholder="Ej: 5491123456789" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
             </div>
             <div>
-              <label className="text-xs text-zinc-400 font-semibold block mb-1">ContraseÃ±a (mínimo 6 caracteres)</label>
+              <label className="text-xs text-zinc-400 font-semibold block mb-1">Contraseña (mínimo 6 caracteres)</label>
               <div className="relative">
                 <input type={showPassword ? "text" : "password"} id="reg-student-password" required minLength="6" placeholder="Mínimo 6 caracteres" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200 pr-10" />
                 <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">

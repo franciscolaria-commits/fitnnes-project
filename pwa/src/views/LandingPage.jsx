@@ -156,7 +156,7 @@ export default function LandingPage() {
       <section id="features" className="relative z-10 py-24 border-t border-white/5 bg-[#080808]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Tecnología diseÃ±ada para escalar</h2>
+            <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Tecnología diseñada para escalar</h2>
             <p className="text-lg text-white/50 max-w-3xl mx-auto">No es solo una app bonita. Es el motor operativo que automatiza tu retención de clientes y destruye tus horas administrativas.</p>
           </div>
 
@@ -173,7 +173,7 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-red-400">El Problema:</span>
-                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Los gimnasios tienen pésima seÃ±al de celular o Wi-Fi. Si una app depende de internet, no carga, el alumno se frustra y abandona el seguimiento.</p>
+                  <p className="text-white/60 text-sm mt-1 leading-relaxed">Los gimnasios tienen pésima señal de celular o Wi-Fi. Si una app depende de internet, no carga, el alumno se frustra y abandona el seguimiento.</p>
                 </div>
                 <div className="pt-4 border-t border-white/5">
                   <span className="text-xs font-semibold uppercase tracking-wider text-emerald-500">La Solución:</span>
@@ -277,7 +277,7 @@ export default function LandingPage() {
       <section id="pricing" className="relative z-10 py-24 bg-[#080808] border-t border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Planes diseÃ±ados para escalar</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">Planes diseñados para escalar</h2>
             <p className="text-white/40">Comienza gratis. Paga solo cuando tu negocio crezca.</p>
           </div>
 

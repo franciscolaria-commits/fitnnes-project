@@ -114,7 +114,7 @@ export default function TutorialPanel({ userType = 'coach' }) {
                 <div className="p-4 bg-blue-900/10 border border-blue-500/20 rounded-xl flex gap-3">
                   <AlertCircle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
                   <p className="text-sm text-zinc-300">
-                    <strong className="text-white">¡Importante para entrenadores nuevos!</strong> Para poder ver las opciones de registro y vinculación para tus alumnos, primero debes tocar el botón <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs mx-1">Generar Mi Enlace</span> en la pestaÃ±a de Alumnos.
+                    <strong className="text-white">¡Importante para entrenadores nuevos!</strong> Para poder ver las opciones de registro y vinculación para tus alumnos, primero debes tocar el botón <span className="bg-blue-600 text-white px-2 py-0.5 rounded text-xs mx-1">Generar Mi Enlace</span> en la pestaña de Alumnos.
                   </p>
                 </div>
 
@@ -125,7 +125,7 @@ export default function TutorialPanel({ userType = 'coach' }) {
                       <h4 className="font-bold text-zinc-200 text-sm">QR de Registro</h4>
                     </div>
                     <p className="text-xs text-zinc-400">
-                      En la pestaÃ±a de <strong>Alumnos</strong>, encontrarás un QR de registro. Al escanearlo con el celular, el alumno es llevado a la pantalla de creación de cuenta y se vincula automáticamente.
+                      En la pestaña de <strong>Alumnos</strong>, encontrarás un QR de registro. Al escanearlo con el celular, el alumno es llevado a la pantalla de creación de cuenta y se vincula automáticamente.
                     </p>
                   </div>
 
@@ -192,7 +192,7 @@ export default function TutorialPanel({ userType = 'coach' }) {
                         <Dumbbell className="w-4 h-4 text-zinc-400" /> Ejercicios (Opcional)
                       </h4>
                       <p className="text-sm text-zinc-400">
-                        La plataforma ya cuenta con ejercicios predeterminados. Si necesitás agregar uno específico tuyo (con tu propio video o GIF), podés crearlo desde la pestaÃ±a <strong>Ejercicios</strong>.
+                        La plataforma ya cuenta con ejercicios predeterminados. Si necesitás agregar uno específico tuyo (con tu propio video o GIF), podés crearlo desde la pestaña <strong>Ejercicios</strong>.
                       </p>
                     </div>
                   </div>
@@ -216,7 +216,7 @@ export default function TutorialPanel({ userType = 'coach' }) {
                         <CheckCircle className="w-4 h-4 text-zinc-400" /> Asignar al Alumno
                       </h4>
                       <p className="text-sm text-zinc-400">
-                        Una vez creada la rutina, podés asignarla a tus alumnos directamente desde la pestaÃ±a <strong>Mis Rutinas</strong>.
+                        Una vez creada la rutina, podés asignarla a tus alumnos directamente desde la pestaña <strong>Mis Rutinas</strong>.
                       </p>
                       <ul className="list-disc pl-5 mt-2 space-y-1 text-sm text-zinc-400">
                         <li>Tocá en "Opciones de la rutina" y luego <strong>Asignación Masiva</strong> para dársela a uno o varios alumnos a la vez.</li>
