@@ -15,7 +15,7 @@ const queryClient = new QueryClient({
     queries: {
       gcTime: 1000 * 60 * 60 * 24, // Mantener en caché por 24 horas
       staleTime: 1000 * 60 * 5, // Refetchear en background tras 5 minutos
-      refetchOnWindowFocus: true, // Siempre buscar actualizaciones al volver a la pestaña
+      refetchOnWindowFocus: true, // Siempre buscar actualizaciones al volver a la pestaÃ±a
     },
   },
 })

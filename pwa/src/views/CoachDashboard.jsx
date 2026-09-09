@@ -683,7 +683,7 @@ export default function CoachDashboard() {
                 )}
 
                 <button type="submit" disabled={loadingAction === 'create_exercise'} className="w-full py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 font-bold text-xs uppercase tracking-widest text-white transition-all disabled:opacity-50">
-                  {loadingAction === 'create_exercise' ? 'Procesando...' : 'Añadir al Catálogo'}
+                  {loadingAction === 'create_exercise' ? 'Procesando...' : 'AÃ±adir al Catálogo'}
                 </button>
               </form>
             </div>
@@ -712,7 +712,7 @@ export default function CoachDashboard() {
                    </div>
                    {!exe.id_entrenador ? (
                      <button onClick={() => handleOverrideMedia(exe.id_ejercicio)} className="w-full mt-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs py-2 rounded-lg font-bold border border-zinc-700/50 transition-colors">
-                       {exe.url_media ? 'Editar mi Video ðŸŽ¥' : 'Añadir mi Video ðŸŽ¥'}
+                       {exe.url_media ? 'Editar mi Video 🎥' : 'AÃ±adir mi Video 🎥'}
                      </button>
                    ) : (
                      <div className="flex gap-2 w-full mt-2">
@@ -915,7 +915,7 @@ export default function CoachDashboard() {
               </div>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex flex-col gap-1 w-full">
-                  <label className="text-xs text-zinc-400 font-semibold">Años de Experiencia</label>
+                  <label className="text-xs text-zinc-400 font-semibold">AÃ±os de Experiencia</label>
                   <input name="anios" type="number" min="0" defaultValue={profile.anios_experiencia || ""} placeholder="Ej. 5" className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-sm text-white" />
                 </div>
                 <div className="flex flex-col gap-1 w-full">
