@@ -7,7 +7,28 @@ import os
 from app.database import get_db, engine
 from app import models
 
-# Crear las tablas en la base de datos automáticamente si no existen
+# Ejecutar migraciones de Alembic al inicio
+try:
+    from pathlib import Path
+    from alembic.config import Config
+    from alembic import command
+    
+    # Path absoluto a alembic.ini
+    base_dir = Path(__file__).resolve().parent.parent
+    alembic_ini_path = base_dir / "alembic.ini"
+    
+    if alembic_ini_path.exists():
+        alembic_cfg = Config(str(alembic_ini_path))
+        # Ajustar el script_location a la ruta absoluta
+        alembic_cfg.set_main_option("script_location", str(base_dir / "alembic"))
+        command.upgrade(alembic_cfg, "head")
+        print("Alembic migrations executed successfully.")
+    else:
+        print("alembic.ini not found, skipping migrations.")
+except Exception as e:
+    print(f"Error running alembic migrations: {e}")
+
+# Crear las tablas en la base de datos automáticamente si no existen (fallback)
 models.Base.metadata.create_all(bind=engine)
 from app.routers.storage import router as storage_router
 from app.routers.auth import router as auth_router
