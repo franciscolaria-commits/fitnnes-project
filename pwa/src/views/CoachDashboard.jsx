@@ -6,6 +6,7 @@ import StudentProgress from './StudentProgress.jsx';
 import FinancesPanel from '../components/FinancesPanel.jsx';
 import TutorialPanel from '../components/TutorialPanel.jsx';
 import ImportRoutineModal from '../components/ImportRoutineModal.jsx';
+import GymConfigPanel from '../components/GymConfigPanel.jsx';
 import { Menu, X, Copy, Download, ChevronDown, ChevronUp } from "lucide-react";
 
 export default function CoachDashboard() {
@@ -615,7 +616,7 @@ export default function CoachDashboard() {
             </div>
 
             <div className="mt-6 border-t border-zinc-800 pt-6">
-              <h2 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-1">ðŸš¨ Alertas de Baja Asistencia</h2>
+              <h2 className="text-lg font-bold text-red-500 flex items-center gap-2 mb-1">🚨 Alertas de Baja Asistencia</h2>
               <p className="text-xs text-zinc-400 mb-4">Alumnos que asistieron menos del 50% de su objetivo la semana pasada.</p>
               
               <div className="grid grid-cols-1 gap-4">
