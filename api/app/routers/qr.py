@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from app.database import get_db
 from app.models import Entrenador, Alumno, AsistenciaQR
-from app.routers.auth import get_current_user
+from app.utils.auth import get_current_user
 from app.models import Usuario
 import uuid
 from datetime import date, datetime, timedelta

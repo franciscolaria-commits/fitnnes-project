@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from typing import Optional
 from app.database import get_db
 from app.models import Entrenador, Alumno, AsistenciaQR, Usuario
-from app.routers.auth import get_current_user
+from app.utils.auth import get_current_user
 from datetime import date, datetime, timedelta
 import math
 
