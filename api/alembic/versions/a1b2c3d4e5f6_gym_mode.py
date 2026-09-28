@@ -1,7 +1,7 @@
 """Add gym mode tables and columns
 
 Revision ID: a1b2c3d4e5f6
-Revises: d3bd51611ea2
+Revises: c41cfbd124f6
 Create Date: 2026-09-28
 """
 from typing import Union, Sequence
@@ -12,7 +12,7 @@ import uuid as _uuid
 from datetime import datetime
 
 revision: str = 'a1b2c3d4e5f6'
-down_revision: Union[str, Sequence[str], None] = 'd3bd51611ea2'
+down_revision: Union[str, Sequence[str], None] = 'c41cfbd124f6'
 branch_labels = None
 depends_on = None
 
