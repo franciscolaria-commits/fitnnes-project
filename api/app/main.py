@@ -28,7 +28,27 @@ try:
 except Exception as e:
     print(f"Error running alembic migrations: {e}")
 
-# Crear las tablas en la base de datos automáticamente si no existen (fallback)
+# Parche de emergencia para agregar columnas que Alembic pudo haber ignorado
+try:
+    with engine.begin() as conn:
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS tipo_cuenta VARCHAR DEFAULT 'estandar'"))
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_tipo_cobro VARCHAR"))
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_frecuencia_tipo VARCHAR"))
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_frecuencia_valor INTEGER"))
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_monto_pase_libre NUMERIC(10, 2)"))
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_monto_clases NUMERIC(10, 2)"))
+        
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS tipo_membresia VARCHAR"))
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clases_compradas INTEGER"))
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clases_usadas_total INTEGER DEFAULT 0"))
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clases_restantes INTEGER"))
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS fecha_inicio_paquete DATE"))
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS vencimiento_estimado_clases DATE"))
+        print("Manual DDL (columnas) aplicadas con éxito.")
+except Exception as e:
+    print(f"Error aplicando manual DDL: {e}")
+
+# Crear las tablas en la base de datos automáticamente si no existen (creará asistencias_qr)
 models.Base.metadata.create_all(bind=engine)
 from app.routers.storage import router as storage_router
 from app.routers.auth import router as auth_router
