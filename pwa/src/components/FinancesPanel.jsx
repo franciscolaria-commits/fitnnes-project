@@ -114,6 +114,44 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     }
   };
 
+    const handleReloadClasses = async (studentId) => {
+    const clasesStr = window.prompt("¿Cuántas clases deseas recargar?", "8");
+    if (!clasesStr) return;
+    const clases = parseInt(clasesStr);
+    if (isNaN(clases) || clases <= 0) {
+      await modal.alert("Cantidad inválida.");
+      return;
+    }
+    
+    // Opcional: Registrar pago al recargar clases
+    const registrarPago = await modal.confirm("¿Deseas registrar un pago por esta recarga de clases?");
+    if (registrarPago) {
+      const amountStr = window.prompt("Ingresa el monto cobrado (opcional):", "");
+      let amount = null;
+      if (amountStr !== null && amountStr.trim() !== "") {
+          amount = parseFloat(amountStr);
+          if (isNaN(amount)) amount = null;
+      }
+      try {
+        await api.post(`/api/v1/coaches/payments`, {
+          id_alumno: studentId,
+          anio_mes: monthYearString,
+          monto: amount,
+          metodo_pago: null,
+          notas: `Recarga de ${clases} clases`
+        });
+      } catch (e) {}
+    }
+
+    try {
+      await api.post(`/api/v1/coaches/students/${studentId}/reload_classes`, { clases });
+      await loadFinances();
+      await modal.alert(`Se recargaron ${clases} clases exitosamente.`);
+    } catch (e) {
+      await modal.alert("Error al recargar clases.");
+    }
+  };
+
   const handleRevertPayment = async (pagoId) => {
     if (!(await modal.confirm("¿Estás seguro de anular este pago?"))) return;
     try {
@@ -319,6 +357,12 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
                     
                     {/* Detalles Adicionales */}
                     <div className="flex flex-col gap-0.5 mt-1">
+                      {p.tipo_membresia === 'por_clases' && (
+                        <span className="text-xs font-bold text-amber-400 mt-1 flex items-center gap-1">
+                          Clases Restantes: {p.clases_restantes || 0}
+                          {(p.clases_restantes || 0) <= 2 && <span className="bg-red-500/20 text-red-400 px-1.5 py-0.5 rounded-full ml-1 text-[10px]">¡POCAS!</span>}
+                        </span>
+                      )}
                       {p.pagado && p.pago?.fecha_pago && (
                         <span className="text-xs text-zinc-500">
                           Pagó el {new Date(p.pago.fecha_pago).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
@@ -377,6 +421,11 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
                     >
                       <MessageCircle className="w-5 h-5" />
                     </button>
+                    {p.tipo_membresia === 'por_clases' && (
+                      <button onClick={() => handleReloadClasses(p.id_alumno)} className="px-3 py-2 text-sm bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white rounded-lg transition-colors font-medium" title="Recargar Clases">
+                        + Clases
+                      </button>
+                    )}
                     {!p.pagado ? (
                       <button onClick={() => handleMarkPaid(p.id_alumno)} className="p-2 bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600 hover:text-white rounded-lg transition-colors" title="Marcar Pagado">
                         <DollarSign className="w-5 h-5" />

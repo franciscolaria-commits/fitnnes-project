@@ -251,6 +251,32 @@ export default function StudentDashboard() {
         {activeTab === 'home' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
             
+            {/* WIDGET DE MEMBRESÍA (Solo si aplica) */}
+            {profile.entrenador?.tipo_cuenta === 'gimnasio' && (
+              <div className="lg:col-span-12 mb-4">
+                <div className="glass-card p-6 border-l-4 border-l-amber-500 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div>
+                    <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest mb-1">MI MEMBRESÍA</h3>
+                    {profile.tipo_membresia === 'por_clases' ? (
+                      <p className="text-zinc-300">
+                        Tenés <span className="text-white font-bold">{profile.clases_restantes || 0}</span> clases restantes de tu paquete.
+                      </p>
+                    ) : (
+                      <p className="text-zinc-300">Estás en modalidad <span className="text-white font-bold">Pase Libre</span>.</p>
+                    )}
+                    {profile.vencimiento_estimado_clases && (
+                      <p className="text-xs text-zinc-500 mt-1">Vencimiento estimado: {new Date(profile.vencimiento_estimado_clases).toLocaleDateString()}</p>
+                    )}
+                  </div>
+                  {profile.tipo_membresia === 'por_clases' && (profile.clases_restantes || 0) <= 2 && (
+                    <div className="bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-xl text-amber-400 font-bold text-sm">
+                      ⚠️ ¡Pocas clases restantes!
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {/* HERO SECTION */}
             <div className="lg:col-span-8 border border-zinc-800 bg-zinc-900 p-6 md:p-12 flex flex-col justify-between min-h-[400px]">
               <div>

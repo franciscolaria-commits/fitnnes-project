@@ -1,6 +1,6 @@
-﻿import uuid
-from datetime import datetime
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, DateTime, Float
+import uuid
+from datetime import datetime, date
+from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, DateTime, Float, Numeric, Date, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -21,7 +21,7 @@ class Entrenador(Base):
     especialidad = Column(String)
     biografia = Column(String)
     anios_experiencia = Column(Integer)
-    url_foto_perfil = Column(String) # Se alojara en Cloudflare R2
+    url_foto_perfil = Column(String) # Se alojarÃƒÂ¡ en Cloudflare R2
     limite_alumnos = Column(Integer, default=10, nullable=False)
     fecha_vencimiento = Column(DateTime, nullable=True)
     estado_financiero = Column(String, default="activo", nullable=False) # 'activo', 'suspendido'
@@ -33,13 +33,21 @@ class Entrenador(Base):
     tipo_cobro_alumnos = Column(String, nullable=True) # 'fijo' o 'por_clase' etc.
     precio_cobro_alumnos = Column(Float, nullable=True)
     
-    # Configuración de gestión y pagos
+    # ConfiguraciÃƒÂ³n de gestiÃƒÂ³n y pagos
     config_estado_alumno_default = Column(String, default="activo", nullable=False) # 'activo' o 'suspendido'
     config_vencimiento_tipo = Column(String, default="individual", nullable=False) # 'fijo' o 'individual'
     config_vencimiento_dia = Column(Integer, nullable=True) # 1-31
     config_bloqueo_morosos = Column(String, default="nunca", nullable=False) # 'nunca', 'inmediato', 'dias_despues'
     config_bloqueo_dias = Column(Integer, default=0, nullable=False)
     
+    # ── Modo Gimnasio ──────────────────────────────────────────
+    tipo_cuenta              = Column(String, default='estandar', nullable=False)  # 'estandar' | 'gimnasio'
+    gym_tipo_cobro           = Column(String, nullable=True)   # 'pase_libre' | 'por_clases' | 'ambos'
+    gym_frecuencia_tipo      = Column(String, nullable=True)   # 'por_semana' | 'por_mes'
+    gym_frecuencia_valor     = Column(Integer, nullable=True)  # ej: 3 (días/semana)
+    gym_monto_pase_libre     = Column(Numeric(10, 2), nullable=True)
+    gym_monto_clases         = Column(Numeric(10, 2), nullable=True)
+
     usuario = relationship("Usuario")
 
 class PagoEntrenador(Base):
@@ -71,6 +79,14 @@ class Alumno(Base):
     recordatorio_enviado_2_dias = Column(Boolean, default=False, nullable=False)
     recordatorio_enviado_hoy = Column(Boolean, default=False, nullable=False)
     
+    # ── Membresía por Clases (Modo Gimnasio) ──────────────────
+    tipo_membresia           = Column(String, nullable=True)   # 'pase_libre' | 'por_clases'
+    clases_compradas         = Column(Integer, nullable=True)  # último paquete
+    clases_usadas_total      = Column(Integer, default=0, nullable=False)
+    clases_restantes         = Column(Integer, nullable=True)
+    fecha_inicio_paquete     = Column(Date, nullable=True)     # primer QR scan
+    vencimiento_estimado_clases = Column(Date, nullable=True)  # calculado
+
     # Recordatorios de Evaluaciones
     frecuencia_evaluacion_dias = Column(Integer, nullable=True)
     ultima_evaluacion_fecha = Column(DateTime, nullable=True)
@@ -288,3 +304,19 @@ class ProgresoVisual(Base):
     
     alumno = relationship("Alumno")
 
+
+class AsistenciaQR(Base):
+    """Registro de asistencia al gimnasio via QR. 1 asistencia por alumno por día."""
+    __tablename__ = "asistencias_qr"
+    __table_args__ = (
+        UniqueConstraint('id_alumno', 'fecha', name='uq_asistencia_alumno_fecha'),
+    )
+    id_asistencia  = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id_alumno      = Column(UUID(as_uuid=True), ForeignKey("alumnos.id_usuario"), nullable=False, index=True)
+    id_entrenador  = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False, index=True)
+    fecha          = Column(Date, nullable=False)
+    hora           = Column(String, nullable=False)  # HH:MM
+    creado_en      = Column(DateTime, default=datetime.utcnow)
+
+    alumno     = relationship("Alumno")
+    entrenador = relationship("Entrenador")

@@ -697,7 +697,11 @@ def get_payments_status(
             "pago": pago,
             "fecha_vencimiento_pago": al.fecha_vencimiento_pago,
             "dias_para_vencer": dias_para_vencer,
-            "bloqueado_por_pago": al.bloqueado_por_pago
+            "bloqueado_por_pago": al.bloqueado_por_pago,
+            "tipo_membresia": al.tipo_membresia,
+            "clases_restantes": al.clases_restantes,
+            "clases_compradas": al.clases_compradas,
+            "clases_usadas_total": al.clases_usadas_total
         })
         
     return result
@@ -1163,3 +1167,38 @@ def import_routine(
         "asignada_al_alumno": data.asignar_al_alumno
     }
 
+
+from pydantic import BaseModel
+class ReloadClassesReq(BaseModel):
+    clases: int
+
+@router.post("/students/{student_id}/reload_classes")
+def reload_classes(
+    student_id: UUID,
+    req: ReloadClassesReq,
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == student_id,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+        
+    if alumno.clases_restantes is None:
+        alumno.clases_restantes = req.clases
+    else:
+        alumno.clases_restantes += req.clases
+        
+    if alumno.clases_compradas is None:
+        alumno.clases_compradas = req.clases
+    else:
+        alumno.clases_compradas += req.clases
+        
+    db.commit()
+    return {"message": "Clases recargadas exitosamente", "clases_restantes": alumno.clases_restantes}

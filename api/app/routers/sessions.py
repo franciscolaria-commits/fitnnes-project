@@ -196,6 +196,35 @@ def complete_session(
         sesion.estado = "completado"
         sesion.fecha_fin = data.fecha_fin
         
+        # Gym mode: descontar clase si corresponde (Máximo 1 vez por día, unificado con AsistenciaQR)
+        if alumno.tipo_membresia == "por_clases":
+            from datetime import date, datetime
+            import uuid
+            today = date.today()
+            
+            asistencia_hoy = db.query(models.AsistenciaQR).filter(
+                models.AsistenciaQR.id_alumno == alumno.id_usuario,
+                models.AsistenciaQR.fecha == today
+            ).first()
+            
+            if not asistencia_hoy:
+                if alumno.clases_restantes is not None and alumno.clases_restantes > 0:
+                    alumno.clases_restantes -= 1
+                if alumno.clases_usadas_total is None:
+                    alumno.clases_usadas_total = 1
+                else:
+                    alumno.clases_usadas_total += 1
+                    
+                nueva_asistencia = models.AsistenciaQR(
+                    id_asistencia=uuid.uuid4(),
+                    id_alumno=alumno.id_usuario,
+                    id_entrenador=alumno.id_entrenador,
+                    fecha=today,
+                    hora=datetime.now().strftime("%H:%M"),
+                    creado_en=datetime.utcnow()
+                )
+                db.add(nueva_asistencia)
+        
         db.commit()
         db.refresh(sesion)
 

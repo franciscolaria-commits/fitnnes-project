@@ -20,6 +20,8 @@ from app.routers.sessions import router as sessions_router
 from app.routers.superadmin import router as superadmin_router
 from app.routers.cron import router as cron_router
 from app.routers.evaluations import router as evaluations_router
+from app.routers.qr import router as qr_router
+from app.routers.gym_config import router as gym_config_router
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -69,6 +71,8 @@ app.include_router(storage_router)
 app.include_router(superadmin_router)
 app.include_router(cron_router)
 app.include_router(evaluations_router)
+app.include_router(qr_router)
+app.include_router(gym_config_router)
 
 
 

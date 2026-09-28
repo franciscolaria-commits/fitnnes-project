@@ -12,6 +12,7 @@ export default function AuthView({ onLoginSuccess }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
+  const [gymInfo, setGymInfo] = useState(null);
   const modal = useModal();
 
   const handleLogin = async (e) => {
@@ -65,13 +66,32 @@ export default function AuthView({ onLoginSuccess }) {
     const phone = e.target['reg-student-phone'].value.trim();
     setLoadingAction('registerStudent');
     try {
+      const tipoMembresiaEl = e.target['reg-student-membresia'];
+      let tipo_membresia = null;
+      let clases_compradas = null;
+      
+      if (gymInfo) {
+        if (gymInfo.tipo_cobro === 'pase_libre') tipo_membresia = 'pase_libre';
+        else if (gymInfo.tipo_cobro === 'por_clases') tipo_membresia = 'por_clases';
+        else if (tipoMembresiaEl) tipo_membresia = tipoMembresiaEl.value;
+        
+        if (tipo_membresia === 'por_clases') {
+          const clasesEl = e.target['reg-student-clases'];
+          if (clasesEl && clasesEl.value) {
+            clases_compradas = parseInt(clasesEl.value);
+          }
+        }
+      }
+
       await api.post("/api/v1/auth/register-student", {
         codigo_invitacion: code,
         email,
         password,
         peso_corporal_actual: weight ? parseFloat(weight) : null,
         objetivo: goal || null,
-        telefono: phone
+        telefono: phone,
+        tipo_membresia,
+        clases_compradas
       });
       await modal.alert("¡Registro completado exitosamente! Inicia sesión.");
       // Limpiar URL si venia de link
@@ -173,7 +193,24 @@ export default function AuthView({ onLoginSuccess }) {
           <form onSubmit={handleRegisterStudent} className="flex flex-col gap-3">
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Email o Código de Invitación del Coach</label>
-              <input type="text" id="reg-student-code" required defaultValue={initialCoachCode} placeholder="entrenador@correo.com o UUID" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
+              <input 
+                type="text" 
+                id="reg-student-code" 
+                required 
+                defaultValue={initialCoachCode} 
+                placeholder="entrenador@correo.com o UUID" 
+                className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" 
+                onBlur={async (e) => {
+                  const code = e.target.value.trim();
+                  if (!code) { setGymInfo(null); return; }
+                  try {
+                    const data = await api.get(`/api/v1/qr/${code}`);
+                    setGymInfo(data);
+                  } catch (err) {
+                    setGymInfo(null);
+                  }
+                }}
+              />
             </div>
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Email</label>
@@ -202,6 +239,27 @@ export default function AuthView({ onLoginSuccess }) {
                 <input type="text" id="reg-student-goal" placeholder="Ej: Fuerza" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
               </div>
             </div>
+            
+            {gymInfo && (gymInfo.tipo_cobro === 'por_clases' || gymInfo.tipo_cobro === 'ambos') && (
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex flex-col gap-3 mt-2">
+                <h3 className="text-sm font-bold text-emerald-400">Completá tu membresía en {gymInfo.nombre}</h3>
+                
+                {gymInfo.tipo_cobro === 'ambos' && (
+                  <div>
+                    <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cómo vas a entrenar?</label>
+                    <select id="reg-student-membresia" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                      <option value="pase_libre">Pase Libre</option>
+                      <option value="por_clases">Por Clases (Paquete)</option>
+                    </select>
+                  </div>
+                )}
+                
+                <div id="clases-compradas-container">
+                  <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cuántas clases vas a comprar inicialmente?</label>
+                  <input type="number" id="reg-student-clases" min="1" placeholder="Ej: 8" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white" />
+                </div>
+              </div>
+            )}
             <button type="submit" disabled={loadingAction === 'registerStudent'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
               {loadingAction === 'registerStudent' ? 'Cargando...' : 'Registrarse como Alumno'}
             </button>

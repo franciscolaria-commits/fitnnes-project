@@ -106,6 +106,8 @@ class AlumnoCreate(AlumnoBase):
     password: str = Field(..., min_length=6)
     codigo_invitacion: str = Field(..., description="UUIDv4 de invitación o Email del Entrenador")
     telefono: str = Field(..., description="WhatsApp con código de país")
+    tipo_membresia: Optional[str] = None
+    clases_compradas: Optional[int] = None
 
 class AlumnoUpdate(BaseModel):
     peso: Optional[float] = None
@@ -123,6 +125,13 @@ class AlumnoOut(AlumnoBase):
     usuario: UsuarioOut
     entrenador: Optional[EntrenadorOut] = None
     rutina_nombre: Optional[str] = None
+    
+    # Gym mode fields
+    tipo_membresia: Optional[str] = None
+    clases_compradas: Optional[int] = None
+    clases_usadas_total: Optional[int] = None
+    clases_restantes: Optional[int] = None
+    vencimiento_estimado_clases: Optional[datetime] = None
 
     class Config:
         from_attributes = True

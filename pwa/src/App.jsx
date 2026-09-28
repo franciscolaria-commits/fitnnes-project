@@ -4,6 +4,7 @@ const LandingPage = React.lazy(() => import('./views/LandingPage.jsx'));
 const CoachDashboard = React.lazy(() => import('./views/CoachDashboard.jsx'));
 const StudentDashboard = React.lazy(() => import('./views/StudentDashboard.jsx'));
 const BlockedView = React.lazy(() => import('./views/BlockedView.jsx'));
+const QRCheckinView = React.lazy(() => import('./views/QRCheckinView.jsx'));
 const SuperAdminPanel = React.lazy(() => import('./views/SuperAdminPanel.jsx'));
 import WeightGuardian from './components/WeightGuardian.jsx';
 
@@ -37,6 +38,10 @@ export default function App() {
   };
 
   const path = window.location.pathname;
+
+  if (path.startsWith('/qr/')) {
+    return <React.Suspense fallback={<LoadingScreen />}><QRCheckinView /></React.Suspense>;
+  }
 
   if (path === '/blocked') {
     return <React.Suspense fallback={<LoadingScreen />}><BlockedView /></React.Suspense>;

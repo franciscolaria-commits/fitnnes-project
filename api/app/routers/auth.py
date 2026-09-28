@@ -163,7 +163,10 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
             peso_corporal_actual=student_data.peso_corporal_actual,
             objetivo=student_data.objetivo,
             estado_activo=is_activo,
-            fecha_vencimiento_pago=vencimiento
+            fecha_vencimiento_pago=vencimiento,
+            tipo_membresia=student_data.tipo_membresia,
+            clases_compradas=student_data.clases_compradas,
+            clases_restantes=student_data.clases_compradas
         )
         db.add(nuevo_alumno)
         
