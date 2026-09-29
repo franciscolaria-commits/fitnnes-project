@@ -18,6 +18,12 @@ export default function CoachDashboard() {
   const [isStudentsOpen, setIsStudentsOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [gymConfig, setGymConfig] = useState(null);
+
+  // Load gym config
+  useEffect(() => {
+    api.get('/api/v1/coaches/gym/config').then(data => setGymConfig(data)).catch(() => {});
+  }, []);
   const [email, setEmail] = useState('');
   const [students, setStudents] = useState([]);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -867,7 +873,7 @@ export default function CoachDashboard() {
         )}
 
         {activePanel === 'finances' && (
-          <FinancesPanel students={students} api={api} loadStudents={loadData} modal={modal} profile={profile} />
+          <FinancesPanel students={students} api={api} loadStudents={loadData} modal={modal} profile={profile} gymConfig={gymConfig} />
         )}
 
         {activePanel === 'tutorial' && (
@@ -978,7 +984,9 @@ export default function CoachDashboard() {
                  </div>
               </div>
 
-              <div className="p-4 border border-zinc-800 bg-zinc-900/50 rounded-xl flex flex-col gap-4">
+              {/* Gym mode overlay - dims when in gym mode */}
+              <div className={`p-4 border border-zinc-800 bg-zinc-900/50 rounded-xl flex flex-col gap-4 relative transition-opacity ${gymConfig?.tipo_cuenta === "gimnasio" ? "opacity-40 pointer-events-none" : ""}`}>
+                 {gymConfig?.tipo_cuenta === "gimnasio" && <div className="absolute inset-0 flex items-center justify-center z-10 rounded-xl bg-zinc-950/30"><span className="bg-zinc-900/95 text-zinc-400 text-xs font-bold px-3 py-1.5 rounded-full border border-zinc-700 uppercase tracking-widest">Desactivado en Modo Gimnasio</span></div>}
                  <h3 className="text-sm font-bold text-blue-400">Reglas Automáticas de Alumnos</h3>
                  <p className="text-xs text-zinc-500">Configura qué pasa cuando un alumno nuevo ingresa y cómo se calculan sus vencimientos.</p>
                  <div className="flex flex-col sm:flex-row gap-4">

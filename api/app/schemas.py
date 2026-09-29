@@ -59,6 +59,7 @@ class EntrenadorBase(BaseModel):
     config_vencimiento_dia: Optional[int] = None
     config_bloqueo_morosos: Optional[str] = "nunca"
     config_bloqueo_dias: Optional[int] = 0
+    tipo_cuenta: Optional[str] = "estandar"
 
 class EntrenadorUpdate(EntrenadorBase):
     pass

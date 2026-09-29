@@ -85,7 +85,7 @@ def qr_checkin(
 
     alumno = db.query(Alumno).filter(
         Alumno.id_usuario == current_user.id_usuario,
-        Alumno.id_entrenador == coach_id
+        Alumno.id_entrenador == coach.id_usuario
     ).first()
     if not alumno:
         raise HTTPException(status_code=403, detail="No pertenecés a este gimnasio")

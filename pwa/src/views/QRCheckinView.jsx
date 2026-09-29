@@ -27,7 +27,7 @@ export default function QRCheckinView() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem('fitness_jwt');
 
   // Load gym info
   useEffect(() => {

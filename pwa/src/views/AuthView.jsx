@@ -32,7 +32,8 @@ export default function AuthView({ onLoginSuccess }) {
       try {
         window.indexedDB.deleteDatabase("keyval-store");
       } catch (e) {}
-      window.location.href = "/";
+      const _redirectUrl = new URLSearchParams(window.location.search).get("redirect");
+      window.location.href = _redirectUrl || "/";
     } catch (err) {
       setError(err.message);
     } finally {

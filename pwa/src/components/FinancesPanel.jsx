@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, DollarSign, Ban, CheckCircle, MessageCircle, BarChart2, TrendingUp, Users } from 'lucide-react';
+import { ChevronLeft, ChevronRight, DollarSign, Ban, CheckCircle, MessageCircle, BarChart2, TrendingUp, Users, Dumbbell, Ticket } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 
-export default function FinancesPanel({ students, api, loadStudents, modal, profile }) {
+export default function FinancesPanel({ students, api, loadStudents, modal, profile, gymConfig }) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [payments, setPayments] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -10,6 +10,9 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
   
   const [filter, setFilter] = useState('todos'); // todos, pagados, pendientes, vencen_2_dias, vencen_hoy, vencidos
   const [chartMonths, setChartMonths] = useState(6);
+
+  const isGymMode = gymConfig?.tipo_cuenta === 'gimnasio';
+  const gymTipoCobro = gymConfig?.gym_tipo_cobro || '';
 
   const monthYearString = `${currentDate.getFullYear()}-${String(currentDate.getMonth() + 1).padStart(2, '0')}`;
   const displayMonthYear = currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
@@ -43,7 +46,6 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     
     let dia_vencimiento_personalizado = null;
     
-    // Si la accion es restaurar (currentStatus es false) y la config es fijo_por_alumno
     if (!currentStatus && profile?.config_vencimiento_tipo === "fijo_por_alumno") {
       const student = payments.find(p => p.id_alumno === studentId);
       if (student && !student.fecha_vencimiento_pago) {
@@ -114,7 +116,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     }
   };
 
-    const handleReloadClasses = async (studentId) => {
+  const handleReloadClasses = async (studentId) => {
     const clasesStr = window.prompt("¿Cuántas clases deseas recargar?", "8");
     if (!clasesStr) return;
     const clases = parseInt(clasesStr);
@@ -123,7 +125,6 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
       return;
     }
     
-    // Opcional: Registrar pago al recargar clases
     const registrarPago = await modal.confirm("¿Deseas registrar un pago por esta recarga de clases?");
     if (registrarPago) {
       const amountStr = window.prompt("Ingresa el monto cobrado (opcional):", "");
@@ -181,13 +182,88 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     if (filter === 'vencen_2_dias') return !p.pagado && p.dias_para_vencer === 2;
     if (filter === 'vencen_hoy') return !p.pagado && p.dias_para_vencer === 0;
     if (filter === 'vencidos') return !p.pagado && p.dias_para_vencer !== null && p.dias_para_vencer < 0;
+    if (filter === 'pase_libre') return p.tipo_membresia === 'pase_libre';
+    if (filter === 'por_clases') return p.tipo_membresia === 'por_clases';
     return true; // todos
   });
+
+  // Gym mode KPIs
+  const gymStudentsPaseLibre = safePayments.filter(p => p.tipo_membresia === 'pase_libre');
+  const gymStudentsPorClases = safePayments.filter(p => p.tipo_membresia === 'por_clases');
+  const gymStudentsSinClases = gymStudentsPorClases.filter(p => (p.clases_restantes || 0) <= 2);
 
   const chartData = summary ? [...summary.historial].reverse().slice(-chartMonths) : [];
 
   return (
     <div className="space-y-6">
+
+      {/* === GYM MODE SUMMARY PANELS === */}
+      {isGymMode && (gymTipoCobro === 'ambos' || gymTipoCobro === 'pase_libre' || gymTipoCobro === 'por_clases') && (
+        <section className="glass-card rounded-2xl p-6 shadow-lg">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <Dumbbell className="w-5 h-5 text-amber-400" /> Panel Modo Gimnasio
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+            {/* Pase Libre card */}
+            {(gymTipoCobro === 'pase_libre' || gymTipoCobro === 'ambos') && (
+              <div className="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10"><Ticket className="w-14 h-14 text-emerald-400" /></div>
+                <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Pase Libre</p>
+                <h3 className="text-3xl font-black text-white">{gymStudentsPaseLibre.length}</h3>
+                <p className="text-emerald-200/60 text-xs">alumnos activos</p>
+                {gymConfig?.gym_monto_pase_libre && (
+                  <p className="text-emerald-400 font-bold text-sm mt-1">
+                    Esperado: ${(gymStudentsPaseLibre.length * gymConfig.gym_monto_pase_libre).toLocaleString('es-AR')} / mes
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Por Clases card */}
+            {(gymTipoCobro === 'por_clases' || gymTipoCobro === 'ambos') && (
+              <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10"><Dumbbell className="w-14 h-14 text-amber-400" /></div>
+                <p className="text-amber-400 text-xs font-bold uppercase tracking-widest">Por Clases</p>
+                <h3 className="text-3xl font-black text-white">{gymStudentsPorClases.length}</h3>
+                <p className="text-amber-200/60 text-xs">alumnos con paquete</p>
+                {gymStudentsSinClases.length > 0 && (
+                  <div className="mt-1 px-2 py-1 bg-red-500/20 border border-red-500/30 rounded-lg">
+                    <p className="text-red-400 text-xs font-bold">⚠ {gymStudentsSinClases.length} alumno(s) con ≤2 clases restantes</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Total Income Estimate */}
+            <div className="p-5 bg-zinc-800/60 border border-zinc-700/50 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-10"><DollarSign className="w-14 h-14 text-zinc-400" /></div>
+              <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Total Alumnos Gym</p>
+              <h3 className="text-3xl font-black text-white">{gymStudentsPaseLibre.length + gymStudentsPorClases.length}</h3>
+              <p className="text-zinc-500 text-xs">registrados en este gimnasio</p>
+            </div>
+          </div>
+
+          {/* Gym filter tabs */}
+          {gymTipoCobro === 'ambos' && (
+            <div className="flex gap-2 mt-4">
+              <button onClick={() => setFilter('todos')}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'todos' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                Todos
+              </button>
+              <button onClick={() => setFilter('pase_libre')}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'pase_libre' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                Pase Libre
+              </button>
+              <button onClick={() => setFilter('por_clases')}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'por_clases' ? 'bg-amber-500/20 text-amber-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                Por Clases
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
       {/* KPIs */}
       {summary && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -269,44 +345,16 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
         <h2 className="text-xl font-bold text-white mb-6">Estado de Pagos del Mes</h2>
                 
         {/* Tabs de Filtro */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <button 
-            onClick={() => setFilter('todos')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'todos' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
-          >
-            Todos
-          </button>
-          <button 
-            onClick={() => setFilter('pagados')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'pagados' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
-          >
-            Pagados
-          </button>
-          <button 
-            onClick={() => setFilter('pendientes')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'pendientes' ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
-          >
-            Pendientes
-          </button>
-          <button 
-            onClick={() => setFilter('vencen_2_dias')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'vencen_2_dias' ? 'bg-yellow-500/20 text-yellow-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
-          >
-            Vencen en 2 días
-          </button>
-          <button 
-            onClick={() => setFilter('vencen_hoy')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'vencen_hoy' ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
-          >
-            Vencen Hoy
-          </button>
-          <button 
-            onClick={() => setFilter('vencidos')}
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'vencidos' ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}
-          >
-            Vencidos
-          </button>
-        </div>
+        {!isGymMode && (
+          <div className="flex flex-wrap gap-2 mb-6">
+            <button onClick={() => setFilter('todos')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'todos' ? 'bg-zinc-800 text-white' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}>Todos</button>
+            <button onClick={() => setFilter('pagados')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'pagados' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}>Pagados</button>
+            <button onClick={() => setFilter('pendientes')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'pendientes' ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}>Pendientes</button>
+            <button onClick={() => setFilter('vencen_2_dias')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'vencen_2_dias' ? 'bg-yellow-500/20 text-yellow-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}>Vencen en 2 días</button>
+            <button onClick={() => setFilter('vencen_hoy')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'vencen_hoy' ? 'bg-orange-500/20 text-orange-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}>Vencen Hoy</button>
+            <button onClick={() => setFilter('vencidos')} className={`px-4 py-2 rounded-lg font-medium transition-colors ${filter === 'vencidos' ? 'bg-red-500/20 text-red-400' : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'}`}>Vencidos</button>
+          </div>
+        )}
 
         {loading ? (
           <div className="py-12 text-center text-zinc-500">Cargando pagos...</div>
@@ -353,6 +401,17 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
                           BLOQUEADO
                         </span>
                       )}
+
+                      {/* Gym mode membership badge */}
+                      {isGymMode && p.tipo_membresia && (
+                        <span className={`text-xs px-2 py-0.5 rounded-full font-bold ${
+                          p.tipo_membresia === 'pase_libre' 
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
+                            : 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                        }`}>
+                          {p.tipo_membresia === 'pase_libre' ? 'Pase Libre' : 'Por Clases'}
+                        </span>
+                      )}
                     </div>
                     
                     {/* Detalles Adicionales */}
@@ -376,7 +435,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
                     </div>
                   </div>
 
-                  {/* Estado (móvil: flex-row space-between) */}
+                  {/* Estado */}
                   <div className="flex items-center justify-between w-full md:w-auto">
                     <span className="text-zinc-500 text-xs uppercase md:hidden">Estado:</span>
                     {!p.estado_activo ? (
@@ -394,7 +453,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
                     )}
                   </div>
 
-                  {/* Monto (móvil: flex-row space-between) */}
+                  {/* Monto */}
                   <div className="flex items-center justify-between w-full md:w-auto">
                     <span className="text-zinc-500 text-xs uppercase md:hidden">Monto:</span>
                     <div className="font-medium text-emerald-400 flex items-center gap-2">
