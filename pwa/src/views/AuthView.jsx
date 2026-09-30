@@ -13,6 +13,7 @@ export default function AuthView({ onLoginSuccess }) {
   const [error, setError] = useState(null);
   const [loadingAction, setLoadingAction] = useState(null);
   const [gymInfo, setGymInfo] = useState(null);
+  const [selectedMembresia, setSelectedMembresia] = useState("");
   const modal = useModal();
 
   const handleLogin = async (e) => {
@@ -201,12 +202,15 @@ export default function AuthView({ onLoginSuccess }) {
                 defaultValue={initialCoachCode} 
                 placeholder="entrenador@correo.com o UUID" 
                 className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" 
-                onBlur={async (e) => {
+                                onBlur={async (e) => {
                   const code = e.target.value.trim();
                   if (!code) { setGymInfo(null); return; }
                   try {
                     const data = await api.get(`/api/v1/qr/${code}`);
                     setGymInfo(data);
+                    if (data.tipo_cobro === 'pase_libre') setSelectedMembresia('pase_libre');
+                    else if (data.tipo_cobro === 'por_clases') setSelectedMembresia('por_clases');
+                    else setSelectedMembresia('');
                   } catch (err) {
                     setGymInfo(null);
                   }
@@ -248,17 +252,20 @@ export default function AuthView({ onLoginSuccess }) {
                 {gymInfo.tipo_cobro === 'ambos' && (
                   <div>
                     <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cómo vas a entrenar?</label>
-                    <select id="reg-student-membresia" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                    <select id="reg-student-membresia" required value={selectedMembresia} onChange={(e) => setSelectedMembresia(e.target.value)} className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white outline-none">
+                      <option value="" disabled>Selecciona cómo vas a entrenar</option>
                       <option value="pase_libre">Pase Libre</option>
                       <option value="por_clases">Por Clases (Paquete)</option>
                     </select>
                   </div>
                 )}
                 
+                {selectedMembresia === 'por_clases' && (
                 <div id="clases-compradas-container">
                   <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cuántas clases vas a comprar inicialmente?</label>
-                  <input type="number" id="reg-student-clases" min="1" placeholder="Ej: 8" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white" />
+                  <input type="number" id="reg-student-clases" min="1" required placeholder="Ej: 8" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white" />
                 </div>
+                )}
               </div>
             )}
             <button type="submit" disabled={loadingAction === 'registerStudent'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
