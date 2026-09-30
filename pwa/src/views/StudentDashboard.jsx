@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, logout } from '../services/api.js';
 import ActiveWorkout from './ActiveWorkout.jsx';
 import StudentProgress from './StudentProgress.jsx';
@@ -24,6 +24,7 @@ export default function StudentDashboard() {
   
   const [phoneInput, setPhoneInput] = useState('');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: profile, isLoading: loadingProfile, isError: profileError, error: profileErrorData, refetch: refetchProfile } = useQuery({
     queryKey: ['studentProfile', 'v2'],

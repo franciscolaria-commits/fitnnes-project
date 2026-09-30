@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { api } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import { Eye, EyeOff } from 'lucide-react';
@@ -15,6 +15,20 @@ export default function AuthView({ onLoginSuccess }) {
   const [gymInfo, setGymInfo] = useState(null);
   const [selectedMembresia, setSelectedMembresia] = useState("");
   const modal = useModal();
+
+  useEffect(() => {
+    if (initialCoachCode && activePanel === 'registerStudent') {
+      api.get(`/api/v1/qr/${initialCoachCode}`)
+        .then(data => {
+          setGymInfo(data);
+          if (data.tipo_cobro === 'pase_libre') setSelectedMembresia('pase_libre');
+          else if (data.tipo_cobro === 'por_clases') setSelectedMembresia('por_clases');
+          else setSelectedMembresia('');
+        })
+        .catch(() => setGymInfo(null));
+    }
+  }, [initialCoachCode, activePanel]);
+
 
   const handleLogin = async (e) => {
     e.preventDefault();
