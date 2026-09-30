@@ -12,7 +12,7 @@ import uuid as _uuid
 from datetime import datetime
 
 revision: str = 'a1b2c3d4e5f6'
-down_revision: Union[str, Sequence[str], None] = 'c41cfbd124f6'
+down_revision: Union[str, Sequence[str], None] = 'a0f3d86ebe46'
 branch_labels = None
 depends_on = None
 
