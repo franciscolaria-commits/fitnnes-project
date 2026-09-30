@@ -133,7 +133,10 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
         
         if entrenador_config:
             is_activo = (entrenador_config.config_estado_alumno_default == "activo")
-            if entrenador_config.config_vencimiento_tipo == "fijo" and entrenador_config.config_vencimiento_dia:
+            # En modo gimnasio, no se aplican reglas estandar de vencimiento
+            if entrenador_config.tipo_cuenta == "gimnasio":
+                vencimiento = None
+            elif entrenador_config.config_vencimiento_tipo == "fijo" and entrenador_config.config_vencimiento_dia:
                 hoy = datetime.utcnow()
                 dia = entrenador_config.config_vencimiento_dia
                 mes = hoy.month
@@ -153,8 +156,9 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
                 # Fijo por alumno: el campo arranca vacío, el entrenador lo define al activar
                 vencimiento = None
             else:
-                # Individual: vence en 30 días exactos desde que se registra
-                vencimiento = datetime.utcnow() + timedelta(days=30)
+                # Individual: vence en 30 días exactos desde que se registra (no aplicar en modo gym)
+                if entrenador_config.tipo_cuenta != "gimnasio":
+                    vencimiento = datetime.utcnow() + timedelta(days=30)
                 
         # 5. Crear perfil de Alumno asociado al entrenador
         nuevo_alumno = Alumno(

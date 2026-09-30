@@ -414,6 +414,11 @@ class EstadoPagoAlumnoResponse(BaseModel):
     fecha_vencimiento_pago: Optional[datetime] = None
     dias_para_vencer: Optional[int] = None
     bloqueado_por_pago: Optional[bool] = False
+    # Gym mode fields
+    tipo_membresia: Optional[str] = None
+    clases_restantes: Optional[int] = None
+    clases_compradas: Optional[int] = None
+    clases_usadas_total: Optional[int] = None
 
 class CoachFinanceSummary(BaseModel):
     ingreso_real_mes: float

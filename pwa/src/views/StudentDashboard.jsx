@@ -20,6 +20,7 @@ export default function StudentDashboard() {
   const [demoExercise, setDemoExercise] = useState(null);
   const [selectedDayIdx, setSelectedDayIdx] = useState(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [showAttendancesModal, setShowAttendancesModal] = useState(false);
   
   const [phoneInput, setPhoneInput] = useState('');
   const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
@@ -36,6 +37,12 @@ export default function StudentDashboard() {
     queryKey: ['studentRoutine'],
     queryFn: () => api.get("/api/v1/students/me/routine"),
     retry: false
+  });
+
+    const { data: asistenciasData } = useQuery({
+    queryKey: ['studentAttendances'],
+    queryFn: () => api.get('/api/v1/students/me/asistencias'),
+    enabled: profile?.entrenador?.tipo_cuenta === 'gimnasio',
   });
 
   const { data: stats } = useQuery({
@@ -267,6 +274,12 @@ export default function StudentDashboard() {
                     {profile.vencimiento_estimado_clases && (
                       <p className="text-xs text-zinc-500 mt-1">Vencimiento estimado: {new Date(profile.vencimiento_estimado_clases).toLocaleDateString()}</p>
                     )}
+                    <button 
+                      onClick={() => setShowAttendancesModal(true)}
+                      className="mt-3 bg-zinc-800 hover:bg-zinc-700 text-amber-400 text-xs font-bold py-1.5 px-3 rounded-lg transition-colors border border-zinc-700"
+                    >
+                      Ver mis asistencias
+                    </button>
                   </div>
                   {profile.tipo_membresia === 'por_clases' && (profile.clases_restantes || 0) <= 2 && (
                     <div className="bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-xl text-amber-400 font-bold text-sm">
@@ -493,7 +506,41 @@ export default function StudentDashboard() {
           />
         </div>
       )}
-    </div>
+    
+      {/* Attendances Modal */}
+      {showAttendancesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-xl w-full max-w-md flex flex-col shadow-2xl">
+            <div className="flex justify-between items-center p-4 border-b border-zinc-800 bg-zinc-900/50">
+              <h3 className="font-black text-white uppercase tracking-tight">Historial de Asistencias</h3>
+              <button onClick={() => setShowAttendancesModal(false)} className="text-zinc-500 hover:text-white p-1">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {asistenciasData ? (
+                asistenciasData.asistencias?.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    {asistenciasData.asistencias.map((a, i) => (
+                      <div key={i} className="flex justify-between items-center bg-zinc-900 border border-zinc-800 p-3 rounded-xl">
+                        <span className="text-zinc-300 font-medium">{new Date(a.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'long' })}</span>
+                        <span className="text-emerald-400 font-mono text-sm">{a.hora}</span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-zinc-500 text-center text-sm py-8">No tienes asistencias registradas aún.</p>
+                )
+              ) : (
+                <p className="text-zinc-500 text-center text-sm py-8">Cargando...</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+</div>
   );
 }
 

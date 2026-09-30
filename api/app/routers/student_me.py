@@ -302,3 +302,32 @@ def get_my_league(db: Session = Depends(get_db), current_user: models.Usuario = 
         })
         
     return result
+
+@router.get("/me/asistencias")
+def get_my_asistencias(
+    db: Session = Depends(get_db),
+    current_user: models.Usuario = Depends(get_current_user)
+):
+    """Devuelve las asistencias QR del alumno actual (modo gimnasio)."""
+    if current_user.rol != "alumno":
+        raise HTTPException(status_code=403, detail="Solo alumnos")
+
+    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Perfil no encontrado")
+
+    asistencias = db.query(models.AsistenciaQR).filter(
+        models.AsistenciaQR.id_alumno == current_user.id_usuario
+    ).order_by(models.AsistenciaQR.fecha.desc()).limit(60).all()
+
+    return {
+        "tipo_membresia": alumno.tipo_membresia,
+        "clases_restantes": alumno.clases_restantes,
+        "clases_compradas": alumno.clases_compradas,
+        "clases_usadas_total": alumno.clases_usadas_total or 0,
+        "vencimiento_estimado": str(alumno.vencimiento_estimado_clases) if alumno.vencimiento_estimado_clases else None,
+        "asistencias": [
+            {"fecha": str(a.fecha), "hora": a.hora}
+            for a in asistencias
+        ]
+    }
