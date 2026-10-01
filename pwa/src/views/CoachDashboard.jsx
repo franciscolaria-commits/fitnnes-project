@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
@@ -185,7 +185,7 @@ export default function CoachDashboard() {
   const handleDeactivateStudent = async (id) => {
     if (!(await modal.confirm("¿Estás seguro de dar de baja a este alumno?"))) return;
     try {
-      await api.delete(`/api/v1/coaches/students/${id}`);
+      await api.patch(`/api/v1/coaches/students/${id}/suspend`, { estado_activo: false });
       await modal.alert("Alumno dado de baja con éxito.");
       loadData();
     } catch (error) {
@@ -215,7 +215,10 @@ export default function CoachDashboard() {
     }
     
     try {
-      await api.patch(`/api/v1/coaches/students/${id}/reactivate`, { dia_vencimiento_personalizado });
+      await api.patch(`/api/v1/coaches/students/${id}/suspend`, { 
+        estado_activo: true, 
+        dia_vencimiento_personalizado 
+      });
       await modal.alert("Alumno reactivado con éxito.");
       loadData();
     } catch (error) {

@@ -918,6 +918,28 @@ def update_payment_date(
     
     return {"status": "ok", "fecha_vencimiento_pago": alumno.fecha_vencimiento_pago}
 
+
+@router.delete("/students/{id_alumno}/hard")
+def hard_delete_student(
+    id_alumno: str,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if current_user.rol != "entrenador":
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        
+    alumno = db.query(models.Alumno).filter(
+        models.Alumno.id_usuario == id_alumno,
+        models.Alumno.id_entrenador == current_user.id_usuario
+    ).first()
+    
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+        
+    db.delete(alumno)
+    db.commit()
+    return {"status": "ok", "message": "Alumno eliminado definitivamente"}
+
 @router.patch("/students/{id_alumno}/suspend")
 def suspend_student(
     id_alumno: str,

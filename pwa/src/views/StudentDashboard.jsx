@@ -68,6 +68,23 @@ export default function StudentDashboard() {
     );
   }
 
+  if (!profile && !profileError) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 gap-6">
+        <div className="glass-card rounded-2xl p-8 border border-zinc-800 max-w-sm w-full text-center flex flex-col items-center gap-4">
+          <div className="w-12 h-12 bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          </div>
+          <h2 className="text-white font-bold text-lg">Perfil Incompleto</h2>
+          <p className="text-zinc-400 text-sm">Tu perfil de alumno no est· configurado. Contact· a tu entrenador para que te asigne al sistema.</p>
+          <button onClick={logout} className="mt-4 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white text-xs font-bold uppercase tracking-widest rounded-xl transition-colors w-full">
+            Cerrar sesiÛn
+          </button>
+        </div>
+      </div>
+    );
+  }
+
 
   const isSuspended = profile?.estado_activo === false || (profile?.data && profile.data.estado_activo === false);
   const isBlockedByPayment = profile?.bloqueado_por_pago || (profile?.data && profile.data.bloqueado_por_pago);
@@ -273,7 +290,7 @@ export default function StudentDashboard() {
                 <div className="glass-card p-6 border-l-4 border-l-amber-500 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
                   <div>
                     <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest mb-1">MI MEMBRES√çA</h3>
-                    {profile?.tipo_membresia === 'por_clases' ? (
+                    {(profile?.tipo_membresia === 'por_clases' || profile?.entrenador?.gym_tipo_cobro === 'por_clases') ? (
                       <p className="text-zinc-300">
                         Ten√©s <span className="text-white font-bold">{profile?.clases_restantes || 0}</span> clases restantes de tu paquete.
                       </p>
@@ -290,7 +307,7 @@ export default function StudentDashboard() {
                       Ver mis asistencias
                     </button>
                   </div>
-                  {profile?.tipo_membresia === 'por_clases' && (profile?.clases_restantes || 0) <= 2 && (
+                  {(profile?.tipo_membresia === 'por_clases' || profile?.entrenador?.gym_tipo_cobro === 'por_clases') && (profile?.clases_restantes || 0) <= 2 && (
                     <div className="bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-xl text-amber-400 font-bold text-sm">
                       ‚ö†Ô∏è ¬°Pocas clases restantes!
                     </div>

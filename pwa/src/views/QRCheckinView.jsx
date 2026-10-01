@@ -28,6 +28,7 @@ export default function QRCheckinView() {
   const [error, setError] = useState('');
 
   const token = localStorage.getItem('fitness_jwt');
+  const queryClient = useQueryClient();
 
   // Load gym info
   useEffect(() => {
@@ -48,6 +49,8 @@ export default function QRCheckinView() {
     try {
       const data = await api.post(`/api/v1/qr/${coachId}/checkin`, {});
       setResult(data);
+      queryClient.invalidateQueries({ queryKey: ['studentProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['studentAttendances'] });
     } catch (e) {
       const msg = e?.detail || e?.message || 'Error al registrar asistencia';
       setError(msg);
