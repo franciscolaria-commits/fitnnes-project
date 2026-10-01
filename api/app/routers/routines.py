@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List
 from uuid import uuid4
@@ -317,11 +317,12 @@ def get_routines(
     if current_user.rol != "entrenador":
         raise HTTPException(status_code=403, detail="Sólo los entrenadores pueden ver sus rutinas")
 
-    # Obtener todas las rutinas activas del entrenador con sus jerarquías
-    rutinas = db.query(models.Rutina).filter(
+    # Obtener todas las rutinas activas del entrenador con sus jerarquías (Eager Loading)
+    rutinas = db.query(models.Rutina).options(
+        selectinload(models.Rutina.dias).selectinload(models.RutinaDia.ejercicios)
+    ).filter(
         models.Rutina.id_entrenador == current_user.id_usuario,
         models.Rutina.is_active == True
     ).all()
     
-    # Cargar manualmente relaciones si fuera necesario, aunque SQLAlchemy cargará lazy si configuramos las relaciones (esperemos no de error de detached session)
     return rutinas

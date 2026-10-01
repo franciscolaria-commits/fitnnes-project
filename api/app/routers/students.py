@@ -31,16 +31,22 @@ def get_my_students(
             detail="Acceso exclusivo para entrenadores."
         )
         
-    alumnos = db.query(Alumno).filter(Alumno.id_entrenador == current_user.id_usuario).all()
+    # Optimizado: Un solo viaje a la base de datos usando LEFT OUTER JOIN
+    resultados = db.query(
+        Alumno,
+        models.Rutina.nombre_rutina
+    ).outerjoin(
+        models.Rutina, Alumno.id_rutina_activa == models.Rutina.id_rutina
+    ).filter(
+        Alumno.id_entrenador == current_user.id_usuario
+    ).all()
     
-    for al in alumnos:
-        al.rutina_nombre = None
-        if al.id_rutina_activa:
-            rutina = db.query(models.Rutina).filter(models.Rutina.id_rutina == al.id_rutina_activa).first()
-            if rutina:
-                al.rutina_nombre = rutina.nombre_rutina
+    alumnos_optimizados = []
+    for alumno, nombre_rutina in resultados:
+        alumno.rutina_nombre = nombre_rutina
+        alumnos_optimizados.append(alumno)
                 
-    return alumnos
+    return alumnos_optimizados
 
 @router.put("/{id_alumno}", response_model=AlumnoOut)
 def update_student(
