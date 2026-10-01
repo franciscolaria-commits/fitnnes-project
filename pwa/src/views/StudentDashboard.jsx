@@ -68,6 +68,15 @@ export default function StudentDashboard() {
     );
   }
 
+  if (!profile && !profileError) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-zinc-400 font-mono uppercase tracking-widest text-xs">Cargando datos...</p>
+      </div>
+    );
+  }
+
   const isSuspended = profile?.estado_activo === false || (profile?.data && profile.data.estado_activo === false);
   const isBlockedByPayment = profile?.bloqueado_por_pago || (profile?.data && profile.data.bloqueado_por_pago);
 
