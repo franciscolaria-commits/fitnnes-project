@@ -331,3 +331,20 @@ def get_my_asistencias(
             for a in asistencias
         ]
     }
+
+@router.patch('/me/membership', response_model=schemas.AlumnoOut)
+def update_my_membership(data: schemas.MembershipUpdate, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
+    if current_user.rol != 'alumno':
+        raise HTTPException(status_code=403, detail='Sólo alumnos')
+    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail='Alumno no encontrado')
+    
+    alumno.tipo_membresia = data.tipo_membresia
+    if data.tipo_membresia == 'por_clases' and data.clases_compradas is not None:
+        alumno.clases_compradas = data.clases_compradas
+        alumno.clases_restantes = data.clases_compradas
+    
+    db.commit()
+    db.refresh(alumno)
+    return alumno

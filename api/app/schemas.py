@@ -524,3 +524,7 @@ class ProgresoVisualOut(ProgresoVisualBase):
 
 class ConfiguracionEvaluacionUpdate(BaseModel):
     frecuencia_evaluacion_dias: Optional[int] = None
+
+class MembershipUpdate(BaseModel):
+    tipo_membresia: str
+    clases_compradas: Optional[int] = None

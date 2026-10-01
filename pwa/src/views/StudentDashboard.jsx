@@ -7,6 +7,7 @@ import StudentEvaluations from './StudentEvaluations.jsx';
 import ExerciseAnimations from '../components/ExerciseAnimations.jsx';
 import TutorialPanel from '../components/TutorialPanel.jsx';
 import { Info } from 'lucide-react';
+import MembershipModal from '../components/MembershipModal.jsx';
 
 const getYouTubeEmbedUrl = (url) => {
   if (!url) return null;
@@ -70,6 +71,8 @@ export default function StudentDashboard() {
   const isSuspended = profile?.estado_activo === false || (profile?.data && profile.data.estado_activo === false);
   const isBlockedByPayment = profile?.bloqueado_por_pago || (profile?.data && profile.data.bloqueado_por_pago);
 
+  const needsMembershipConfig = profile && !profile.tipo_membresia && profile.entrenador?.tipo_cuenta === 'gimnasio' && profile.entrenador?.gym_tipo_cobro === 'ambos';
+
   if (profileError && !profile) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-6 p-6">
@@ -131,6 +134,10 @@ export default function StudentDashboard() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500 selection:text-zinc-950">
+      
+      {needsMembershipConfig && (
+        <MembershipModal gymInfo={profile.entrenador} onComplete={() => refetchProfile()} />
+      )}
       
       {profile?.usuario && !profile.usuario.telefono && (
         <div className="bg-orange-500/10 border-b border-orange-500/30 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
