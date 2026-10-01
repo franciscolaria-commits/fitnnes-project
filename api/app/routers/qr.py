@@ -33,7 +33,7 @@ def _calcular_vencimiento(fecha_inicio: date, clases_restantes: int,
 @router.get("/{coach_id}")
 def get_gym_info(coach_id: str, db: Session = Depends(get_db)):
     """Devuelve info pública del gimnasio para mostrar en la pantalla del QR."""
-    from app.models import Usuario
+    from app.models import Usuario, Invitacion
     # coach_id puede ser UUID o email
     coach = None
     if "@" in coach_id:
@@ -44,7 +44,11 @@ def get_gym_info(coach_id: str, db: Session = Depends(get_db)):
         try:
             import uuid
             uuid_val = uuid.UUID(coach_id)
-            coach = db.query(Entrenador).filter(Entrenador.id_usuario == uuid_val).first()
+            inv = db.query(Invitacion).filter(Invitacion.codigo_unico == str(uuid_val)).first()
+            if inv:
+                coach = db.query(Entrenador).filter(Entrenador.id_usuario == inv.id_entrenador).first()
+            else:
+                coach = db.query(Entrenador).filter(Entrenador.id_usuario == uuid_val).first()
         except ValueError:
             pass
     if not coach or coach.tipo_cuenta != "gimnasio":
@@ -66,7 +70,7 @@ def qr_checkin(
 ):
     """Registra asistencia del alumno. Máximo 1 por día."""
     # Validaciones
-    from app.models import Usuario
+    from app.models import Usuario, Invitacion
     # coach_id puede ser UUID o email
     coach = None
     if "@" in coach_id:
@@ -77,7 +81,11 @@ def qr_checkin(
         try:
             import uuid
             uuid_val = uuid.UUID(coach_id)
-            coach = db.query(Entrenador).filter(Entrenador.id_usuario == uuid_val).first()
+            inv = db.query(Invitacion).filter(Invitacion.codigo_unico == str(uuid_val)).first()
+            if inv:
+                coach = db.query(Entrenador).filter(Entrenador.id_usuario == inv.id_entrenador).first()
+            else:
+                coach = db.query(Entrenador).filter(Entrenador.id_usuario == uuid_val).first()
         except ValueError:
             pass
     if not coach or coach.tipo_cuenta != "gimnasio":

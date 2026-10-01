@@ -259,11 +259,11 @@ export default function AuthView({ onLoginSuccess }) {
               </div>
             </div>
             
-            {gymInfo && (gymInfo.tipo_cobro === 'por_clases' || gymInfo.tipo_cobro === 'ambos') && (
+            {gymInfo && (gymInfo.tipo_cobro === 'por_clases' || gymInfo.tipo_cobro === 'ambos' || !gymInfo.tipo_cobro) && (
               <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex flex-col gap-3 mt-2">
                 <h3 className="text-sm font-bold text-emerald-400">Completá tu membresía en {gymInfo.nombre}</h3>
                 
-                {gymInfo.tipo_cobro === 'ambos' && (
+                {(gymInfo.tipo_cobro === 'ambos' || !gymInfo.tipo_cobro) && (
                   <div>
                     <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cómo vas a entrenar?</label>
                     <select id="reg-student-membresia" required value={selectedMembresia} onChange={(e) => setSelectedMembresia(e.target.value)} className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white outline-none">

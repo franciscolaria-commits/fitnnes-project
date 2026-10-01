@@ -23,9 +23,9 @@ const queryClient = new QueryClient({
 // Persister usando IndexedDB (idb-keyval)
 const asyncStoragePersister = createAsyncStoragePersister({
   storage: {
-    getItem: async (key) => await get(key),
-    setItem: async (key, value) => await set(key, value),
-    removeItem: async (key) => await del(key),
+    getItem: async (key) => { try { return await get(key); } catch(e) { return null; } },
+    setItem: async (key, value) => { try { await set(key, value); } catch(e) {} },
+    removeItem: async (key) => { try { await del(key); } catch(e) {} },
   },
 })
 
