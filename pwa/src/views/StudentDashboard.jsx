@@ -68,19 +68,11 @@ export default function StudentDashboard() {
     );
   }
 
-  if (!profile && !profileError) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
-        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-zinc-400 font-mono uppercase tracking-widest text-xs">Cargando datos...</p>
-      </div>
-    );
-  }
 
   const isSuspended = profile?.estado_activo === false || (profile?.data && profile.data.estado_activo === false);
   const isBlockedByPayment = profile?.bloqueado_por_pago || (profile?.data && profile.data.bloqueado_por_pago);
 
-  const needsMembershipConfig = profile && !profile.tipo_membresia && profile.entrenador?.tipo_cuenta === 'gimnasio' && profile.entrenador?.gym_tipo_cobro === 'ambos';
+  const needsMembershipConfig = profile && !profile?.tipo_membresia && profile?.entrenador?.tipo_cuenta === 'gimnasio' && profile?.entrenador?.gym_tipo_cobro === 'ambos';
 
   if (profileError && !profile) {
     return (
@@ -145,7 +137,7 @@ export default function StudentDashboard() {
     <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500 selection:text-zinc-950">
       
       {needsMembershipConfig && (
-        <MembershipModal gymInfo={profile.entrenador} onComplete={() => refetchProfile()} />
+        <MembershipModal gymInfo={profile?.entrenador} onComplete={() => refetchProfile()} />
       )}
       
       {profile?.usuario && !profile.usuario.telefono && (
@@ -276,20 +268,20 @@ export default function StudentDashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 auto-rows-min">
             
             {/* WIDGET DE MEMBRESÍA (Solo si aplica) */}
-            {profile.entrenador?.tipo_cuenta === 'gimnasio' && (
+            {profile?.entrenador?.tipo_cuenta === 'gimnasio' && (
               <div className="lg:col-span-12 mb-4">
                 <div className="glass-card p-6 border-l-4 border-l-amber-500 rounded-xl shadow-lg flex flex-col md:flex-row items-center justify-between gap-4">
                   <div>
                     <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest mb-1">MI MEMBRESÍA</h3>
-                    {profile.tipo_membresia === 'por_clases' ? (
+                    {profile?.tipo_membresia === 'por_clases' ? (
                       <p className="text-zinc-300">
-                        Tenés <span className="text-white font-bold">{profile.clases_restantes || 0}</span> clases restantes de tu paquete.
+                        Tenés <span className="text-white font-bold">{profile?.clases_restantes || 0}</span> clases restantes de tu paquete.
                       </p>
                     ) : (
                       <p className="text-zinc-300">Estás en modalidad <span className="text-white font-bold">Pase Libre</span>.</p>
                     )}
-                    {profile.vencimiento_estimado_clases && (
-                      <p className="text-xs text-zinc-500 mt-1">Vencimiento estimado: {new Date(profile.vencimiento_estimado_clases).toLocaleDateString()}</p>
+                    {profile?.vencimiento_estimado_clases && (
+                      <p className="text-xs text-zinc-500 mt-1">Vencimiento estimado: {new Date(profile?.vencimiento_estimado_clases).toLocaleDateString()}</p>
                     )}
                     <button 
                       onClick={() => setShowAttendancesModal(true)}
@@ -298,7 +290,7 @@ export default function StudentDashboard() {
                       Ver mis asistencias
                     </button>
                   </div>
-                  {profile.tipo_membresia === 'por_clases' && (profile.clases_restantes || 0) <= 2 && (
+                  {profile?.tipo_membresia === 'por_clases' && (profile?.clases_restantes || 0) <= 2 && (
                     <div className="bg-amber-500/10 border border-amber-500/30 px-4 py-2 rounded-xl text-amber-400 font-bold text-sm">
                       ⚠️ ¡Pocas clases restantes!
                     </div>
