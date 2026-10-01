@@ -35,24 +35,23 @@ def create_routine(
         )
         db.add(new_rutina)
 
-        dias_out = []
+        dias_a_insertar = []
+        ejercicios_a_insertar = []
+        
         # 2. Iterar sobre Días
         for dia_data in routine_data.dias:
             new_dia_id = uuid4()
-            new_dia = models.RutinaDia(
+            dias_a_insertar.append(models.RutinaDia(
                 id_dia=new_dia_id,
                 id_rutina=new_rutina_id,
                 nombre_dia=dia_data.nombre_dia,
                 orden=dia_data.orden
-            )
-            db.add(new_dia)
+            ))
 
-            ejercicios_out = []
             # 3. Iterar sobre Ejercicios de cada Día
             for ej_data in dia_data.ejercicios:
-                new_ej_id = uuid4()
-                new_ej = models.RutinaEjercicio(
-                    id_rutina_ejercicio=new_ej_id,
+                ejercicios_a_insertar.append(models.RutinaEjercicio(
+                    id_rutina_ejercicio=uuid4(),
                     id_dia=new_dia_id,
                     id_ejercicio=ej_data.id_ejercicio,
                     series_esperadas=ej_data.series_esperadas,
@@ -60,8 +59,13 @@ def create_routine(
                     descanso_segundos=ej_data.descanso_segundos,
                     orden=ej_data.orden,
                     nota_entrenador=ej_data.nota_entrenador
-                )
-                db.add(new_ej)
+                ))
+                
+        # Batch insert for days and exercises
+        if dias_a_insertar:
+            db.add_all(dias_a_insertar)
+        if ejercicios_a_insertar:
+            db.add_all(ejercicios_a_insertar)
                 
         # Commit de toda la jerarquía de forma transaccional
         db.commit()
@@ -111,21 +115,22 @@ def update_routine(
         )
         db.add(new_rutina)
 
+        dias_a_insertar = []
+        ejercicios_a_insertar = []
+        
         # 4. Insertar la jerarquía profunda clonada/modificada
         for dia_data in routine_data.dias:
             new_dia_id = uuid4()
-            new_dia = models.RutinaDia(
+            dias_a_insertar.append(models.RutinaDia(
                 id_dia=new_dia_id,
                 id_rutina=new_rutina_id,
                 nombre_dia=dia_data.nombre_dia,
                 orden=dia_data.orden
-            )
-            db.add(new_dia)
+            ))
 
             for ej_data in dia_data.ejercicios:
-                new_ej_id = uuid4()
-                new_ej = models.RutinaEjercicio(
-                    id_rutina_ejercicio=new_ej_id,
+                ejercicios_a_insertar.append(models.RutinaEjercicio(
+                    id_rutina_ejercicio=uuid4(),
                     id_dia=new_dia_id,
                     id_ejercicio=ej_data.id_ejercicio,
                     series_esperadas=ej_data.series_esperadas,
@@ -133,18 +138,20 @@ def update_routine(
                     descanso_segundos=ej_data.descanso_segundos,
                     orden=ej_data.orden,
                     nota_entrenador=ej_data.nota_entrenador
-                )
-                db.add(new_ej)
+                ))
+        
+        if dias_a_insertar:
+            db.add_all(dias_a_insertar)
+        if ejercicios_a_insertar:
+            db.add_all(ejercicios_a_insertar)
         
         # Forzar la inserción de la nueva rutina antes de reasignar a los alumnos
         db.flush()
 
-        # 5. Reasignar automáticamente a los alumnos afectados
-        alumnos_afectados = db.query(models.Alumno).filter(
+        # 5. Reasignar automáticamente a los alumnos afectados (Bulk Update)
+        db.query(models.Alumno).filter(
             models.Alumno.id_rutina_activa == old_rutina.id_rutina
-        ).all()
-        for alumno in alumnos_afectados:
-            alumno.id_rutina_activa = new_rutina_id
+        ).update({"id_rutina_activa": new_rutina_id}, synchronize_session=False)
 
         db.commit()
         db.refresh(new_rutina)
@@ -187,21 +194,22 @@ def duplicate_routine(
         )
         db.add(new_rutina)
 
+        dias_a_insertar = []
+        ejercicios_a_insertar = []
+
         # 3. Insertar la jerarquía profunda clonada
         for old_dia in old_rutina.dias:
             new_dia_id = uuid4()
-            new_dia = models.RutinaDia(
+            dias_a_insertar.append(models.RutinaDia(
                 id_dia=new_dia_id,
                 id_rutina=new_rutina_id,
                 nombre_dia=old_dia.nombre_dia,
                 orden=old_dia.orden
-            )
-            db.add(new_dia)
+            ))
 
             for old_ej in old_dia.ejercicios:
-                new_ej_id = uuid4()
-                new_ej = models.RutinaEjercicio(
-                    id_rutina_ejercicio=new_ej_id,
+                ejercicios_a_insertar.append(models.RutinaEjercicio(
+                    id_rutina_ejercicio=uuid4(),
                     id_dia=new_dia_id,
                     id_ejercicio=old_ej.id_ejercicio,
                     series_esperadas=old_ej.series_esperadas,
@@ -209,8 +217,12 @@ def duplicate_routine(
                     descanso_segundos=old_ej.descanso_segundos,
                     orden=old_ej.orden,
                     nota_entrenador=old_ej.nota_entrenador
-                )
-                db.add(new_ej)
+                ))
+        
+        if dias_a_insertar:
+            db.add_all(dias_a_insertar)
+        if ejercicios_a_insertar:
+            db.add_all(ejercicios_a_insertar)
 
         db.commit()
         db.refresh(new_rutina)

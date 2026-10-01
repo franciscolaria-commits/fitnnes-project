@@ -65,12 +65,12 @@ class PagoEntrenador(Base):
 class Alumno(Base):
     __tablename__ = "alumnos"
     id_usuario = Column(UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), primary_key=True)
-    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False)
+    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False, index=True)
     peso_corporal_actual = Column(Float)
     fecha_ultimo_peso = Column(DateTime, default=datetime.utcnow)
     objetivo = Column(String)
     estado_activo = Column(Boolean, default=True, index=True)
-    id_rutina_activa = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=True)
+    id_rutina_activa = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=True, index=True)
     clasificacion = Column(String, nullable=True)
     
     # Control de pagos
@@ -124,7 +124,7 @@ class Ejercicio(Base):
     es_con_peso = Column(Boolean, default=True) # Indica si lleva peso
     tipo_banda = Column(String, nullable=True) # "liviana", "media", "fuerte" o null
     # Si es null, es un ejercicio global del sistema. Si tiene UUID, es custom del entrenador.
-    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=True)
+    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=True, index=True)
 
 class EjercicioMediaCoach(Base):
     __tablename__ = "ejercicios_media_coaches"
@@ -137,7 +137,7 @@ class EjercicioMediaCoach(Base):
 class Rutina(Base):
     __tablename__ = "rutinas"
     id_rutina = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False)
+    id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False, index=True)
     nombre_rutina = Column(String, nullable=False)
     version_id = Column(Integer, default=1)
     is_active = Column(Boolean, default=True)
@@ -149,7 +149,7 @@ class Rutina(Base):
 class RutinaDia(Base):
     __tablename__ = "rutinas_dias"
     id_dia = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    id_rutina = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=False)
+    id_rutina = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=False, index=True)
     nombre_dia = Column(String, nullable=False)
     orden = Column(Integer, nullable=False)
     
@@ -158,8 +158,8 @@ class RutinaDia(Base):
 class RutinaEjercicio(Base):
     __tablename__ = "rutinas_ejercicios"
     id_rutina_ejercicio = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    id_dia = Column(UUID(as_uuid=True), ForeignKey("rutinas_dias.id_dia"), nullable=False)
-    id_ejercicio = Column(UUID(as_uuid=True), ForeignKey("ejercicios.id_ejercicio"), nullable=False)
+    id_dia = Column(UUID(as_uuid=True), ForeignKey("rutinas_dias.id_dia"), nullable=False, index=True)
+    id_ejercicio = Column(UUID(as_uuid=True), ForeignKey("ejercicios.id_ejercicio"), nullable=False, index=True)
     series_esperadas = Column(Integer, nullable=False)
     reps_esperadas = Column(Integer, nullable=False)
     descanso_segundos = Column(Integer)
@@ -172,8 +172,8 @@ class RutinaEjercicio(Base):
 class EntrenamientoSesion(Base):
     __tablename__ = "entrenamiento_sesiones"
     id_sesion = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    id_alumno = Column(UUID(as_uuid=True), ForeignKey("alumnos.id_usuario"), nullable=False)
-    id_rutina = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=False)
+    id_alumno = Column(UUID(as_uuid=True), ForeignKey("alumnos.id_usuario"), nullable=False, index=True)
+    id_rutina = Column(UUID(as_uuid=True), ForeignKey("rutinas.id_rutina"), nullable=False, index=True)
     fecha_inicio = Column(DateTime, default=datetime.utcnow)
     fecha_fin = Column(DateTime, nullable=True)
     estado = Column(String, nullable=False) # 'completado', 'incompleto'
@@ -183,8 +183,8 @@ class EntrenamientoSesion(Base):
 class EntrenamientoSetReal(Base):
     __tablename__ = "entrenamiento_sets_reales"
     id_set = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    id_sesion = Column(UUID(as_uuid=True), ForeignKey("entrenamiento_sesiones.id_sesion"), nullable=False)
-    id_rutina_ejercicio = Column(UUID(as_uuid=True), ForeignKey("rutinas_ejercicios.id_rutina_ejercicio"), nullable=False)
+    id_sesion = Column(UUID(as_uuid=True), ForeignKey("entrenamiento_sesiones.id_sesion"), nullable=False, index=True)
+    id_rutina_ejercicio = Column(UUID(as_uuid=True), ForeignKey("rutinas_ejercicios.id_rutina_ejercicio"), nullable=False, index=True)
     peso_usado = Column(Float, nullable=False)
     reps_logradas = Column(Integer, nullable=False)
     rpe = Column(Integer, nullable=True)

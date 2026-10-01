@@ -1,4 +1,5 @@
 import os
+import asyncio
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordRequestForm
@@ -190,7 +191,7 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
 
 @router.post("/login", response_model=Token)
 @limiter.limit("5/minute")
-def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
     """
     Endpoint para autenticar usuarios mediante OAuth2.
     Valida las credenciales y retorna un token de acceso JWT.
@@ -212,7 +213,16 @@ def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends(), db
         
     # 2. Validar usuarios normales en BD
     usuario = db.query(Usuario).filter(Usuario.email == form_data.username.lower()).first()
-    if not usuario or not verificar_password(form_data.password, usuario.password_hash):
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Correo electrónico o contraseña incorrectos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+        
+    # Validar password asincrónicamente para no bloquear el event loop
+    is_password_valid = await asyncio.to_thread(verificar_password, form_data.password, usuario.password_hash)
+    if not is_password_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Correo electrónico o contraseña incorrectos",
