@@ -1,4 +1,4 @@
-import uuid
+﻿import uuid
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.orm import Session
@@ -47,7 +47,7 @@ def update_coach_profile(
 ):
     """
     Actualiza el perfil profesional del entrenador autenticado.
-    Permite modificar la especialidad, biografía y url de la foto de perfil (alojada en R2).
+    Permite modificar la especialidad, biografÃ­a y url de la foto de perfil (alojada en R2).
     """
     if current_user.rol != "entrenador":
         raise HTTPException(
@@ -65,7 +65,7 @@ def update_coach_profile(
     try:
         update_data = profile_data.dict(exclude_unset=True)
         
-        # Prevenir modificación accidental
+        # Prevenir modificaciÃ³n accidental
         if "fecha_vencimiento" in update_data:
             del update_data["fecha_vencimiento"]
         if "estado_financiero" in update_data:
@@ -82,7 +82,7 @@ def update_coach_profile(
         print(f"ERROR INTERNO (Update Entrenador): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ocurrió un error interno en el servidor."
+            detail="OcurriÃ³ un error interno en el servidor."
         )
 
 @router.post("/profile/image", response_model=EntrenadorOut)
@@ -111,7 +111,7 @@ async def upload_coach_profile_image(
         # Validate file size (e.g., 5MB limit)
         contents = await file.read()
         if len(contents) > 5 * 1024 * 1024:
-            raise HTTPException(status_code=400, detail="El archivo es demasiado grande. Máximo 5MB.")
+            raise HTTPException(status_code=400, detail="El archivo es demasiado grande. MÃ¡ximo 5MB.")
             
         file_ext = file.filename.split(".")[-1].lower() if "." in file.filename else "jpg"
         unique_filename = f"profiles/coach_{current_user.id_usuario}_{uuid.uuid4().hex[:8]}.{file_ext}"
@@ -132,7 +132,7 @@ async def upload_coach_profile_image(
         print(f"ERROR INTERNO (Upload Foto): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ocurrió un error interno en el servidor."
+            detail="OcurriÃ³ un error interno en el servidor."
         )
 
 @router.post("/invitations", response_model=InvitacionOut, status_code=status.HTTP_201_CREATED)
@@ -142,8 +142,8 @@ def create_invitation(
     db: Session = Depends(get_db)
 ):
     """
-    Genera un nuevo código de invitación único (UUIDv4 inquebrantable) 
-    para vincular un alumno con este entrenador. Expiración de 7 días.
+    Genera un nuevo cÃ³digo de invitaciÃ³n Ãºnico (UUIDv4 inquebrantable) 
+    para vincular un alumno con este entrenador. ExpiraciÃ³n de 7 dÃ­as.
     """
     if current_user.rol != "entrenador":
         raise HTTPException(
@@ -152,7 +152,7 @@ def create_invitation(
         )
         
     try:
-        # Generar código de invitación obligatoriamente como UUIDv4
+        # Generar cÃ³digo de invitaciÃ³n obligatoriamente como UUIDv4
         codigo_uuid = uuid.uuid4()
         
         nueva_invitacion = Invitacion(
@@ -173,7 +173,7 @@ def create_invitation(
         print(f"ERROR INTERNO (Generar Invitacion): {str(e)}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Ocurrió un error interno en el servidor."
+            detail="OcurriÃ³ un error interno en el servidor."
         )
 
 @router.get("/invitations", response_model=List[InvitacionOut])
@@ -196,7 +196,7 @@ def get_invitations(
 @router.get("/audits/pending", response_model=List[schemas.LogLigaAlumnoOut])
 def get_pending_audits(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores pueden ver auditorías")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores pueden ver auditorÃ­as")
         
     logs = db.query(models.LogLigaAlumno).join(
         models.Alumno, models.Alumno.id_usuario == models.LogLigaAlumno.id_alumno
@@ -226,7 +226,7 @@ def get_pending_audits(db: Session = Depends(get_db), current_user: models.Usuar
 @router.get("/audits/attendance_alerts")
 def get_attendance_alerts(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores pueden ver alertas")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores pueden ver alertas")
         
     query = text("""
         WITH TargetWeek AS (
@@ -311,7 +311,7 @@ def resolve_audit(
     current_user: models.Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     log = db.query(models.LogLigaAlumno).filter(models.LogLigaAlumno.id_log == id_log).first()
     if not log:
@@ -325,13 +325,13 @@ def resolve_audit(
     if data.action == "aprobar":
         log.estado_validacion = "aprobado_manual"
         db.commit()
-        return {"status": "Aprobado", "message": "Récord validado exitosamente."}
+        return {"status": "Aprobado", "message": "RÃ©cord validado exitosamente."}
     elif data.action == "rechazar":
         log.estado_validacion = "rechazado"
         db.commit()
-        return {"status": "Rechazado", "message": "Récord rechazado."}
+        return {"status": "Rechazado", "message": "RÃ©cord rechazado."}
     else:
-        raise HTTPException(status_code=400, detail="Acción inválida")
+        raise HTTPException(status_code=400, detail="AcciÃ³n invÃ¡lida")
 
 from sqlalchemy import text
 
@@ -342,7 +342,7 @@ def get_student_progress_chart(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -375,7 +375,7 @@ def get_student_attendance(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -445,7 +445,7 @@ def get_student_attendance(
 
 
 # ==========================================
-# ENDPOINTS DE ESTADÍSTICAS Y PROGRESO (VISTA DEL ENTRENADOR)
+# ENDPOINTS DE ESTADÃSTICAS Y PROGRESO (VISTA DEL ENTRENADOR)
 # ==========================================
 
 @router.get("/students/{id_alumno}/stats")
@@ -454,9 +454,9 @@ def get_student_stats_for_coach(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    """Devuelve las estadísticas completas del alumno para el entrenador."""
+    """Devuelve las estadÃ­sticas completas del alumno para el entrenador."""
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
 
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -488,7 +488,7 @@ def get_student_stats_for_coach(
     reps = stats_row.reps or 0
     win_rate_percentage = 80.0 if total_sessions > 0 else 0.0
 
-    # Rolling adherence (últimos 30 días)
+    # Rolling adherence (Ãºltimos 30 dÃ­as)
     thirty_days_ago = datetime.utcnow() - timedelta(days=30)
     sessions_last_30 = db.query(models.EntrenamientoSesion).filter(
         models.EntrenamientoSesion.id_alumno == id_alumno,
@@ -540,7 +540,7 @@ def get_student_league_for_coach(
 ):
     """Devuelve el estado de ligas/fuerza relativa del alumno para el entrenador."""
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
 
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -625,7 +625,7 @@ def get_student_history_for_coach(
 ):
     """Devuelve el historial de sesiones del alumno para el entrenador."""
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
 
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -652,7 +652,7 @@ def get_student_history_for_coach(
 
 
 # ==========================================
-# ENDPOINTS DE FINANZAS Y SUSPENSIÓN
+# ENDPOINTS DE FINANZAS Y SUSPENSIÃ“N
 # ==========================================
 
 @router.get("/payments", response_model=List[schemas.EstadoPagoAlumnoResponse])
@@ -662,7 +662,7 @@ def get_payments_status(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumnos = db.query(models.Alumno).filter(models.Alumno.id_entrenador == current_user.id_usuario).all()
     
@@ -712,7 +712,7 @@ def get_finances_summary(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     current_anio_mes = datetime.utcnow().strftime("%Y-%m")
     
@@ -751,7 +751,7 @@ def get_finances_summary(
         deuda_pendiente = ingreso_esperado - ingreso_real
         if deuda_pendiente < 0: deuda_pendiente = 0
 
-    # Historial últimos 12 meses
+    # Historial Ãºltimos 12 meses
     historial = []
     from sqlalchemy import func
     meses_anteriores = db.query(
@@ -785,7 +785,7 @@ def register_payment(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == pago_data.id_alumno,
@@ -816,7 +816,7 @@ def register_payment(
         )
         db.add(nuevo_pago)
         
-    # Obtener configuración del entrenador para saber cómo sumar el tiempo
+    # Obtener configuraciÃ³n del entrenador para saber cÃ³mo sumar el tiempo
     entrenador_config = db.query(models.Entrenador).filter(models.Entrenador.id_usuario == current_user.id_usuario).first()
     
     if not alumno.fecha_vencimiento_pago:
@@ -824,10 +824,10 @@ def register_payment(
     else:
         if entrenador_config and entrenador_config.config_vencimiento_tipo == "fijo_por_alumno":
             # Para este modo, la fecha base siempre es la fecha de vencimiento anterior,
-            # sin importar si pagó tarde, para mantener intacto su número de día.
+            # sin importar si pagÃ³ tarde, para mantener intacto su nÃºmero de dÃ­a.
             base_date = alumno.fecha_vencimiento_pago
             
-            # Sumar exactamente 1 mes manteniendo el mismo día
+            # Sumar exactamente 1 mes manteniendo el mismo dÃ­a
             import calendar
             mes = base_date.month + 1
             anio = base_date.year
@@ -839,7 +839,7 @@ def register_payment(
             nuevo_dia = min(dia_original, ultimo_dia_mes)
             alumno.fecha_vencimiento_pago = base_date.replace(year=anio, month=mes, day=nuevo_dia)
         else:
-            # Lógica anterior de +30 días: si estaba vencido, cuenta desde hoy
+            # LÃ³gica anterior de +30 dÃ­as: si estaba vencido, cuenta desde hoy
             ahora = datetime.utcnow()
             base_date = alumno.fecha_vencimiento_pago if alumno.fecha_vencimiento_pago >= ahora else ahora
             alumno.fecha_vencimiento_pago = base_date + timedelta(days=30)
@@ -863,7 +863,7 @@ def delete_payment(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     pago = db.query(models.PagoAlumno).filter(
         models.PagoAlumno.id_pago == id_pago,
@@ -885,7 +885,7 @@ def update_payment_date(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -900,14 +900,14 @@ def update_payment_date(
     
     mes = hoy.month
     anio = hoy.year
-    # Si el día ya pasó este mes, cuenta para el mes siguiente
+    # Si el dÃ­a ya pasÃ³ este mes, cuenta para el mes siguiente
     if hoy.day >= dia:
         mes += 1
         if mes > 12:
             mes = 1
             anio += 1
                 
-    # Asegurar que el día sea válido para el mes calculado (ej. febrero 28)
+    # Asegurar que el dÃ­a sea vÃ¡lido para el mes calculado (ej. febrero 28)
     import calendar
     _, ultimo_dia_mes = calendar.monthrange(anio, mes)
     if dia > ultimo_dia_mes:
@@ -926,7 +926,7 @@ def hard_delete_student(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="S�lo entrenadores")
+        raise HTTPException(status_code=403, detail="Sólo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -948,7 +948,7 @@ def suspend_student(
     current_user: Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == id_alumno,
@@ -960,21 +960,21 @@ def suspend_student(
         
     alumno.estado_activo = data.estado_activo
     
-    # Si se envía un día de vencimiento personalizado al reactivar
+    # Si se envÃ­a un dÃ­a de vencimiento personalizado al reactivar
     if data.estado_activo and data.dia_vencimiento_personalizado is not None:
         hoy = datetime.utcnow()
         mes = hoy.month
         anio = hoy.year
         dia = data.dia_vencimiento_personalizado
         
-        # Si el día ya pasó este mes, el vencimiento es el mes siguiente
+        # Si el dÃ­a ya pasÃ³ este mes, el vencimiento es el mes siguiente
         if hoy.day >= dia:
             mes += 1
             if mes > 12:
                 mes = 1
                 anio += 1
                 
-        # Asegurarnos de que el día sea válido para el mes calculado
+        # Asegurarnos de que el dÃ­a sea vÃ¡lido para el mes calculado
         import calendar
         _, ultimo_dia_mes = calendar.monthrange(anio, mes)
         if dia > ultimo_dia_mes:
@@ -987,7 +987,7 @@ def suspend_student(
 
 
 # ==========================================
-# ENDPOINT DE IMPORTACIÓN DE RUTINAS
+# ENDPOINT DE IMPORTACIÃ“N DE RUTINAS
 # ==========================================
 
 from pydantic import BaseModel
@@ -1093,11 +1093,11 @@ def import_routine(
     db.add(rutina)
     db.flush()
 
-    # 4. Crear los días y ejercicios de la rutina
+    # 4. Crear los dÃ­as y ejercicios de la rutina
     rutina_ejercicio_map = {}  # (dia_idx, nombre_lower) -> id_rutina_ejercicio
 
     for dia_idx, dia in enumerate(data.dias):
-        nombre_dia = dia.nombre_dia.strip() if dia.nombre_dia.strip() else f"Día {dia_idx + 1}"
+        nombre_dia = dia.nombre_dia.strip() if dia.nombre_dia.strip() else f"DÃ­a {dia_idx + 1}"
         rutina_dia = models.RutinaDia(
             id_dia=uuid.uuid4(),
             id_rutina=rutina.id_rutina,
@@ -1113,7 +1113,7 @@ def import_routine(
             if not id_ejercicio:
                 continue
 
-            # Parsear reps_objetivo: si es "8-10" tomamos el primer número
+            # Parsear reps_objetivo: si es "8-10" tomamos el primer nÃºmero
             reps_num = 10
             try:
                 reps_str = str(ex_item.reps_objetivo).split('-')[0].strip()
@@ -1148,7 +1148,7 @@ def import_routine(
             if not sets_validos:
                 continue
 
-            # Crear una sesión histórica por cada ejercicio con datos
+            # Crear una sesiÃ³n histÃ³rica por cada ejercicio con datos
             sesion = models.EntrenamientoSesion(
                 id_sesion=uuid.uuid4(),
                 id_alumno=data.id_alumno,
@@ -1172,7 +1172,7 @@ def import_routine(
                 )
                 db.add(set_real)
 
-    # 6. Asignar rutina al alumno si se indicó
+    # 6. Asignar rutina al alumno si se indicÃ³
     if data.asignar_al_alumno:
         alumno.id_rutina_activa = rutina.id_rutina
 
@@ -1202,7 +1202,7 @@ def reload_classes(
     current_user: models.Usuario = Depends(get_current_user)
 ):
     if current_user.rol != "entrenador":
-        raise HTTPException(status_code=403, detail="Sólo entrenadores")
+        raise HTTPException(status_code=403, detail="SÃ³lo entrenadores")
         
     alumno = db.query(models.Alumno).filter(
         models.Alumno.id_usuario == student_id,
