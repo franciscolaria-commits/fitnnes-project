@@ -1174,7 +1174,7 @@ class ReloadClassesReq(BaseModel):
 
 @router.post("/students/{student_id}/reload_classes")
 def reload_classes(
-    student_id: UUID,
+    student_id: uuid.UUID,
     req: ReloadClassesReq,
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user)
