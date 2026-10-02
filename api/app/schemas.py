@@ -230,6 +230,40 @@ class RutinaOut(BaseModel):
     class Config:
         from_attributes = True
 
+# Schemas livianos para el listing del coach (sin el objeto ejercicio completo)
+class RutinaEjercicioListOut(BaseModel):
+    id_rutina_ejercicio: UUID
+    id_ejercicio: UUID
+    series_esperadas: int
+    reps_esperadas: int
+    descanso_segundos: Optional[int] = None
+    orden: int
+    nota_entrenador: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class RutinaDiaListOut(BaseModel):
+    id_dia: UUID
+    nombre_dia: str
+    orden: int
+    ejercicios: List[RutinaEjercicioListOut] = []
+
+    class Config:
+        from_attributes = True
+
+class RutinaListOut(BaseModel):
+    id_rutina: UUID
+    nombre_rutina: str
+    version_id: int
+    is_active: bool
+    fecha_creacion: datetime
+    frecuencia_semanal: Optional[int] = 3
+    dias: List[RutinaDiaListOut] = []
+
+    class Config:
+        from_attributes = True
+
 # ==========================================
 # ESQUEMAS DE ASIGNACIÓN
 # ==========================================

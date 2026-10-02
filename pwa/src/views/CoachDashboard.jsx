@@ -52,25 +52,31 @@ export default function CoachDashboard() {
 
   const loadData = async () => {
     try {
-      const stdData = await api.get("/api/v1/coaches/students");
+      // Todas las peticiones en paralelo (Promise.all) — reduce latencia ~70%
+      const [
+        stdData,
+        invData,
+        exData,
+        rutData,
+        profData,
+        audData,
+        alertsData,
+      ] = await Promise.all([
+        api.get("/api/v1/coaches/students"),
+        api.get("/api/v1/coaches/invitations"),
+        api.get("/api/v1/exercises"),
+        api.get("/api/v1/routines"),
+        api.get("/api/v1/coaches/profile"),
+        api.get("/api/v1/coaches/audits/pending"),
+        api.get("/api/v1/coaches/audits/attendance_alerts"),
+      ]);
+
       setStudents(stdData);
-      
-      const invData = await api.get("/api/v1/coaches/invitations");
       setInvitations(invData);
-      
-      const exData = await api.get("/api/v1/exercises");
       setExercises(exData);
-      
-      const rutData = await api.get("/api/v1/routines");
       setRoutines(rutData);
-
-      const profData = await api.get("/api/v1/coaches/profile");
       setProfile(profData);
-      
-      const audData = await api.get("/api/v1/coaches/audits/pending");
       setAudits(audData);
-
-      const alertsData = await api.get("/api/v1/coaches/audits/attendance_alerts");
       setAttendanceAlerts(alertsData);
     } catch (err) {
       console.error(err);

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from uuid import UUID, uuid4
 from datetime import datetime
 from pydantic import BaseModel
@@ -18,41 +18,29 @@ def get_my_profile(db: Session = Depends(get_db), current_user: models.Usuario =
         raise HTTPException(status_code=403, detail="Sólo los alumnos pueden ver su perfil")
         
     alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
-    if not alumno:
-        raise HTTPException(status_code=404, detail="Perfil no encontrado")
-        
-    return alumno
-
-@router.put("/profile/phone", response_model=schemas.UsuarioOut)
-def update_my_phone(phone_data: schemas.PhoneUpdate, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
-    current_user.telefono = phone_data.telefono
-    db.commit()
-    db.refresh(current_user)
-    return current_user
-
-@router.get("/me/routine", response_model=schemas.RutinaOut)
-def get_my_routine(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
-    if current_user.rol != "alumno":
-        raise HTTPException(status_code=403, detail="Sólo los alumnos pueden ver su rutina asignada")
-
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno or not alumno.id_rutina_activa:
         raise HTTPException(status_code=404, detail="No tienes una rutina asignada actualmente")
 
-    rutina = db.query(models.Rutina).filter(models.Rutina.id_rutina == alumno.id_rutina_activa).first()
+    # Eager load completo: rutina -> dias -> ejercicios -> objeto ejercicio
+    rutina = db.query(models.Rutina).options(
+        selectinload(models.Rutina.dias).selectinload(models.RutinaDia.ejercicios).selectinload(models.RutinaEjercicio.ejercicio)
+    ).filter(models.Rutina.id_rutina == alumno.id_rutina_activa).first()
     if not rutina:
         raise HTTPException(status_code=404, detail="La rutina asignada no pudo ser cargada")
 
-    # Inyectar url_media para ejercicios globales según los overrides del entrenador
+    # Pre-cargar todos los overrides del entrenador en UNA sola query (elimina N+1)
+    overrides = db.query(models.EjercicioMediaCoach).filter(
+        models.EjercicioMediaCoach.id_entrenador == alumno.id_entrenador
+    ).all()
+    override_map = {str(o.id_ejercicio): o.url_media for o in overrides}
+
+    # Aplicar overrides en memoria sin consultas adicionales
     for dia in rutina.dias:
         for ex in dia.ejercicios:
             if ex.ejercicio and not ex.ejercicio.id_entrenador:
-                override = db.query(models.EjercicioMediaCoach).filter(
-                    models.EjercicioMediaCoach.id_ejercicio == ex.id_ejercicio,
-                    models.EjercicioMediaCoach.id_entrenador == alumno.id_entrenador
-                ).first()
-                if override:
-                    ex.ejercicio.url_media = override.url_media
+                url = override_map.get(str(ex.id_ejercicio))
+                if url:
+                    ex.ejercicio.url_media = url
 
     return rutina
 

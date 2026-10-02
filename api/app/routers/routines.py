@@ -309,7 +309,7 @@ def assign_routine_bulk(
         print(f"ERROR INTERNO (Asignar Rutina Masiva): {str(e)}")
         raise HTTPException(status_code=500, detail="Ocurrió un error interno en el servidor.")
 
-@router.get("", response_model=List[schemas.RutinaOut])
+@router.get("", response_model=List[schemas.RutinaListOut])
 def get_routines(
     db: Session = Depends(get_db),
     current_user: models.Usuario = Depends(get_current_user)
