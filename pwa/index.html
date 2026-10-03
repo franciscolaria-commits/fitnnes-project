@@ -1,18 +1,45 @@
 ﻿<!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/logo.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Syncro</title>
-      <link rel="manifest" href="/manifest.json" />
+
+    <!-- Viewport sin bloqueo de zoom (accesibilidad) -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- SEO basico -->
+    <title>Syncro | App para entrenadores personales</title>
+    <meta name="description" content="Syncro es la plataforma para entrenadores personales con 10 a 50 alumnos. Rutinas, seguimiento de cargas, evaluaciones y cobros en un solo lugar. Proba gratis 30 dias." />
+    <meta name="keywords" content="app entrenadores personales, gestion alumnos gym, rutinas online, seguimiento cargas, entrenador personal argentina" />
+    <meta name="author" content="Syncro" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph (WhatsApp, Facebook, Instagram, Telegram) -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://syncro-clone-r4pwfmggl-syncroclone.vercel.app/" />
+    <meta property="og:title" content="Syncro | App para entrenadores personales" />
+    <meta property="og:description" content="Rutinas, seguimiento de cargas, evaluaciones y cobros en un solo lugar. Deja las planillas y el caos de WhatsApp. Proba gratis 30 dias." />
+    <meta property="og:image" content="https://pub-c9df6b372d71433c93f52808f95347d4.r2.dev/landing/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="es_AR" />
+    <meta property="og:site_name" content="Syncro" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Syncro | App para entrenadores personales" />
+    <meta name="twitter:description" content="Rutinas, seguimiento de cargas, evaluaciones y cobros en un solo lugar. Proba gratis 30 dias." />
+    <meta name="twitter:image" content="https://pub-c9df6b372d71433c93f52808f95347d4.r2.dev/landing/og-image.png" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" href="/logo.png" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="theme-color" content="#050505" />
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-
