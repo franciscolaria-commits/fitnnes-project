@@ -88,43 +88,35 @@ export default function LandingPage() {
       <section className="relative z-10 pt-24 pb-16 px-4 text-center flex flex-col items-center">
         
         <div className="inline-flex items-center gap-2 bg-emerald-500/10 border border-emerald-500/20 rounded-full px-3 py-1.5 mb-8">
-          <span className="bg-emerald-500 text-black text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">New</span>
-          <span className="text-xs font-medium text-emerald-300/80 tracking-wide">La Revolución en el Control de tus Clientes</span>
+          <span className="bg-emerald-500 text-black text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full">Para vos</span>
+          <span className="text-xs font-medium text-emerald-300/80 tracking-wide">Para entrenadores con 10 a 50 alumnos</span>
         </div>
 
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 max-w-4xl leading-[1.1]">
-          Tus rutinas en Excel te están costando clientes.
+          Tus rutinas en Excel te están costando alumnos.
         </h1>
         
         <p className="text-lg md:text-xl text-white/50 max-w-2xl mb-10 font-light">
-          Moderniza la experiencia de tu gimnasio. Ofrece una app nativa, controla el progreso offline y automatiza tu negocio en una sola plataforma.
+          Rutinas, seguimiento de cargas, evaluaciones y cobros en un solo lugar. Dejá las planillas y el caos de WhatsApp.
         </p>
 
         <button 
           onClick={() => window.location.href = WHATSAPP_LINK}
           className="bg-white hover:bg-gray-200 text-black px-8 py-4 rounded-xl text-base font-semibold transition-all shadow-[0_0_40px_rgba(255,255,255,0.1)] hover:shadow-[0_0_60px_rgba(255,255,255,0.2)] cursor-pointer"
         >
-          Prueba gratis por 30 días
+          Probá gratis por 30 días
         </button>
 
         {/* Social Proof */}
-        <div className="mt-12 flex flex-col sm:flex-row items-center gap-4 text-sm text-white/40">
-          <div className="flex -space-x-3">
-            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
-            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
-            <img src="https://randomuser.me/api/portraits/men/68.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
-            <img src="https://randomuser.me/api/portraits/women/68.jpg" alt="Entrenador" className="w-10 h-10 rounded-full border-2 border-[#050505] object-cover" />
+        <div className="mt-10 flex flex-col items-center gap-2 text-sm text-white/40">
+          <div className="flex text-emerald-400 gap-0.5">
+            <Star className="w-4 h-4 fill-current" />
+            <Star className="w-4 h-4 fill-current" />
+            <Star className="w-4 h-4 fill-current" />
+            <Star className="w-4 h-4 fill-current" />
+            <Star className="w-4 h-4 fill-current" />
           </div>
-          <div className="flex flex-col items-center sm:items-start">
-            <div className="flex text-emerald-400 gap-0.5">
-              <Star className="w-4 h-4 fill-current" />
-              <Star className="w-4 h-4 fill-current" />
-              <Star className="w-4 h-4 fill-current" />
-              <Star className="w-4 h-4 fill-current" />
-              <Star className="w-4 h-4 fill-current" />
-            </div>
-            <span className="mt-1">Usado por cientos de entrenadores</span>
-          </div>
+          <span>Usado por entrenadores personales en Argentina</span>
         </div>
       </section>
 
