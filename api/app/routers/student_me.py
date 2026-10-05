@@ -16,7 +16,25 @@ router = APIRouter(
 def get_my_profile(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Sólo los alumnos pueden ver su perfil")
-        
+
+    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    if not alumno:
+        raise HTTPException(status_code=404, detail="Perfil no encontrado")
+
+    return alumno
+
+@router.put("/profile/phone", response_model=schemas.UsuarioOut)
+def update_my_phone(phone_data: schemas.PhoneUpdate, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
+    current_user.telefono = phone_data.telefono
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.get("/me/routine", response_model=schemas.RutinaOut)
+def get_my_routine(db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
+    if current_user.rol != "alumno":
+        raise HTTPException(status_code=403, detail="Sólo los alumnos pueden ver su rutina asignada")
+
     alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno or not alumno.id_rutina_activa:
         raise HTTPException(status_code=404, detail="No tienes una rutina asignada actualmente")
