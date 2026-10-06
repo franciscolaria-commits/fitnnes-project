@@ -266,7 +266,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
 
       {/* KPIs */}
       {summary && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isGymMode ? "lg:grid-cols-3" : "lg:grid-cols-4"}`}>
           <div className="glass-card p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
              <div className="absolute top-0 right-0 p-4 opacity-20"><DollarSign className="w-16 h-16 text-emerald-500"/></div>
              <p className="text-zinc-400 text-sm font-medium z-10">Ingresos del Mes</p>
@@ -283,11 +283,13 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
              <p className="text-zinc-400 text-sm font-medium z-10">Alumnos Pagados</p>
              <h3 className="text-3xl font-black text-zinc-100 z-10">{summary.alumnos_pagados}</h3>
           </div>
-          <div className="glass-card p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
-             <div className="absolute top-0 right-0 p-4 opacity-20"><Users className="w-16 h-16 text-zinc-500"/></div>
-             <p className="text-zinc-400 text-sm font-medium z-10">Total Alumnos</p>
-             <h3 className="text-3xl font-black text-zinc-100 z-10">{summary.cant_alumnos}</h3>
-          </div>
+          {!isGymMode && (
+            <div className="glass-card p-6 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-20"><Users className="w-16 h-16 text-zinc-500"/></div>
+               <p className="text-zinc-400 text-sm font-medium z-10">Total Alumnos</p>
+               <h3 className="text-3xl font-black text-zinc-100 z-10">{summary.cant_alumnos}</h3>
+            </div>
+          )}
         </div>
       )}
 
