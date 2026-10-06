@@ -10,7 +10,8 @@ export default function TutorialPanel({ userType = 'coach' }) {
     instalar: true,
     alumnos: userType === 'coach',
     rutinas: false,
-    finanzas: false
+    finanzas: false,
+    gym: false
   });
 
   const toggleSection = (section) => {
@@ -305,6 +306,77 @@ export default function TutorialPanel({ userType = 'coach' }) {
               </div>
             )}
           </div>
+
+          {/* SECCIÓN 4: MODO GIMNASIO */}
+          <div className="glass-card rounded-2xl shadow-lg border border-zinc-800 overflow-hidden mb-8">
+            <div 
+              className="p-6 flex items-center justify-between cursor-pointer bg-zinc-900/40 hover:bg-zinc-800/60 transition-colors"
+              onClick={() => toggleSection('gym')}
+            >
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-amber-500/20 text-amber-400 rounded-lg">
+                  <Dumbbell className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-zinc-100">4. Modo Gimnasio y Asistencias</h3>
+                  <p className="text-xs text-zinc-500">Configuración de clases, pase libre y kiosko de check-in</p>
+                </div>
+              </div>
+              {openSections.gym ? <ChevronUp className="text-zinc-400" /> : <ChevronDown className="text-zinc-400" />}
+            </div>
+            
+            {openSections.gym && (
+              <div className="p-6 border-t border-zinc-800 bg-zinc-900/20 flex flex-col gap-6">
+                
+                <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl p-5">
+                  <h4 className="font-bold text-white flex items-center gap-2 mb-3">
+                    <Settings className="w-4 h-4 text-zinc-400" /> 1. Activar el Modo Gimnasio
+                  </h4>
+                  <p className="text-sm text-zinc-400 mb-2">
+                    Para empezar, ve a la pestaña <strong>Perfil</strong>. Abajo de todo, encontrarás la sección <strong>Modo Gimnasio</strong>. Cambia tu tipo de cuenta de 'Estándar' a 'Gimnasio'.
+                  </p>
+                  <p className="text-sm text-zinc-400">
+                    Allí podrás elegir el modelo de cobro (Pase Libre, Por Clases, o Ambos). También podrás fijar la tarifa para el pase libre mensual y el precio del paquete de clases.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800 flex flex-col gap-2">
+                    <h5 className="font-bold text-emerald-400 text-sm flex items-center gap-2">
+                      Pase Libre
+                    </h5>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Tus alumnos podrán asistir ilimitadamente. Solo deben registrar su asistencia escaneando el QR, pero no se les descontará nada. El vencimiento se controla de la misma forma que en el modo estándar (por mes).
+                    </p>
+                  </div>
+                  <div className="bg-zinc-950/50 p-4 rounded-xl border border-zinc-800 flex flex-col gap-2">
+                    <h5 className="font-bold text-amber-400 text-sm flex items-center gap-2">
+                      Por Clases (Paquetes)
+                    </h5>
+                    <p className="text-xs text-zinc-400 leading-relaxed">
+                      Vendes paquetes (ej: 8 o 12 clases mensuales). En el panel de <strong>Finanzas</strong> verás un botón especial para recargarle las clases a cada alumno cuando te paguen. Cada vez que escanean el QR en tu gimnasio, se les descuenta automáticamente 1 clase.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl p-5">
+                  <h4 className="font-bold text-white flex items-center gap-2 mb-3">
+                    <Smartphone className="w-4 h-4 text-zinc-400" /> 2. Kiosko de Asistencia (Check-in)
+                  </h4>
+                  <p className="text-sm text-zinc-400 mb-3">
+                    Para que los alumnos puedan registrar su llegada, ve a la pestaña <strong>Auditoría</strong> y haz clic en <strong>"Ir a Modo Kiosko"</strong>.
+                  </p>
+                  <ul className="text-xs text-zinc-400 space-y-2 list-disc pl-4">
+                    <li>Esto abrirá una pantalla especial que puedes dejar abierta en una tablet o PC en la recepción de tu gimnasio.</li>
+                    <li>Tus alumnos deben abrir la app de Syncro en sus celulares, tocar el icono de QR de arriba a la derecha para ver su credencial, y escanearla en el Kiosko.</li>
+                    <li>El Kiosko les dirá al instante si están al día, si se quedaron sin clases, o si están suspendidos por falta de pago, descontando la clase de forma automática.</li>
+                  </ul>
+                </div>
+
+              </div>
+            )}
+          </div>
+
         </>
       )}
 
