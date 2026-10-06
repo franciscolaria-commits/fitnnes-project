@@ -30,7 +30,7 @@ def get_coach_profile(
             detail="Acceso exclusivo para entrenadores."
         )
         
-    perfil = db.query(Entrenador).filter(Entrenador.id_usuario == current_user.id_usuario).first()
+    perfil = db.query(Entrenador).options(joinedload(Entrenador.usuario)).filter(Entrenador.id_usuario == current_user.id_usuario).first()
     if not perfil:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -55,7 +55,7 @@ def update_coach_profile(
             detail="Acceso exclusivo para entrenadores."
         )
         
-    perfil = db.query(Entrenador).filter(Entrenador.id_usuario == current_user.id_usuario).first()
+    perfil = db.query(Entrenador).options(joinedload(Entrenador.usuario)).filter(Entrenador.id_usuario == current_user.id_usuario).first()
     if not perfil:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -100,7 +100,7 @@ async def upload_coach_profile_image(
             detail="Acceso exclusivo para entrenadores."
         )
         
-    perfil = db.query(Entrenador).filter(Entrenador.id_usuario == current_user.id_usuario).first()
+    perfil = db.query(Entrenador).options(joinedload(Entrenador.usuario)).filter(Entrenador.id_usuario == current_user.id_usuario).first()
     if not perfil:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

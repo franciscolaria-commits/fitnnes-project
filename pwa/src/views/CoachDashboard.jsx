@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import WorkoutBuilder from './WorkoutBuilder.jsx';
@@ -25,17 +26,27 @@ export default function CoachDashboard() {
     api.get('/api/v1/coaches/gym/config').then(data => setGymConfig(data)).catch(() => {});
   }, []);
   const [email, setEmail] = useState('');
-  const [students, setStudents] = useState([]);
+
+  const queryClient = useQueryClient();
+  const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => api.get('/api/v1/coaches/students') });
+  const { data: invitations = [] } = useQuery({ queryKey: ['invitations'], queryFn: () => api.get('/api/v1/coaches/invitations') });
+  const { data: exercises = [] } = useQuery({ queryKey: ['exercises'], queryFn: () => api.get('/api/v1/exercises') });
+  const { data: routines = [] } = useQuery({ queryKey: ['routines'], queryFn: () => api.get('/api/v1/routines') });
+  const { data: profile = {} } = useQuery({ queryKey: ['coachProfile'], queryFn: () => api.get('/api/v1/coaches/profile') });
+  const { data: audits = [] } = useQuery({ queryKey: ['audits'], queryFn: () => api.get('/api/v1/coaches/audits/pending') });
+  const { data: attendanceAlerts = [] } = useQuery({ queryKey: ['attendanceAlerts'], queryFn: () => api.get('/api/v1/coaches/audits/attendance_alerts') });
+
+  
   const [showImportModal, setShowImportModal] = useState(false);
-  const [invitations, setInvitations] = useState([]);
-  const [exercises, setExercises] = useState([]);
+  
+  
   const [exerciseSearchQuery, setExerciseSearchQuery] = useState('');
   const [exerciseCategoryFilter, setExerciseCategoryFilter] = useState('Todas');
-  const [routines, setRoutines] = useState([]);
-  const [profile, setProfile] = useState({});
+  
+  
   const [editingRoutine, setEditingRoutine] = useState(null);
-  const [audits, setAudits] = useState([]);
-  const [attendanceAlerts, setAttendanceAlerts] = useState([]);
+  
+  
   const [loadingAction, setLoadingAction] = useState(null);
   const [assignMenuOpenId, setAssignMenuOpenId] = useState(null);
   const [selectedStudentsForAssign, setSelectedStudentsForAssign] = useState([]);
@@ -47,49 +58,17 @@ export default function CoachDashboard() {
       const user = JSON.parse(userRaw);
       setEmail(user.email);
     }
-    loadData();
+    queryClient.invalidateQueries();
   }, []);
 
-  const loadData = async () => {
-    try {
-      // Todas las peticiones en paralelo (Promise.all) — reduce latencia ~70%
-      const [
-        stdData,
-        invData,
-        exData,
-        rutData,
-        profData,
-        audData,
-        alertsData,
-      ] = await Promise.all([
-        api.get("/api/v1/coaches/students"),
-        api.get("/api/v1/coaches/invitations"),
-        api.get("/api/v1/exercises"),
-        api.get("/api/v1/routines"),
-        api.get("/api/v1/coaches/profile"),
-        api.get("/api/v1/coaches/audits/pending"),
-        api.get("/api/v1/coaches/audits/attendance_alerts"),
-      ]);
-
-      setStudents(stdData);
-      setInvitations(invData);
-      setExercises(exData);
-      setRoutines(rutData);
-      setProfile(profData);
-      setAudits(audData);
-      setAttendanceAlerts(alertsData);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  
   const handleResolveAudit = async (id, action) => {
     if (!(await modal.confirm(`¿Seguro que deseas ${action} este récord?`))) return;
     setLoadingAction(`audit-${id}-${action}`);
     try {
       await api.post(`/api/v1/coaches/audits/${id}/resolve`, { action });
       await modal.alert(`Récord ${action} exitosamente.`);
-      loadData();
+      queryClient.invalidateQueries();
     } catch (err) {
       await modal.alert("Error: " + err.message);
     } finally {
@@ -139,7 +118,7 @@ export default function CoachDashboard() {
       await modal.alert("Ejercicio creado exitosamente.");
       e.target.reset();
       setEsConPeso(true);
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error al crear ejercicio: ${error.message}`);
     } finally {
@@ -153,7 +132,7 @@ export default function CoachDashboard() {
     try {
       await api.post(`/api/v1/exercises/${id_ejercicio}/media`, { url_media: url.trim() });
       await modal.alert("Video asignado exitosamente al ejercicio global.");
-      loadData();
+      queryClient.invalidateQueries();
     } catch (err) {
       await modal.alert("Error: " + err.message);
     }
@@ -171,7 +150,7 @@ export default function CoachDashboard() {
         url_media: url.trim() || undefined
       });
       await modal.alert("Ejercicio modificado exitosamente.");
-      loadData();
+      queryClient.invalidateQueries();
     } catch (err) {
       await modal.alert("Error: " + err.message);
     }
@@ -182,7 +161,7 @@ export default function CoachDashboard() {
     try {
       await api.delete(`/api/v1/exercises/${id_ejercicio}`);
       await modal.alert("Ejercicio eliminado exitosamente.");
-      loadData();
+      queryClient.invalidateQueries();
     } catch (err) {
       await modal.alert("Error al eliminar: Es posible que esté en uso en alguna rutina.");
     }
@@ -193,7 +172,7 @@ export default function CoachDashboard() {
     try {
       await api.patch(`/api/v1/coaches/students/${id}/suspend`, { estado_activo: false });
       await modal.alert("Alumno dado de baja con éxito.");
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -226,7 +205,7 @@ export default function CoachDashboard() {
         dia_vencimiento_personalizado 
       });
       await modal.alert("Alumno reactivado con éxito.");
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -237,7 +216,7 @@ export default function CoachDashboard() {
     try {
       await api.delete(`/api/v1/coaches/students/${id}/hard`);
       await modal.alert("Alumno eliminado definitivamente.");
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -248,7 +227,7 @@ export default function CoachDashboard() {
     if (clas === null) return;
     try {
       await api.put(`/api/v1/coaches/students/${id}`, { clasificacion: clas.trim() || null });
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -264,7 +243,7 @@ export default function CoachDashboard() {
     }
     try {
       await api.patch(`/api/v1/coaches/students/${id}/payment_date`, { dia_vencimiento_personalizado: dia });
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error al actualizar el día de pago: ${error.message}`);
     }
@@ -277,7 +256,7 @@ export default function CoachDashboard() {
       const data = await api.post("/api/v1/coaches/invitations", {});
       await modal.alert(`¡Código generado con éxito!\nCódigo UUIDv4: ${data.codigo_unico}`);
       e.target.reset();
-      loadData();
+      queryClient.invalidateQueries();
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     } finally {
@@ -805,7 +784,7 @@ export default function CoachDashboard() {
                            try {
                              await api.post(`/api/v1/routines/${rut.id_rutina}/duplicate`);
                              await modal.alert("Rutina duplicada exitosamente.");
-                             loadData();
+                             queryClient.invalidateQueries();
                            } catch(e) { await modal.alert(e.message); }
                          }}
                          className="px-2 py-1 bg-indigo-900/40 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-800/60 transition-colors rounded text-xs font-medium"
@@ -919,7 +898,7 @@ export default function CoachDashboard() {
                            headers: { 'Content-Type': 'multipart/form-data' }
                          });
                          await modal.alert("Foto subida exitosamente.");
-                         loadData();
+                         queryClient.invalidateQueries();
                        } catch (error) {
                          await modal.alert("Error al subir foto: " + error.message);
                        }
@@ -953,7 +932,7 @@ export default function CoachDashboard() {
                     config_estado_alumno_default, config_vencimiento_tipo, config_vencimiento_dia
                   });
                   await modal.alert("Perfil actualizado correctamente.");
-                  loadData();
+                  queryClient.invalidateQueries();
                 } catch (error) {
                   await modal.alert("Error al actualizar perfil: " + error.message);
                 }
@@ -1060,7 +1039,7 @@ export default function CoachDashboard() {
         <WorkoutBuilder 
           initialData={editingRoutine}
           onClose={() => { setIsBuildingRoutine(false); setEditingRoutine(null); }} 
-          onSaveSuccess={() => { setIsBuildingRoutine(false); setEditingRoutine(null); loadData(); }} 
+          onSaveSuccess={() => { setIsBuildingRoutine(false); setEditingRoutine(null); queryClient.invalidateQueries(); }} 
         />
       )}
       {/* Import Routine Modal */}

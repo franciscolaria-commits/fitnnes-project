@@ -17,7 +17,7 @@ def get_my_profile(db: Session = Depends(get_db), current_user: models.Usuario =
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Sólo los alumnos pueden ver su perfil")
 
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno:
         raise HTTPException(status_code=404, detail="Perfil no encontrado")
 
@@ -35,7 +35,7 @@ def get_my_routine(db: Session = Depends(get_db), current_user: models.Usuario =
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Sólo los alumnos pueden ver su rutina asignada")
 
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno or not alumno.id_rutina_activa:
         raise HTTPException(status_code=404, detail="No tienes una rutina asignada actualmente")
 
@@ -130,7 +130,7 @@ def get_my_stats(db: Session = Depends(get_db), current_user: models.Usuario = D
     ).count()
 
     # Averiguar frecuencia semanal
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     frecuencia = 3 # default
     if alumno and alumno.id_rutina_activa:
         rutina = db.query(models.Rutina).filter(models.Rutina.id_rutina == alumno.id_rutina_activa).first()
@@ -219,7 +219,7 @@ def update_my_weight(data: UpdateWeightRequest, background_tasks: BackgroundTask
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Sólo alumnos pueden actualizar su peso")
     
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno:
         raise HTTPException(status_code=404, detail="Alumno no encontrado")
         
@@ -238,7 +238,7 @@ def get_my_league(db: Session = Depends(get_db), current_user: models.Usuario = 
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Sólo alumnos")
         
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     peso_corporal = alumno.peso_corporal_actual or 70.0
 
     MAPEO_PILARES = {
@@ -318,7 +318,7 @@ def get_my_asistencias(
     if current_user.rol != "alumno":
         raise HTTPException(status_code=403, detail="Solo alumnos")
 
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno:
         raise HTTPException(status_code=404, detail="Perfil no encontrado")
 
@@ -342,7 +342,7 @@ def get_my_asistencias(
 def update_my_membership(data: schemas.MembershipUpdate, db: Session = Depends(get_db), current_user: models.Usuario = Depends(get_current_user)):
     if current_user.rol != 'alumno':
         raise HTTPException(status_code=403, detail='Sólo alumnos')
-    alumno = db.query(models.Alumno).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
+    alumno = db.query(models.Alumno).options(joinedload(models.Alumno.usuario), joinedload(models.Alumno.entrenador).joinedload(models.Entrenador.usuario)).filter(models.Alumno.id_usuario == current_user.id_usuario).first()
     if not alumno:
         raise HTTPException(status_code=404, detail='Alumno no encontrado')
     
