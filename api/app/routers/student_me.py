@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session, selectinload, joinedload
 from uuid import UUID, uuid4
 from datetime import datetime
 from pydantic import BaseModel

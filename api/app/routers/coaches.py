@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime, timedelta
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List
 
 from app import models, schemas

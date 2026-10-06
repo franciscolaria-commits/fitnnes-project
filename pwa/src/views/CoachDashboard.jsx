@@ -861,7 +861,7 @@ export default function CoachDashboard() {
         )}
 
         {activePanel === 'finances' && (
-          <FinancesPanel students={students} api={api} loadStudents={loadData} modal={modal} profile={profile} gymConfig={gymConfig} />
+          <FinancesPanel students={students} api={api} loadStudents={() => queryClient.invalidateQueries({ queryKey: ['students'] })} modal={modal} profile={profile} gymConfig={gymConfig} />
         )}
 
         {activePanel === 'tutorial' && (
