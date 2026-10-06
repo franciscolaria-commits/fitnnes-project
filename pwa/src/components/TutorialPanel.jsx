@@ -361,15 +361,15 @@ export default function TutorialPanel({ userType = 'coach' }) {
 
                 <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl p-5">
                   <h4 className="font-bold text-white flex items-center gap-2 mb-3">
-                    <Smartphone className="w-4 h-4 text-zinc-400" /> 2. Kiosko de Asistencia (Check-in)
+                    <Smartphone className="w-4 h-4 text-zinc-400" /> 2. Registro de Asistencia (Check-in)
                   </h4>
                   <p className="text-sm text-zinc-400 mb-3">
-                    Para que los alumnos puedan registrar su llegada, ve a la pestaña <strong>Auditoría</strong> y haz clic en <strong>"Ir a Modo Kiosko"</strong>.
+                    Para registrar su asistencia, los alumnos van a tener que escanear el QR que está en tu pestaña <strong>Perfil</strong> (el botón de color verde).
                   </p>
                   <ul className="text-xs text-zinc-400 space-y-2 list-disc pl-4">
-                    <li>Esto abrirá una pantalla especial que puedes dejar abierta en una tablet o PC en la recepción de tu gimnasio.</li>
-                    <li>Tus alumnos deben abrir la app de Syncro en sus celulares, tocar el icono de QR de arriba a la derecha para ver su credencial, y escanearla en el Kiosko.</li>
-                    <li>El Kiosko les dirá al instante si están al día, si se quedaron sin clases, o si están suspendidos por falta de pago, descontando la clase de forma automática.</li>
+                    <li>Se <strong>recomienda imprimirlo</strong> y pegarlo en la recepción de tu gimnasio, al igual que los QRs para registrarse e iniciar sesión.</li>
+                    <li>Tus alumnos abren la app de Syncro en sus celulares y usan la cámara o escáner de la app para escanear este QR físico al llegar.</li>
+                    <li>El sistema les dirá al instante si están al día, descontará su clase de forma automática si corresponde, o les avisará si están suspendidos por falta de pago.</li>
                   </ul>
                 </div>
 
