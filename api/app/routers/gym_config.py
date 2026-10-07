@@ -4,7 +4,7 @@ Gym configuration and class management endpoints for coaches.
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List, Any
 from app.database import get_db
 from app.models import Entrenador, Alumno, AsistenciaQR, Usuario
 from app.utils.auth import get_current_user
@@ -21,6 +21,7 @@ class GymConfigInput(BaseModel):
     gym_frecuencia_valor: Optional[int] = None
     gym_monto_pase_libre: Optional[float] = None
     gym_monto_clases: Optional[float] = None
+    gym_paquetes_clases: Optional[List[dict]] = None
 
 
 class RecargaClasesInput(BaseModel):
@@ -44,6 +45,7 @@ def get_gym_config(
         "gym_frecuencia_valor": coach.gym_frecuencia_valor,
         "gym_monto_pase_libre": float(coach.gym_monto_pase_libre) if coach.gym_monto_pase_libre else None,
         "gym_monto_clases": float(coach.gym_monto_clases) if coach.gym_monto_clases else None,
+        "gym_paquetes_clases": coach.gym_paquetes_clases or [],
         "qr_url": f"/qr/{str(current_user.id_usuario)}",
     }
 
@@ -68,6 +70,8 @@ def update_gym_config(
     coach.gym_frecuencia_valor = body.gym_frecuencia_valor
     coach.gym_monto_pase_libre = body.gym_monto_pase_libre
     coach.gym_monto_clases     = body.gym_monto_clases
+    if body.gym_paquetes_clases is not None:
+        coach.gym_paquetes_clases = body.gym_paquetes_clases
     db.commit()
     return {"ok": True}
 

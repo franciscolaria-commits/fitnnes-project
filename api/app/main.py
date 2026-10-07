@@ -38,6 +38,7 @@ try:
         conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_frecuencia_valor INTEGER"))
         conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_monto_pase_libre NUMERIC(10, 2)"))
         conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_monto_clases NUMERIC(10, 2)"))
+        conn.execute(text("ALTER TABLE entrenadores ADD COLUMN IF NOT EXISTS gym_paquetes_clases JSON DEFAULT '[]'::json"))
         
         conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS tipo_membresia VARCHAR"))
         conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clases_compradas INTEGER"))
@@ -45,6 +46,7 @@ try:
         conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS clases_restantes INTEGER"))
         conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS fecha_inicio_paquete DATE"))
         conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS vencimiento_estimado_clases DATE"))
+        conn.execute(text("ALTER TABLE alumnos ADD COLUMN IF NOT EXISTS gym_paquete_id VARCHAR"))
         print("Manual DDL (columnas) aplicadas con éxito.")
 except Exception as e:
     print(f"Error aplicando manual DDL: {e}")
