@@ -21,6 +21,7 @@ export default function GymConfigPanel() {
     gym_frecuencia_valor: 3,
     gym_monto_pase_libre: '',
     gym_monto_clases: '',
+    gym_paquetes_clases: [],
   });
 
   const [saved, setSaved] = useState(false);
@@ -34,6 +35,7 @@ export default function GymConfigPanel() {
         gym_frecuencia_valor: config.gym_frecuencia_valor || 3,
         gym_monto_pase_libre: config.gym_monto_pase_libre || '',
         gym_monto_clases: config.gym_monto_clases || '',
+        gym_paquetes_clases: config.gym_paquetes_clases || [],
       });
     }
   }, [config]);
@@ -63,6 +65,7 @@ export default function GymConfigPanel() {
       gym_frecuencia_valor: form.tipo_cuenta === 'gimnasio' && form.gym_tipo_cobro !== 'pase_libre' ? Number(form.gym_frecuencia_valor) : null,
       gym_monto_pase_libre: (form.gym_tipo_cobro === 'pase_libre' || form.gym_tipo_cobro === 'ambos') ? Number(form.gym_monto_pase_libre) || null : null,
       gym_monto_clases: (form.gym_tipo_cobro === 'por_clases' || form.gym_tipo_cobro === 'ambos') ? Number(form.gym_monto_clases) || null : null,
+      gym_paquetes_clases: form.tipo_cuenta === 'gimnasio' && (form.gym_tipo_cobro === 'por_clases' || form.gym_tipo_cobro === 'ambos') ? form.gym_paquetes_clases : [],
     });
   };
 
@@ -121,48 +124,62 @@ export default function GymConfigPanel() {
             </div>
           </div>
 
-          {/* Frecuencia (solo si hay clases) */}
+          {/* Paquetes de Clases (Múltiples) */}
           {needsClases && (
-            <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Frecuencia de clases</p>
-              <div className="grid grid-cols-2 gap-2">
-                {[
-                  { val: 'por_semana', label: 'Días por semana' },
-                  { val: 'por_mes', label: 'Días por mes' },
-                ].map(opt => (
-                  <button key={opt.val} onClick={() => set('gym_frecuencia_tipo', opt.val)}
-                    className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${form.gym_frecuencia_tipo === opt.val ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400' : 'border-zinc-800 text-zinc-500'}`}>
-                    {opt.label}
-                  </button>
+            <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl space-y-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Paquetes de Clases</p>
+              
+              <div className="space-y-3">
+                {form.gym_paquetes_clases.map((pkg, i) => (
+                  <div key={pkg.id || i} className="flex gap-2 items-center bg-zinc-950 p-2 rounded-lg border border-zinc-800">
+                    <div className="flex-1 flex flex-col gap-1">
+                      <label className="text-[10px] text-zinc-500">Cantidad de clases</label>
+                      <input type="number" min={1} value={pkg.clases || ''}
+                        onChange={e => {
+                          const newPkgs = [...form.gym_paquetes_clases];
+                          newPkgs[i].clases = Number(e.target.value);
+                          set('gym_paquetes_clases', newPkgs);
+                        }}
+                        className="bg-transparent text-white text-sm outline-none w-full" placeholder="Ej: 8" />
+                    </div>
+                    <div className="w-px h-8 bg-zinc-800"></div>
+                    <div className="flex-1 flex flex-col gap-1">
+                      <label className="text-[10px] text-zinc-500">Precio ($)</label>
+                      <input type="number" min={0} value={pkg.precio || ''}
+                        onChange={e => {
+                          const newPkgs = [...form.gym_paquetes_clases];
+                          newPkgs[i].precio = Number(e.target.value);
+                          set('gym_paquetes_clases', newPkgs);
+                        }}
+                        className="bg-transparent text-white text-sm outline-none w-full" placeholder="Ej: 15000" />
+                    </div>
+                    <button onClick={() => {
+                      const newPkgs = form.gym_paquetes_clases.filter((_, idx) => idx !== i);
+                      set('gym_paquetes_clases', newPkgs);
+                    }} className="p-2 text-red-400 hover:bg-red-500/20 rounded-lg">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                    </button>
+                  </div>
                 ))}
               </div>
-              <div className="flex items-center gap-3">
-                <span className="text-zinc-400 text-sm">Cantidad de días:</span>
-                <input type="number" min={1} max={30} value={form.gym_frecuencia_valor}
-                  onChange={e => set('gym_frecuencia_valor', e.target.value)}
-                  className="w-20 bg-zinc-950 border border-zinc-800 text-white p-2 rounded-lg text-sm outline-none text-center focus:border-emerald-500" />
-              </div>
+              
+              <button onClick={() => {
+                const newPkgs = [...form.gym_paquetes_clases, { id: Date.now().toString(), clases: 8, precio: 10000 }];
+                set('gym_paquetes_clases', newPkgs);
+              }} className="w-full py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-xs font-bold transition-colors">
+                + Agregar Paquete
+              </button>
             </div>
           )}
 
-          {/* Montos */}
-          <div className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Montos</p>
-            {needsPaseLibre && (
-              <div className="flex items-center gap-3">
-                <label className="text-sm text-zinc-300 w-40">Pase libre ($/mes):</label>
-                <input type="number" value={form.gym_monto_pase_libre} onChange={e => set('gym_monto_pase_libre', e.target.value)}
-                  className="flex-1 bg-zinc-950 border border-zinc-800 text-white p-2.5 rounded-lg text-sm outline-none focus:border-emerald-500" placeholder="Ej: 15000" />
-              </div>
-            )}
-            {needsClases && (
-              <div className="flex items-center gap-3">
-                <label className="text-sm text-zinc-300 w-40">Por paquete clases:</label>
-                <input type="number" value={form.gym_monto_clases} onChange={e => set('gym_monto_clases', e.target.value)}
-                  className="flex-1 bg-zinc-950 border border-zinc-800 text-white p-2.5 rounded-lg text-sm outline-none focus:border-emerald-500" placeholder="Ej: 8000" />
-              </div>
-            )}
-          </div>
+          {/* Monto Pase Libre */}
+          {needsPaseLibre && (
+            <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-xl">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-400 mb-3">Monto Pase Libre ($/mes)</p>
+              <input type="number" value={form.gym_monto_pase_libre} onChange={e => set('gym_monto_pase_libre', e.target.value)}
+                className="w-full bg-zinc-950 border border-zinc-800 text-white p-2.5 rounded-lg text-sm outline-none focus:border-emerald-500" placeholder="Ej: 15000" />
+            </div>
+          )}
 
           {/* QR Code */}
           {config?.qr_url && (

@@ -109,6 +109,7 @@ class AlumnoCreate(AlumnoBase):
     telefono: str = Field(..., description="WhatsApp con código de país")
     tipo_membresia: Optional[str] = None
     clases_compradas: Optional[int] = None
+    gym_paquete_id: Optional[str] = None
 
 class AlumnoUpdate(BaseModel):
     peso: Optional[float] = None
@@ -130,6 +131,7 @@ class AlumnoOut(AlumnoBase):
     # Gym mode fields
     tipo_membresia: Optional[str] = None
     clases_compradas: Optional[int] = None
+    gym_paquete_id: Optional[str] = None
     clases_usadas_total: Optional[int] = None
     clases_restantes: Optional[int] = None
     vencimiento_estimado_clases: Optional[datetime] = None
@@ -452,6 +454,7 @@ class EstadoPagoAlumnoResponse(BaseModel):
     tipo_membresia: Optional[str] = None
     clases_restantes: Optional[int] = None
     clases_compradas: Optional[int] = None
+    gym_paquete_id: Optional[str] = None
     clases_usadas_total: Optional[int] = None
 
 class CoachFinanceSummary(BaseModel):
@@ -562,3 +565,4 @@ class ConfiguracionEvaluacionUpdate(BaseModel):
 class MembershipUpdate(BaseModel):
     tipo_membresia: str
     clases_compradas: Optional[int] = None
+    gym_paquete_id: Optional[str] = None

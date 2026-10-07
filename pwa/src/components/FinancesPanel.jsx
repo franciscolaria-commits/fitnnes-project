@@ -203,65 +203,82 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
           <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
             <Dumbbell className="w-5 h-5 text-amber-400" /> Panel Modo Gimnasio
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
 
             {/* Pase Libre card */}
             {(gymTipoCobro === 'pase_libre' || gymTipoCobro === 'ambos') && (
               <div className="p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-10"><Ticket className="w-14 h-14 text-emerald-400" /></div>
                 <p className="text-emerald-400 text-xs font-bold uppercase tracking-widest">Pase Libre</p>
-                <h3 className="text-3xl font-black text-white">{gymStudentsPaseLibre.length}</h3>
+                <h3 className="text-3xl font-black text-white">{safePayments.filter(p => p.tipo_membresia === 'pase_libre').length}</h3>
                 <p className="text-emerald-200/60 text-xs">alumnos activos</p>
                 {gymConfig?.gym_monto_pase_libre && (
                   <p className="text-emerald-400 font-bold text-sm mt-1">
-                    Esperado: ${(gymStudentsPaseLibre.length * gymConfig.gym_monto_pase_libre).toLocaleString('es-AR')} / mes
+                    Esperado: ${(safePayments.filter(p => p.tipo_membresia === 'pase_libre').length * gymConfig.gym_monto_pase_libre).toLocaleString('es-AR')} / mes
                   </p>
                 )}
               </div>
             )}
 
-            {/* Por Clases card */}
-            {(gymTipoCobro === 'por_clases' || gymTipoCobro === 'ambos') && (
-              <div className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
-                <div className="absolute top-0 right-0 p-4 opacity-10"><Dumbbell className="w-14 h-14 text-amber-400" /></div>
-                <p className="text-amber-400 text-xs font-bold uppercase tracking-widest">Por Clases</p>
-                <h3 className="text-3xl font-black text-white">{gymStudentsPorClases.length}</h3>
-                <p className="text-amber-200/60 text-xs">alumnos con paquete</p>
-                {gymStudentsSinClases.length > 0 && (
-                  <div className="mt-1 px-2 py-1 bg-red-500/20 border border-red-500/30 rounded-lg">
-                    <p className="text-red-400 text-xs font-bold">⚠ {gymStudentsSinClases.length} alumno(s) con ≤2 clases restantes</p>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Por Clases cards (dinámicos) */}
+            {(gymTipoCobro === 'por_clases' || gymTipoCobro === 'ambos') && gymConfig?.gym_paquetes_clases?.map(pkg => {
+              const studentsInPkg = safePayments.filter(p => p.tipo_membresia === 'por_clases' && p.gym_paquete_id === pkg.id);
+              const studentsSinClases = studentsInPkg.filter(p => (p.clases_restantes || 0) <= 2);
+              return (
+                <div key={pkg.id} className="p-5 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
+                  <div className="absolute top-0 right-0 p-4 opacity-10"><Dumbbell className="w-14 h-14 text-amber-400" /></div>
+                  <p className="text-amber-400 text-xs font-bold uppercase tracking-widest">{pkg.clases} Clases</p>
+                  <h3 className="text-3xl font-black text-white">{studentsInPkg.length}</h3>
+                  <p className="text-amber-200/60 text-xs">alumnos en este paquete</p>
+                  <p className="text-amber-400 font-bold text-sm mt-1">
+                    Esperado: ${(studentsInPkg.length * (pkg.precio || 0)).toLocaleString('es-AR')} / mes
+                  </p>
+                  {studentsSinClases.length > 0 && (
+                    <div className="mt-2 flex items-center gap-1 text-xs text-red-400 font-bold bg-red-400/10 px-2 py-1 rounded-lg w-fit">
+                      <AlertCircle className="w-3 h-3" /> {studentsSinClases.length} por recargar
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
-            {/* Total Income Estimate */}
+            {/* Total Alumnos Gym */}
             <div className="p-5 bg-zinc-800/60 border border-zinc-700/50 rounded-2xl flex flex-col gap-2 relative overflow-hidden">
               <div className="absolute top-0 right-0 p-4 opacity-10"><DollarSign className="w-14 h-14 text-zinc-400" /></div>
               <p className="text-zinc-400 text-xs font-bold uppercase tracking-widest">Total Alumnos Gym</p>
-              <h3 className="text-3xl font-black text-white">{gymStudentsPaseLibre.length + gymStudentsPorClases.length}</h3>
+              <h3 className="text-3xl font-black text-white">{safePayments.filter(p => p.tipo_membresia === 'pase_libre' || p.tipo_membresia === 'por_clases').length}</h3>
               <p className="text-zinc-500 text-xs">registrados en este gimnasio</p>
             </div>
           </div>
-
-          {/* Gym filter tabs */}
-          {gymTipoCobro === 'ambos' && (
-            <div className="flex gap-2 mt-4">
+{/* Gym filter tabs */}
+          {(gymTipoCobro === 'ambos' || gymConfig?.gym_paquetes_clases?.length > 1) && (
+            <div className="flex gap-2 border-b border-zinc-800 pb-4 overflow-x-auto no-scrollbar">
               <button onClick={() => setFilter('todos')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'todos' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${filter === 'todos' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
                 Todos
               </button>
-              <button onClick={() => setFilter('pase_libre')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'pase_libre' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
-                Pase Libre
-              </button>
-              <button onClick={() => setFilter('por_clases')}
-                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors ${filter === 'por_clases' ? 'bg-amber-500/20 text-amber-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
-                Por Clases
-              </button>
+              {(gymTipoCobro === 'pase_libre' || gymTipoCobro === 'ambos') && (
+                <button onClick={() => setFilter('pase_libre')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${filter === 'pase_libre' ? 'bg-emerald-500/20 text-emerald-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                  Pase Libre
+                </button>
+              )}
+              {(gymTipoCobro === 'por_clases' || gymTipoCobro === 'ambos') && gymConfig?.gym_paquetes_clases?.map(pkg => (
+                <button key={pkg.id} onClick={() => setFilter(`pkg_${pkg.id}`)}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${filter === `pkg_${pkg.id}` ? 'bg-amber-500/20 text-amber-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                  {pkg.clases} Clases
+                </button>
+              ))}
+              {/* Fallback para alumnos por clases sin paquete asignado */}
+              {(gymTipoCobro === 'por_clases' || gymTipoCobro === 'ambos') && (
+                <button onClick={() => setFilter('por_clases_otros')}
+                  className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${filter === 'por_clases_otros' ? 'bg-amber-500/20 text-amber-400' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
+                  Otras Clases
+                </button>
+              )}
             </div>
           )}
-        </section>
+          </section>
       )}
 
       {/* KPIs */}
@@ -483,7 +500,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
                       <MessageCircle className="w-5 h-5" />
                     </button>
                     {p.tipo_membresia === 'por_clases' && (
-                      <button onClick={() => handleReloadClasses(p.id_alumno)} className="px-3 py-2 text-sm bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white rounded-lg transition-colors font-medium" title="Recargar Clases">
+                      <button onClick={() => handleReloadClasses(p.id_alumno, p.gym_paquete_id)} className="px-3 py-2 text-sm bg-amber-600/20 text-amber-400 hover:bg-amber-600 hover:text-white rounded-lg transition-colors font-medium" title="Recargar Clases">
                         + Clases
                       </button>
                     )}

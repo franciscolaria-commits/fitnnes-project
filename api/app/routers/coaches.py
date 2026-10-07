@@ -1193,6 +1193,7 @@ def import_routine(
 from pydantic import BaseModel
 class ReloadClassesReq(BaseModel):
     clases: int
+    gym_paquete_id: str = None
 
 @router.post("/students/{student_id}/reload_classes")
 def reload_classes(
@@ -1219,6 +1220,8 @@ def reload_classes(
         
     if alumno.clases_compradas is None:
         alumno.clases_compradas = req.clases
+    if hasattr(req, 'gym_paquete_id') and req.gym_paquete_id:
+        alumno.gym_paquete_id = req.gym_paquete_id
     else:
         alumno.clases_compradas += req.clases
         

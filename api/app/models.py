@@ -1,6 +1,6 @@
-import uuid
+﻿import uuid
 from datetime import datetime, date
-from sqlalchemy import Column, String, Boolean, Integer, ForeignKey, DateTime, Float, Numeric, Date, UniqueConstraint
+from sqlalchemy import Column, JSON, String, Boolean, Integer, ForeignKey, DateTime, Float, Numeric, Date, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.database import Base
@@ -33,7 +33,7 @@ class Entrenador(Base):
     tipo_cobro_alumnos = Column(String, nullable=True) # 'fijo' o 'por_clase' etc.
     precio_cobro_alumnos = Column(Float, nullable=True)
     
-    # ConfiguraciÃƒÂ³n de gestiÃƒÂ³n y pagos
+    # Configuración del estado de los alumnos
     config_estado_alumno_default = Column(String, default="activo", nullable=False) # 'activo' o 'suspendido'
     config_vencimiento_tipo = Column(String, default="individual", nullable=False) # 'fijo' o 'individual'
     config_vencimiento_dia = Column(Integer, nullable=True) # 1-31
@@ -47,6 +47,7 @@ class Entrenador(Base):
     gym_frecuencia_valor     = Column(Integer, nullable=True)  # ej: 3 (días/semana)
     gym_monto_pase_libre     = Column(Numeric(10, 2), nullable=True)
     gym_monto_clases         = Column(Numeric(10, 2), nullable=True)
+    gym_paquetes_clases      = Column(JSON, default=list, server_default='[]')
 
     usuario = relationship("Usuario")
 
@@ -82,6 +83,7 @@ class Alumno(Base):
     # ── Membresía por Clases (Modo Gimnasio) ──────────────────
     tipo_membresia           = Column(String, nullable=True)   # 'pase_libre' | 'por_clases'
     clases_compradas         = Column(Integer, nullable=True)  # último paquete
+    gym_paquete_id           = Column(String, nullable=True)
     clases_usadas_total      = Column(Integer, default=0, nullable=False)
     clases_restantes         = Column(Integer, nullable=True)
     fecha_inicio_paquete     = Column(Date, nullable=True)     # primer QR scan
