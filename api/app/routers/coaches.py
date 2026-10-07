@@ -701,6 +701,7 @@ def get_payments_status(
             "tipo_membresia": al.tipo_membresia,
             "clases_restantes": al.clases_restantes,
             "clases_compradas": al.clases_compradas,
+            "gym_paquete_id": al.gym_paquete_id,
             "clases_usadas_total": al.clases_usadas_total
         })
         
