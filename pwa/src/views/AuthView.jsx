@@ -282,11 +282,25 @@ export default function AuthView({ onLoginSuccess }) {
                 )}
                 
                 {selectedMembresia === 'por_clases' && (
-                <div id="clases-compradas-container">
-                  <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cuántas clases vas a comprar inicialmente?</label>
-                  <input type="number" id="reg-student-clases" min="1" required placeholder="Ej: 8" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white" />
-                </div>
+              <div id="clases-compradas-container">
+                {gymInfo?.gym_paquetes_clases && gymInfo.gym_paquetes_clases.length > 0 ? (
+                  <>
+                    <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Qué paquete de clases vas a comprar inicialmente?</label>
+                    <select id="reg-student-gym-paquete" required defaultValue="" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white">
+                      <option value="" disabled>Selecciona un paquete</option>
+                      {gymInfo.gym_paquetes_clases.map(p => (
+                        <option key={p.id} value={p.id}>{p.clases} clases (${p.precio})</option>
+                      ))}
+                    </select>
+                  </>
+                ) : (
+                  <>
+                    <label className="text-xs text-emerald-200 font-semibold block mb-1">¿Cuántas clases vas a comprar inicialmente?</label>
+                    <input type="number" id="reg-student-clases" min="1" required placeholder="Ej: 8" className="w-full border border-emerald-500/50 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-white" />
+                  </>
                 )}
+              </div>
+            )}
               </div>
             )}
             <button type="submit" disabled={loadingAction === 'registerStudent'} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 font-bold active:scale-95 transition-all text-sm mt-2 shadow-lg shadow-blue-500/10 disabled:opacity-50">
