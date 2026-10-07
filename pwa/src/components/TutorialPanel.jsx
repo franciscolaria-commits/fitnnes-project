@@ -373,6 +373,21 @@ export default function TutorialPanel({ userType = 'coach' }) {
                   </ul>
                 </div>
 
+            <div className="bg-zinc-900/50 border border-zinc-700/50 rounded-xl p-5 mt-4">
+              <h4 className="font-bold text-white flex items-center gap-2 mb-3">
+                <ClipboardList className="w-4 h-4 text-zinc-400" /> 3. Configuración de Paquetes de Clases
+              </h4>
+              <p className="text-sm text-zinc-400 mb-3">
+                Si configuras tu gimnasio con el modelo "Por Clases" o "Ambos", puedes crear paquetes de clases personalizados desde tu <strong>Perfil</strong>.
+              </p>
+              <ul className="text-xs text-zinc-400 space-y-2 list-disc pl-4">
+                <li>Puedes definir múltiples opciones como "8 clases por mes" o "12 clases por mes" con sus respectivos precios.</li>
+                <li>Cuando los alumnos nuevos se registren mediante tu código QR, <strong>el sistema les pedirá elegir uno de estos paquetes</strong> en lugar de escribir a mano cuántas clases quieren comprar.</li>
+                <li>Al registrarse con un paquete, el sistema asignará automáticamente esa cantidad de clases a su cuenta.</li>
+                <li>En el panel de <strong>Finanzas</strong>, tendrás filtros rápidos en la barra superior para agrupar y ver solo a los alumnos que compraron determinado paquete, facilitando tu organización.</li>
+              </ul>
+            </div>
+
               </div>
             )}
           </div>
