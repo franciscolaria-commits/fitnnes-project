@@ -94,14 +94,32 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
   };
 
   const handleMarkPaid = async (studentId) => {
+    const student = payments?.find(p => p.id_alumno === studentId);
+    
+    let expectedAmount = null;
+    if (isGymMode && student) {
+      if (student.tipo_membresia === 'pase_libre') {
+        expectedAmount = gymConfig?.gym_monto_pase_libre || 0;
+      } else if (student.tipo_membresia === 'por_clases') {
+        const pkg = gymConfig?.gym_paquetes_clases?.find(pkg => pkg.id === student.gym_paquete_id);
+        if (pkg) expectedAmount = pkg.precio || 0;
+      }
+    }
+
     const isPaid = await modal.confirm("¿Confirmas que el alumno ya realizó el pago?");
     if (!isPaid) return;
-    const amountStr = window.prompt("Opcional: Ingresa el monto pagado (ej: 1500)", "");
+    
     let amount = null;
-    if (amountStr !== null && amountStr.trim() !== "") {
-        amount = parseFloat(amountStr);
-        if (isNaN(amount)) amount = null;
+    if (isGymMode && expectedAmount !== null && expectedAmount > 0) {
+      amount = expectedAmount;
+    } else {
+      const amountStr = window.prompt("Opcional: Ingresa el monto pagado (ej: 1500)", "");
+      if (amountStr !== null && amountStr.trim() !== "") {
+          amount = parseFloat(amountStr);
+          if (isNaN(amount)) amount = null;
+      }
     }
+
     try {
       await api.post(`/api/v1/coaches/payments`, {
         id_alumno: studentId,
@@ -116,8 +134,21 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     }
   };
 
-  const handleReloadClasses = async (studentId) => {
-    const clasesStr = window.prompt("¿Cuántas clases deseas recargar?", "8");
+  const handleReloadClasses = async (studentId, gym_paquete_id) => {
+    const student = payments?.find(p => p.id_alumno === studentId);
+    let defaultClases = "8";
+    let expectedAmount = null;
+
+    if (isGymMode) {
+      const pkgId = gym_paquete_id || student?.gym_paquete_id;
+      const pkg = gymConfig?.gym_paquetes_clases?.find(pkg => pkg.id === pkgId);
+      if (pkg) {
+         defaultClases = String(pkg.clases || 8);
+         expectedAmount = pkg.precio || 0;
+      }
+    }
+
+    const clasesStr = window.prompt("¿Cuántas clases deseas recargar?", defaultClases);
     if (!clasesStr) return;
     const clases = parseInt(clasesStr);
     if (isNaN(clases) || clases <= 0) {
@@ -127,11 +158,15 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     
     const registrarPago = await modal.confirm("¿Deseas registrar un pago por esta recarga de clases?");
     if (registrarPago) {
-      const amountStr = window.prompt("Ingresa el monto cobrado (opcional):", "");
       let amount = null;
-      if (amountStr !== null && amountStr.trim() !== "") {
-          amount = parseFloat(amountStr);
-          if (isNaN(amount)) amount = null;
+      if (isGymMode && expectedAmount !== null && expectedAmount > 0 && clases.toString() === defaultClases) {
+         amount = expectedAmount;
+      } else {
+        const amountStr = window.prompt("Ingresa el monto cobrado (opcional):", "");
+        if (amountStr !== null && amountStr.trim() !== "") {
+            amount = parseFloat(amountStr);
+            if (isNaN(amount)) amount = null;
+        }
       }
       try {
         await api.post(`/api/v1/coaches/payments`, {
