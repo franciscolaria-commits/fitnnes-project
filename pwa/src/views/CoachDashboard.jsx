@@ -8,7 +8,7 @@ import FinancesPanel from '../components/FinancesPanel.jsx';
 import TutorialPanel from '../components/TutorialPanel.jsx';
 import ImportRoutineModal from '../components/ImportRoutineModal.jsx';
 import GymConfigPanel from '../components/GymConfigPanel.jsx';
-import { Menu, X, Copy, Download, ChevronDown, ChevronUp } from "lucide-react";
+import { Menu, X, Copy, Download, ChevronDown, ChevronUp, AlertTriangle } from "lucide-react";
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
@@ -264,8 +264,29 @@ export default function CoachDashboard() {
     }
   };
 
+  const isGymMode = gymConfig?.tipo_cuenta === 'gimnasio';
+  const isMissingPackages = isGymMode && 
+    (gymConfig?.gym_tipo_cobro === 'ambos' || gymConfig?.gym_tipo_cobro === 'por_clases') && 
+    (!gymConfig?.gym_paquetes_clases || gymConfig.gym_paquetes_clases.length === 0);
+
   return (
     <div className="w-full max-w-5xl mx-auto flex flex-col gap-6 p-4 md:p-8 relative">
+      {isMissingPackages && (
+        <div className="bg-red-500/20 border border-red-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg animate-in fade-in slide-in-from-top-4 relative z-30">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-red-500/20 rounded-full shrink-0">
+               <AlertTriangle className="w-6 h-6 text-red-400" />
+            </div>
+            <div>
+              <h3 className="text-red-400 font-bold text-sm uppercase tracking-wider">Atención: Configuración Incompleta</h3>
+              <p className="text-zinc-300 text-sm mt-1">Has activado el cobro por clases, pero <strong>no tienes ningún paquete de clases creado</strong>. Para poder asignar y cobrar paquetes a tus alumnos, debes crearlos urgentemente en tu Perfil.</p>
+            </div>
+          </div>
+          <button onClick={() => setActivePanel('profile')} className="shrink-0 px-4 py-2 bg-red-500 hover:bg-red-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all">
+             Ir a Perfil
+          </button>
+        </div>
+      )}
       <header className="glass-card rounded-2xl p-4 flex items-center justify-between shadow-lg relative z-20">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-blue-600 flex items-center justify-center shadow-md shadow-blue-500/10">
