@@ -162,7 +162,15 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
                     vencimiento = datetime.utcnow() + timedelta(days=30)
                 
         # 5. Crear perfil de Alumno asociado al entrenador
+        
+        if student_data.gym_paquete_id and entrenador_config and entrenador_config.gym_paquetes_clases:
+            for p in entrenador_config.gym_paquetes_clases:
+                if str(p.get("id")) == str(student_data.gym_paquete_id):
+                    student_data.clases_compradas = p.get("clases", 0)
+                    break
+        
         nuevo_alumno = Alumno(
+
             id_usuario=nuevo_usuario.id_usuario,
             id_entrenador=id_entrenador,
             peso_corporal_actual=student_data.peso_corporal_actual,
@@ -171,7 +179,8 @@ def register_student(student_data: AlumnoCreate, db: Session = Depends(get_db)):
             fecha_vencimiento_pago=vencimiento,
             tipo_membresia=student_data.tipo_membresia,
             clases_compradas=student_data.clases_compradas,
-            clases_restantes=student_data.clases_compradas
+            clases_restantes=student_data.clases_compradas,
+            gym_paquete_id=student_data.gym_paquete_id
         )
         db.add(nuevo_alumno)
         

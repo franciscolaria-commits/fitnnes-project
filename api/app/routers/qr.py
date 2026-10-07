@@ -59,6 +59,7 @@ def get_gym_info(coach_id: str, db: Session = Depends(get_db)):
         "tipo_cobro": coach.gym_tipo_cobro,
         "gym_monto_pase_libre": float(coach.gym_monto_pase_libre) if coach.gym_monto_pase_libre else None,
         "gym_monto_clases": float(coach.gym_monto_clases) if coach.gym_monto_clases else None,
+        "gym_paquetes_clases": coach.gym_paquetes_clases or [],
     }
 
 

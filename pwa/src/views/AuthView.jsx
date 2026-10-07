@@ -85,6 +85,7 @@ export default function AuthView({ onLoginSuccess }) {
       const tipoMembresiaEl = e.target['reg-student-membresia'];
       let tipo_membresia = null;
       let clases_compradas = null;
+      let gym_paquete_id = null;
       
       if (gymInfo) {
         if (gymInfo.tipo_cobro === 'pase_libre') tipo_membresia = 'pase_libre';
@@ -92,9 +93,14 @@ export default function AuthView({ onLoginSuccess }) {
         else if (tipoMembresiaEl) tipo_membresia = tipoMembresiaEl.value;
         
         if (tipo_membresia === 'por_clases') {
-          const clasesEl = e.target['reg-student-clases'];
-          if (clasesEl && clasesEl.value) {
-            clases_compradas = parseInt(clasesEl.value);
+          const paqueteEl = e.target['reg-student-gym-paquete'];
+          if (paqueteEl && paqueteEl.value) {
+            gym_paquete_id = paqueteEl.value;
+          } else {
+            const clasesEl = e.target['reg-student-clases'];
+            if (clasesEl && clasesEl.value) {
+              clases_compradas = parseInt(clasesEl.value);
+            }
           }
         }
       }
@@ -107,7 +113,8 @@ export default function AuthView({ onLoginSuccess }) {
         objetivo: goal || null,
         telefono: phone,
         tipo_membresia,
-        clases_compradas
+        clases_compradas,
+        gym_paquete_id
       });
       await modal.alert("¡Registro completado exitosamente! Inicia sesión.");
       // Limpiar URL si venia de link
