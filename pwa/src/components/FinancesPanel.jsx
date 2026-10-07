@@ -10,6 +10,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
   
   const [filter, setFilter] = useState('todos'); // todos, pagados, pendientes, vencen_2_dias, vencen_hoy, vencidos
   const [chartMonths, setChartMonths] = useState(6);
+  const [reloadModal, setReloadModal] = useState({ isOpen: false, studentId: null, defaultPkgId: null });
 
   const isGymMode = gymConfig?.tipo_cuenta === 'gimnasio';
   const gymTipoCobro = gymConfig?.gym_tipo_cobro || '';
@@ -135,19 +136,16 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
   };
 
   const handleReloadClasses = async (studentId, gym_paquete_id) => {
-    const student = payments?.find(p => p.id_alumno === studentId);
-    let defaultClases = "8";
-    let expectedAmount = null;
-
-    if (isGymMode) {
+    if (isGymMode && gymConfig?.gym_paquetes_clases?.length > 0) {
+      const student = payments?.find(p => p.id_alumno === studentId);
       const pkgId = gym_paquete_id || student?.gym_paquete_id;
-      const pkg = gymConfig?.gym_paquetes_clases?.find(pkg => pkg.id === pkgId);
-      if (pkg) {
-         defaultClases = String(pkg.clases || 8);
-         expectedAmount = pkg.precio || 0;
-      }
+      setReloadModal({ isOpen: true, studentId, defaultPkgId: pkgId });
+      return;
     }
 
+    // Fallback logic for non-gym or gyms without packages
+    const student = payments?.find(p => p.id_alumno === studentId);
+    let defaultClases = "8";
     const clasesStr = window.prompt("¿Cuántas clases deseas recargar?", defaultClases);
     if (!clasesStr) return;
     const clases = parseInt(clasesStr);
@@ -158,15 +156,11 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
     
     const registrarPago = await modal.confirm("¿Deseas registrar un pago por esta recarga de clases?");
     if (registrarPago) {
+      const amountStr = window.prompt("Ingresa el monto cobrado (opcional):", "");
       let amount = null;
-      if (isGymMode && expectedAmount !== null && expectedAmount > 0 && clases.toString() === defaultClases) {
-         amount = expectedAmount;
-      } else {
-        const amountStr = window.prompt("Ingresa el monto cobrado (opcional):", "");
-        if (amountStr !== null && amountStr.trim() !== "") {
-            amount = parseFloat(amountStr);
-            if (isNaN(amount)) amount = null;
-        }
+      if (amountStr !== null && amountStr.trim() !== "") {
+          amount = parseFloat(amountStr);
+          if (isNaN(amount)) amount = null;
       }
       try {
         await api.post(`/api/v1/coaches/payments`, {
@@ -185,6 +179,40 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
       await modal.alert(`Se recargaron ${clases} clases exitosamente.`);
     } catch (e) {
       await modal.alert("Error al recargar clases.");
+    }
+  };
+
+  const handleConfirmReloadPackage = async (pkgId) => {
+    const studentId = reloadModal.studentId;
+    const pkg = gymConfig.gym_paquetes_clases.find(p => p.id === pkgId);
+    setReloadModal({ isOpen: false });
+
+    if (!pkg) return;
+
+    const registrarPago = await modal.confirm(`¿Deseas registrar un pago automático de $${pkg.precio} por este paquete de ${pkg.clases} clases?`);
+    if (registrarPago) {
+      try {
+        await api.post(`/api/v1/coaches/payments`, {
+          id_alumno: studentId,
+          anio_mes: monthYearString,
+          monto: pkg.precio,
+          metodo_pago: null,
+          notas: `Recarga: paquete de ${pkg.clases} clases`
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    try {
+      await api.post(`/api/v1/coaches/students/${studentId}/reload_classes`, { 
+        clases: pkg.clases,
+        gym_paquete_id: pkg.id
+      });
+      await loadFinances();
+      await modal.alert(`El alumno ahora tiene ${pkg.clases} clases y su paquete fue actualizado.`);
+    } catch (e) {
+      await modal.alert("Error al asignar paquete.");
     }
   };
 
@@ -563,6 +591,38 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
           </div>
         )}
       </section>
+
+      {/* MODAL DE SELECCIÓN DE PAQUETE (GYM MODE) */}
+      {reloadModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 font-sans text-zinc-200">
+           <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-6 shadow-2xl rounded-2xl animate-in fade-in zoom-in-95 duration-200">
+              <div>
+                <h3 className="text-xl font-bold text-white">Seleccionar Paquete</h3>
+                <p className="text-sm text-zinc-400 mt-1">Elige el paquete que el alumno desea comprar o recargar.</p>
+              </div>
+              
+              <div className="flex flex-col gap-3 max-h-[50vh] overflow-y-auto no-scrollbar">
+                {gymConfig?.gym_paquetes_clases?.map(pkg => (
+                  <button 
+                    key={pkg.id} 
+                    onClick={() => handleConfirmReloadPackage(pkg.id)}
+                    className={`p-4 rounded-xl border flex justify-between items-center transition-all ${pkg.id === reloadModal.defaultPkgId ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 hover:border-zinc-600'}`}
+                  >
+                    <div className="flex flex-col text-left">
+                       <span className="font-bold text-amber-400">{pkg.clases} Clases</span>
+                       <span className="text-xs text-zinc-400 mt-0.5">{pkg.id === reloadModal.defaultPkgId ? 'Paquete actual' : 'Cambiar a este paquete'}</span>
+                    </div>
+                    <span className="font-bold text-white text-lg">${pkg.precio}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-3 mt-2">
+                 <button onClick={() => setReloadModal({isOpen: false})} className="px-4 py-2 text-sm font-bold tracking-widest uppercase text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all">Cancelar</button>
+              </div>
+           </div>
+        </div>
+      )}
     </div>
   );
 }
