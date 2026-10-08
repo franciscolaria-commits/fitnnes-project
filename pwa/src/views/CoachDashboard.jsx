@@ -266,6 +266,42 @@ export default function CoachDashboard() {
   };
 
   const isGymMode = gymConfig?.tipo_cuenta === 'gimnasio';
+  const handleConfirmReloadPackage = async (pkgId) => {
+    const studentId = reloadModal.studentId;
+    const pkg = gymConfig.gym_paquetes_clases.find(p => p.id === pkgId);
+    setReloadModal({ isOpen: false });
+
+    if (!pkg) return;
+
+    const registrarPago = await modal.confirm(`¿Deseas registrar un pago automático de $${pkg.precio} por este paquete de ${pkg.clases} clases?`);
+    if (registrarPago) {
+      const currentDate = new Date();
+      const monthYearString = currentDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' });
+      try {
+        await api.post(`/api/v1/coaches/payments`, {
+          id_alumno: studentId,
+          anio_mes: monthYearString,
+          monto: pkg.precio,
+          metodo_pago: null,
+          notas: `Recarga: paquete de ${pkg.clases} clases`
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    try {
+      await api.post(`/api/v1/coaches/students/${studentId}/reload_classes`, { 
+        clases: pkg.clases,
+        gym_paquete_id: pkg.id
+      });
+      queryClient.invalidateQueries({ queryKey: ['students'] });
+      await modal.alert(`El alumno ahora tiene ${pkg.clases} clases y su paquete fue actualizado.`);
+    } catch (e) {
+      await modal.alert("Error al asignar paquete.");
+    }
+  };
+
   const studentsWithoutPackage = isGymMode ? students.filter(s => s.tipo_membresia === 'por_clases' && !s.gym_paquete_id && s.estado_activo) : [];
   
   const isMissingPackages = isGymMode && 
