@@ -19,6 +19,7 @@ export default function CoachDashboard() {
   const [isStudentsOpen, setIsStudentsOpen] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
+  const [reloadModal, setReloadModal] = useState({ isOpen: false, studentId: null, defaultPkgId: null });
   const [gymConfig, setGymConfig] = useState(null);
 
   // Load gym config
@@ -265,6 +266,8 @@ export default function CoachDashboard() {
   };
 
   const isGymMode = gymConfig?.tipo_cuenta === 'gimnasio';
+  const studentsWithoutPackage = isGymMode ? students.filter(s => s.tipo_membresia === 'por_clases' && !s.gym_paquete_id && s.estado_activo) : [];
+  
   const isMissingPackages = isGymMode && 
     (gymConfig?.gym_tipo_cobro === 'ambos' || gymConfig?.gym_tipo_cobro === 'por_clases') && 
     (!gymConfig?.gym_paquetes_clases || gymConfig.gym_paquetes_clases.length === 0);
@@ -284,6 +287,24 @@ export default function CoachDashboard() {
           </div>
           <button onClick={() => setActivePanel('profile')} className="shrink-0 px-4 py-2 bg-red-500 hover:bg-red-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all">
              Ir a Perfil
+          </button>
+        </div>
+      )}
+
+      {/* BANNER ALUMNOS SIN PAQUETE ASIGNADO */}
+      {studentsWithoutPackage.length > 0 && gymConfig?.gym_paquetes_clases?.length > 0 && (
+        <div className="bg-amber-500/20 border border-amber-500/50 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg animate-in fade-in slide-in-from-top-4 relative z-30">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-amber-500/20 rounded-full shrink-0">
+               <AlertTriangle className="w-6 h-6 text-amber-400" />
+            </div>
+            <div>
+              <h3 className="text-amber-400 font-bold text-sm uppercase tracking-wider">Alumnos sin paquete asignado</h3>
+              <p className="text-zinc-300 text-sm mt-1">Tienes <strong>{studentsWithoutPackage.length} alumnos</strong> marcados como "Por clases" que todavía no tienen un paquete asignado. Asígnales uno para evitar errores.</p>
+            </div>
+          </div>
+          <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); }} className="shrink-0 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all">
+             Ver Alumnos
           </button>
         </div>
       )}
@@ -326,6 +347,38 @@ export default function CoachDashboard() {
           </button>
         </div>
       </header>
+
+      {/* MODAL DE SELECCIÓN DE PAQUETE (GYM MODE) */}
+      {reloadModal.isOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-zinc-950/80 backdrop-blur-sm p-4 font-sans text-zinc-200">
+           <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 p-6 flex flex-col gap-6 shadow-2xl rounded-2xl animate-in fade-in zoom-in-95 duration-200">
+              <div>
+                <h3 className="text-xl font-bold text-white">Asignar Paquete Inicial</h3>
+                <p className="text-sm text-zinc-400 mt-1">El alumno no tiene ningún paquete asociado. Elige el paquete correspondiente para regularizarlo.</p>
+              </div>
+              
+              <div className="flex flex-col gap-3 max-h-[50vh] overflow-y-auto no-scrollbar">
+                {gymConfig?.gym_paquetes_clases?.map(pkg => (
+                  <button 
+                    key={pkg.id} 
+                    onClick={() => handleConfirmReloadPackage(pkg.id)}
+                    className={`p-4 rounded-xl border flex justify-between items-center transition-all ${pkg.id === reloadModal.defaultPkgId ? 'border-amber-500 bg-amber-500/10' : 'border-zinc-700 bg-zinc-800/50 hover:bg-zinc-800 hover:border-zinc-600'}`}
+                  >
+                    <div className="flex flex-col text-left">
+                       <span className="font-bold text-amber-400">{pkg.clases} Clases</span>
+                       <span className="text-xs text-zinc-400 mt-0.5">Asignar este paquete</span>
+                    </div>
+                    <span className="font-bold text-white text-lg">${pkg.precio}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="flex justify-end gap-3 mt-2">
+                 <button onClick={() => setReloadModal({isOpen: false})} className="px-4 py-2 text-sm font-bold tracking-widest uppercase text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-all">Cancelar</button>
+              </div>
+           </div>
+        </div>
+      )}
 
       {/* Mobile Menu Dropdown */}
       {isMobileMenuOpen && (
@@ -548,7 +601,7 @@ export default function CoachDashboard() {
                   const tagMatch = alumno.clasificacion && alumno.clasificacion.toLowerCase().includes(search);
                   return nameEmailMatch || tagMatch;
                 }).map(alumno => (
-                  <div key={alumno.id_usuario} className={`p-4 rounded-xl border flex flex-col justify-between gap-3 ${alumno.estado_activo ? 'bg-zinc-900/60 border-zinc-800/40' : 'bg-red-950/10 border-red-900/40 opacity-75'}`}>
+                  <div key={alumno.id_usuario} className={`p-4 rounded-xl border flex flex-col justify-between gap-3 ${alumno.estado_activo ? (isGymMode && alumno.tipo_membresia === 'por_clases' && !alumno.gym_paquete_id ? 'bg-amber-950/20 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.1)]' : 'bg-zinc-900/60 border-zinc-800/40') : 'bg-red-950/10 border-red-900/40 opacity-75'}`}>
                     <div>
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-bold text-zinc-100">{alumno.usuario.email.split('@')[0]}</h3>
@@ -582,10 +635,18 @@ export default function CoachDashboard() {
                     </div>
                     <div className="flex gap-2 w-full mt-2">
                       {alumno.estado_activo ? (
-                        <>
-                          <button onClick={() => setSelectedStudentId(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors border border-indigo-500/20">Progreso</button>
-                          <button onClick={() => handleDeactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-red-950/20 hover:bg-red-900/40 text-red-400 border border-red-500/10 font-semibold transition-colors">Suspender</button>
-                        </>
+                        <div className="flex flex-col w-full gap-2">
+                          {isGymMode && alumno.tipo_membresia === 'por_clases' && !alumno.gym_paquete_id && gymConfig?.gym_paquetes_clases?.length > 0 && (
+                            <button onClick={() => setReloadModal({ isOpen: true, studentId: alumno.id_usuario, defaultPkgId: null })} className="w-full py-2 px-3 rounded-lg text-xs bg-amber-500 hover:bg-amber-400 text-black font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+                              <AlertTriangle className="w-4 h-4" />
+                              Asignar Paquete
+                            </button>
+                          )}
+                          <div className="flex gap-2 w-full">
+                            <button onClick={() => setSelectedStudentId(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold transition-colors border border-indigo-500/20">Progreso</button>
+                            <button onClick={() => handleDeactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-red-950/20 hover:bg-red-900/40 text-red-400 border border-red-500/10 font-semibold transition-colors">Suspender</button>
+                          </div>
+                        </div>
                       ) : (
                         <>
                           <button onClick={() => handleReactivateStudent(alumno.id_usuario)} className="flex-1 py-2 px-3 rounded-lg text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-semibold transition-colors">Reactivar</button>
