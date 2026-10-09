@@ -1,4 +1,4 @@
-﻿import uuid
+import uuid
 from datetime import datetime, date
 from sqlalchemy import Column, JSON, String, Boolean, Integer, ForeignKey, DateTime, Float, Numeric, Date, UniqueConstraint
 from sqlalchemy.dialects.postgresql import UUID
@@ -68,6 +68,7 @@ class Alumno(Base):
     id_usuario = Column(UUID(as_uuid=True), ForeignKey("usuarios.id_usuario"), primary_key=True)
     id_entrenador = Column(UUID(as_uuid=True), ForeignKey("entrenadores.id_usuario"), nullable=False, index=True)
     peso_corporal_actual = Column(Float)
+    fecha_nacimiento = Column(Date, nullable=True)
     fecha_ultimo_peso = Column(DateTime, default=datetime.utcnow)
     objetivo = Column(String)
     estado_activo = Column(Boolean, default=True, index=True)

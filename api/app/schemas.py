@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, date
 from uuid import UUID
 
 # ==========================================
@@ -98,6 +98,7 @@ class InvitacionOut(BaseModel):
 
 class AlumnoBase(BaseModel):
     peso_corporal_actual: Optional[float] = None
+    fecha_nacimiento: Optional[date] = None
     objetivo: Optional[str] = None
     id_rutina_activa: Optional[UUID] = None
     clasificacion: Optional[str] = None
@@ -105,6 +106,7 @@ class AlumnoBase(BaseModel):
 class AlumnoCreate(AlumnoBase):
     email: EmailStr
     password: str = Field(..., min_length=6)
+    fecha_nacimiento: date
     codigo_invitacion: str = Field(..., description="UUIDv4 de invitación o Email del Entrenador")
     telefono: str = Field(..., description="WhatsApp con código de país")
     tipo_membresia: Optional[str] = None

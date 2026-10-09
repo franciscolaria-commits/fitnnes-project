@@ -77,6 +77,7 @@ export default function AuthView({ onLoginSuccess }) {
     const code = e.target['reg-student-code'].value.trim();
     const email = e.target['reg-student-email'].value;
     const password = e.target['reg-student-password'].value;
+    const birthdate = e.target['reg-student-birthdate'].value;
     const weight = e.target['reg-student-weight'].value;
     const goal = e.target['reg-student-goal'].value;
     const phone = e.target['reg-student-phone'].value.trim();
@@ -109,6 +110,7 @@ export default function AuthView({ onLoginSuccess }) {
         codigo_invitacion: code,
         email,
         password,
+        fecha_nacimiento: birthdate,
         peso_corporal_actual: weight ? parseFloat(weight) : null,
         objetivo: goal || null,
         telefono: phone,
@@ -254,6 +256,10 @@ export default function AuthView({ onLoginSuccess }) {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+            </div>
+            <div>
+              <label className="text-xs text-zinc-400 font-semibold block mb-1">Fecha de Nacimiento</label>
+              <input type="date" id="reg-student-birthdate" required className="w-full border border-zinc-800 bg-zinc-900 rounded-xl px-4 py-3 text-sm text-zinc-200 focus:outline-none focus:border-indigo-500" />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
