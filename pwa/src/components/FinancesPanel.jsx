@@ -136,14 +136,18 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
   };
 
   const handleReloadClasses = async (studentId, gym_paquete_id) => {
-    if (isGymMode && gymConfig?.gym_paquetes_clases?.length > 0) {
-      const student = payments?.find(p => p.id_alumno === studentId);
-      const pkgId = gym_paquete_id || student?.gym_paquete_id;
-      setReloadModal({ isOpen: true, studentId, defaultPkgId: pkgId });
+    if (isGymMode) {
+      if (gymConfig?.gym_paquetes_clases?.length > 0) {
+        const student = payments?.find(p => p.id_alumno === studentId);
+        const pkgId = gym_paquete_id || student?.gym_paquete_id;
+        setReloadModal({ isOpen: true, studentId, defaultPkgId: pkgId });
+      } else {
+        await modal.alert("Debes crear al menos un paquete de clases en la sección Perfil para poder asignar clases.");
+      }
       return;
     }
 
-    // Fallback logic for non-gym or gyms without packages
+    // Fallback logic for non-gym
     const student = payments?.find(p => p.id_alumno === studentId);
     let defaultClases = "8";
     const clasesStr = window.prompt("¿Cuántas clases deseas recargar?", defaultClases);
@@ -314,7 +318,7 @@ export default function FinancesPanel({ students, api, loadStudents, modal, prof
             </div>
           </div>
 {/* Gym filter tabs */}
-          {(gymTipoCobro === 'ambos' || gymConfig?.gym_paquetes_clases?.length > 1) && (
+          {(gymTipoCobro === 'ambos' || gymTipoCobro === 'por_clases' || gymTipoCobro === 'pase_libre') && (
             <div className="flex gap-2 border-b border-zinc-800 pb-4 overflow-x-auto no-scrollbar">
               <button onClick={() => setFilter('todos')}
                 className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${filter === 'todos' ? 'bg-zinc-700 text-white' : 'text-zinc-400 hover:bg-zinc-800/50'}`}>
