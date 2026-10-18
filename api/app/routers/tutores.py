@@ -375,6 +375,9 @@ async def diagnostico_smtp(
     if relay_valido:
         metodo_principal = "Google Apps Script Relay (HTTPS Puerto 443 - Envía a CUALQUIER tutor sin restricciones)"
         diagnostico_msg = "✅ Despacho vía Google Apps Script Relay activo y verificado. Los correos se envían directamente desde syncrobylaria2026@gmail.com a CUALQUIER tutor sin restricciones de dominio ni bloqueos de Render."
+    elif relay_url and "403" in str(relay_status):
+        metodo_principal = "Google Apps Script Relay (Bloqueado por permisos)"
+        diagnostico_msg = "⚠️ Google Apps Script Relay devolvió HTTP 403 Forbidden. En script.google.com ve a 'Implementar' -> 'Gestionar implementaciones' y cambia 'Quién tiene acceso' a 'Cualquiera' (Anyone) y 'Ejecutar como' a 'Yo'."
     elif resend_valido:
         metodo_principal = "Resend HTTPS API (Puerto 443)"
         diagnostico_msg = "✅ Despacho vía Resend HTTPS API activo. En capa gratuita entrega a tu cuenta de Resend (para otros tutores, configura GMAIL_RELAY_URL o verifica un dominio)."
