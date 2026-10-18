@@ -1,4 +1,5 @@
 import os
+import asyncio
 import secrets
 from datetime import datetime, timedelta
 from typing import Optional
@@ -243,12 +244,20 @@ async def reenviar_solicitud(
     frontend_url = os.getenv("FRONTEND_URL", "https://syncro-clone.vercel.app").rstrip("/")
     auth_url = f"{frontend_url}/consentimiento-tutor?token={new_token}"
 
-    enviado = await send_parental_consent_request_email(
-        alumno.email_tutor,
-        alumno_nombre,
-        entrenador_nombre,
-        new_token
-    )
+    enviado = False
+    try:
+        enviado = await asyncio.wait_for(
+            send_parental_consent_request_email(
+                alumno.email_tutor,
+                alumno_nombre,
+                entrenador_nombre,
+                new_token
+            ),
+            timeout=5.0
+        )
+    except Exception as e:
+        print(f"[Tutores] Timeout o error enviando email en reenviar-solicitud ({e}), entregando enlace directo.")
+        enviado = False
 
     if enviado:
         mensaje = f"Solicitud de autorización despachada a {alumno.email_tutor}"

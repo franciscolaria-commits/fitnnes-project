@@ -73,10 +73,18 @@ export default function PendingGuardianConsentView({ user, onUpdateUser }) {
         });
       }
     } catch (err) {
+      const isOfflineOrTimeout = err?.message === 'OFFLINE' || err?.message?.includes('Timeout');
       setFeedbackMessage({
-        type: 'error',
-        text: err.message || 'No se pudo reenviar la solicitud. Intenta más tarde.'
+        type: isOfflineOrTimeout ? 'info' : 'error',
+        text: isOfflineOrTimeout
+          ? 'La solicitud demoró en responder. Si el correo no llega a la casilla del tutor, puedes copiar y enviarle el enlace directo que figura abajo.'
+          : (err?.message || 'No se pudo reenviar la solicitud. Intenta más tarde.')
       });
+      // Reintentar traer el enlace directo por si se generó en la base de datos
+      try {
+        const linkData = await api.get('/api/v1/tutores/mi-enlace');
+        if (linkData?.enlace_autorizacion) setAuthUrl(linkData.enlace_autorizacion);
+      } catch (e) {}
     } finally {
       setLoadingAction(null);
     }
@@ -118,7 +126,12 @@ export default function PendingGuardianConsentView({ user, onUpdateUser }) {
       localStorage.setItem('fitness_user', JSON.stringify(localUser));
       if (onUpdateUser) onUpdateUser(localUser);
     } catch (err) {
-      modal.alert(err.message || 'Error al actualizar el correo.');
+      const isOfflineOrTimeout = err?.message === 'OFFLINE' || err?.message?.includes('Timeout');
+      modal.alert(
+        isOfflineOrTimeout
+          ? 'El servidor tardó en responder. Por favor, verifica tu conexión o utiliza el enlace directo que figura abajo.'
+          : (err?.message || 'Error al actualizar el correo.')
+      );
     } finally {
       setLoadingAction(null);
     }

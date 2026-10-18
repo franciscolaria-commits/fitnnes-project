@@ -41,8 +41,8 @@ def get_smtp_credentials():
 
 async def _send_smtp_robust(message: EmailMessage, recipient: str) -> bool:
     """
-    Envío SMTP de alta resiliencia para entornos cloud:
-    Intenta Puerto 465 (SSL directo) y si falla o hay timeout en la nube,
+    Envío SMTP de alta resiliencia para entornos cloud con fast-fail ante bloqueo de puertos:
+    Intenta Puerto 465 (SSL directo) con timeout rápido (3.5s) y si falla o hay timeout en la nube,
     reintenta automáticamente por Puerto 587 (STARTTLS).
     Maneja contraseñas de aplicación con y sin espacios.
     """
@@ -56,7 +56,7 @@ async def _send_smtp_robust(message: EmailMessage, recipient: str) -> bool:
     if clean_pass != smtp_password:
         passwords_to_try.append(clean_pass)
 
-    # Intento 1: Puerto 465 SSL directo
+    # Intento 1: Puerto 465 SSL directo (timeout de 3.5s para no congelar la app si Render bloquea el puerto)
     for pwd in passwords_to_try:
         try:
             await aiosmtplib.send(
@@ -66,14 +66,17 @@ async def _send_smtp_robust(message: EmailMessage, recipient: str) -> bool:
                 use_tls=True,
                 username=smtp_email,
                 password=pwd,
-                timeout=15,
+                timeout=3.5,
             )
             print(f"[EmailService] Correo enviado exitosamente a {recipient} via puerto 465 (SSL)")
             return True
         except Exception as e1:
+            err_str = str(e1).lower()
             print(f"[EmailService] Puerto 465 SSL fallo para {recipient}: {type(e1).__name__} - {e1}")
+            if "timeout" in err_str or "timed out" in err_str or "refused" in err_str or "unreachable" in err_str:
+                break
 
-    # Intento 2: Puerto 587 STARTTLS
+    # Intento 2: Puerto 587 STARTTLS (timeout de 3.5s)
     for pwd in passwords_to_try:
         try:
             await aiosmtplib.send(
@@ -83,12 +86,17 @@ async def _send_smtp_robust(message: EmailMessage, recipient: str) -> bool:
                 start_tls=True,
                 username=smtp_email,
                 password=pwd,
-                timeout=15,
+                timeout=3.5,
             )
             print(f"[EmailService] Correo enviado exitosamente a {recipient} via puerto 587 (STARTTLS)")
             return True
         except Exception as e2:
+            err_str = str(e2).lower()
             print(f"[EmailService] Puerto 587 STARTTLS fallo para {recipient}: {type(e2).__name__} - {e2}")
+            if "timeout" in err_str or "timed out" in err_str or "refused" in err_str or "unreachable" in err_str:
+                break
+
+    return False
 
 async def _send_via_http_api(recipient: str, subject: str, html_content: str) -> bool:
     """
@@ -312,14 +320,19 @@ async def _send_via_google_relay(recipient: str, subject: str, html_content: str
     def do_post():
         try:
             import requests
-            resp = requests.post(relay_url, json=payload, timeout=15)
-            if resp.status_code == 200:
-                res_json = resp.json()
-                if res_json.get("success"):
-                    print(f"[EmailService] Correo entregado exitosamente a {recipient} via Google Apps Script Relay (Puerto 443)")
-                    return True
-                else:
-                    print(f"[EmailService] Google Relay respondió error: {res_json.get('error')}")
+            resp = requests.post(relay_url, json=payload, timeout=10, allow_redirects=True)
+            if resp.status_code in [200, 302]:
+                try:
+                    res_json = resp.json()
+                    if res_json.get("success"):
+                        print(f"[EmailService] Correo entregado exitosamente a {recipient} via Google Apps Script Relay (Puerto 443)")
+                        return True
+                    else:
+                        print(f"[EmailService] Google Relay respondió error: {res_json.get('error')}")
+                except Exception:
+                    if "success" in resp.text.lower():
+                        print(f"[EmailService] Correo entregado exitosamente via Google Relay")
+                        return True
             else:
                 print(f"[EmailService] Google Relay HTTP {resp.status_code}: {resp.text[:200]}")
         except Exception as e:
