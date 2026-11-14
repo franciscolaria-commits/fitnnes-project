@@ -2,13 +2,21 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, logout } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
-import WorkoutBuilder from './WorkoutBuilder.jsx';
-import StudentProgress from './StudentProgress.jsx';
-import FinancesPanel from '../components/FinancesPanel.jsx';
-import TutorialPanel from '../components/TutorialPanel.jsx';
-import ImportRoutineModal from '../components/ImportRoutineModal.jsx';
-import GymConfigPanel from '../components/GymConfigPanel.jsx';
+import { markDashboardMounted, markBootstrapStart, markBootstrapDone, logBgPrefetch } from '../utils/perfTracker.js';
 import { Menu, X, Copy, Download, ChevronDown, ChevronUp, AlertTriangle, ShieldAlert, Loader2 } from "lucide-react";
+
+const WorkoutBuilder = React.lazy(() => import('./WorkoutBuilder.jsx'));
+const StudentProgress = React.lazy(() => import('./StudentProgress.jsx'));
+const FinancesPanel = React.lazy(() => import('../components/FinancesPanel.jsx'));
+const TutorialPanel = React.lazy(() => import('../components/TutorialPanel.jsx'));
+const ImportRoutineModal = React.lazy(() => import('../components/ImportRoutineModal.jsx'));
+const GymConfigPanel = React.lazy(() => import('../components/GymConfigPanel.jsx'));
+
+const ModuleLoader = () => (
+  <div className="p-8 text-center text-xs text-zinc-400 font-semibold uppercase tracking-widest animate-pulse">
+    Cargando módulo...
+  </div>
+);
 
 export default function CoachDashboard() {
   const [activePanel, setActivePanel] = useState('students');
@@ -20,25 +28,69 @@ export default function CoachDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedStudentId, setSelectedStudentId] = useState(null);
   const [reloadModal, setReloadModal] = useState({ isOpen: false, studentId: null, defaultPkgId: null });
-  const [gymConfig, setGymConfig] = useState(null);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelConfirmText, setCancelConfirmText] = useState("");
   const [isSubmittingCancellation, setIsSubmittingCancellation] = useState(false);
-
-  // Load gym config
-  useEffect(() => {
-    api.get('/api/v1/coaches/gym/config').then(data => setGymConfig(data)).catch(() => {});
-  }, []);
   const [email, setEmail] = useState('');
 
   const queryClient = useQueryClient();
-  const { data: students = [] } = useQuery({ queryKey: ['students'], queryFn: () => api.get('/api/v1/coaches/students') });
-  const { data: invitations = [] } = useQuery({ queryKey: ['invitations'], queryFn: () => api.get('/api/v1/coaches/invitations') });
-  const { data: exercises = [] } = useQuery({ queryKey: ['exercises'], queryFn: () => api.get('/api/v1/exercises') });
-  const { data: routines = [] } = useQuery({ queryKey: ['routines'], queryFn: () => api.get('/api/v1/routines') });
-  const { data: profile = {} } = useQuery({ queryKey: ['coachProfile'], queryFn: () => api.get('/api/v1/coaches/profile') });
-  const { data: audits = [] } = useQuery({ queryKey: ['audits'], queryFn: () => api.get('/api/v1/coaches/audits/pending') });
-  const { data: attendanceAlerts = [] } = useQuery({ queryKey: ['attendanceAlerts'], queryFn: () => api.get('/api/v1/coaches/audits/attendance_alerts') });
+  const bootstrapQuery = useQuery({
+    queryKey: ['coachBootstrap'],
+    queryFn: async () => {
+      markBootstrapStart();
+      const data = await api.get('/api/v1/coaches/bootstrap');
+      queryClient.setQueryData(['coachProfile'], data.profile);
+      queryClient.setQueryData(['gymConfig'], data.gym_config);
+      queryClient.setQueryData(['students'], data.students);
+      markBootstrapDone(data.students?.length || 0);
+      return data;
+    },
+  });
+  const bootstrapSettled = !bootstrapQuery.isFetching && !bootstrapQuery.isPending;
+
+  const { data: gymConfig = null } = useQuery({
+    queryKey: ['gymConfig'],
+    queryFn: () => api.get('/api/v1/coaches/gym/config'),
+    enabled: bootstrapSettled,
+  });
+  const { data: students = [] } = useQuery({
+    queryKey: ['students'],
+    queryFn: () => api.get('/api/v1/coaches/students'),
+    enabled: bootstrapSettled,
+  });
+  const { data: profile = {} } = useQuery({
+    queryKey: ['coachProfile'],
+    queryFn: () => api.get('/api/v1/coaches/profile'),
+    enabled: bootstrapSettled,
+  });
+  const { data: invitations = [] } = useQuery({
+    queryKey: ['invitations'],
+    queryFn: () => api.get('/api/v1/coaches/invitations'),
+    enabled: isInviteOpen,
+  });
+  const { data: exercises = [] } = useQuery({
+    queryKey: ['exercises'],
+    queryFn: () => api.get('/api/v1/exercises'),
+    enabled: activePanel === 'exercises' || isBuildingRoutine,
+  });
+  const { data: routines = [] } = useQuery({
+    queryKey: ['routines'],
+    queryFn: () => api.get('/api/v1/routines'),
+    enabled: activePanel === 'routines',
+  });
+  const { data: audits = [], isSuccess: auditsLoaded } = useQuery({
+    queryKey: ['audits'],
+    queryFn: () => api.get('/api/v1/coaches/audits/pending'),
+    enabled: activePanel === 'audits',
+  });
+  const { data: attendanceAlerts = [] } = useQuery({
+    queryKey: ['attendanceAlerts'],
+    queryFn: () => api.get('/api/v1/coaches/audits/attendance_alerts'),
+    enabled: activePanel === 'audits',
+  });
+  const pendingAuditsCount = auditsLoaded
+    ? audits.length
+    : (bootstrapQuery.data?.pending_audits_count ?? 0);
 
   
   const [showImportModal, setShowImportModal] = useState(false);
@@ -86,13 +138,42 @@ export default function CoachDashboard() {
   };
 
   useEffect(() => {
+    markDashboardMounted();
     const userRaw = localStorage.getItem("fitness_user");
     if (userRaw) {
       const user = JSON.parse(userRaw);
       setEmail(user.email);
     }
-    queryClient.invalidateQueries();
   }, []);
+
+  // Carga escalonada en segundo plano: primero Alumnos (bootstrap), luego Rutinas y al final Ejercicios
+  const bgPrefetchedRef = useRef(false);
+  useEffect(() => {
+    if (!bootstrapQuery.isSuccess || bgPrefetchedRef.current) return;
+    bgPrefetchedRef.current = true;
+    let cancelled = false;
+    const timer = setTimeout(async () => {
+      try {
+        const t1 = performance.now();
+        await queryClient.prefetchQuery({
+          queryKey: ['routines'],
+          queryFn: () => api.get('/api/v1/routines'),
+        });
+        if (!cancelled) logBgPrefetch('routines', performance.now() - t1);
+
+        const t2 = performance.now();
+        await queryClient.prefetchQuery({
+          queryKey: ['exercises'],
+          queryFn: () => api.get('/api/v1/exercises'),
+        });
+        if (!cancelled) logBgPrefetch('exercises', performance.now() - t2);
+      } catch (e) {}
+    }, 120);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [bootstrapQuery.isSuccess, queryClient]);
 
   
   const handleResolveAudit = async (id, action) => {
@@ -101,7 +182,8 @@ export default function CoachDashboard() {
     try {
       await api.post(`/api/v1/coaches/audits/${id}/resolve`, { action });
       await modal.alert(`Récord ${action} exitosamente.`);
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['audits'] });
+      queryClient.invalidateQueries({ queryKey: ['coachBootstrap'] });
     } catch (err) {
       await modal.alert("Error: " + err.message);
     } finally {
@@ -151,7 +233,7 @@ export default function CoachDashboard() {
       await modal.alert("Ejercicio creado exitosamente.");
       e.target.reset();
       setEsConPeso(true);
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
     } catch (error) {
       await modal.alert(`Error al crear ejercicio: ${error.message}`);
     } finally {
@@ -165,7 +247,7 @@ export default function CoachDashboard() {
     try {
       await api.post(`/api/v1/exercises/${id_ejercicio}/media`, { url_media: url.trim() });
       await modal.alert("Video asignado exitosamente al ejercicio global.");
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
     } catch (err) {
       await modal.alert("Error: " + err.message);
     }
@@ -183,7 +265,7 @@ export default function CoachDashboard() {
         url_media: url.trim() || undefined
       });
       await modal.alert("Ejercicio modificado exitosamente.");
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
     } catch (err) {
       await modal.alert("Error: " + err.message);
     }
@@ -194,7 +276,7 @@ export default function CoachDashboard() {
     try {
       await api.delete(`/api/v1/exercises/${id_ejercicio}`);
       await modal.alert("Ejercicio eliminado exitosamente.");
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['exercises'] });
     } catch (err) {
       await modal.alert("Error al eliminar: Es posible que esté en uso en alguna rutina.");
     }
@@ -205,7 +287,7 @@ export default function CoachDashboard() {
     try {
       await api.patch(`/api/v1/coaches/students/${id}/suspend`, { estado_activo: false });
       await modal.alert("Alumno dado de baja con éxito.");
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['students'] });
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -238,7 +320,7 @@ export default function CoachDashboard() {
         dia_vencimiento_personalizado 
       });
       await modal.alert("Alumno reactivado con éxito.");
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['students'] });
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -249,7 +331,7 @@ export default function CoachDashboard() {
     try {
       await api.delete(`/api/v1/coaches/students/${id}/hard`);
       await modal.alert("Alumno eliminado definitivamente.");
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['students'] });
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -260,7 +342,7 @@ export default function CoachDashboard() {
     if (clas === null) return;
     try {
       await api.put(`/api/v1/coaches/students/${id}`, { clasificacion: clas.trim() || null });
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['students'] });
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     }
@@ -276,7 +358,7 @@ export default function CoachDashboard() {
     }
     try {
       await api.patch(`/api/v1/coaches/students/${id}/payment_date`, { dia_vencimiento_personalizado: dia });
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['students'] });
     } catch (error) {
       await modal.alert(`Error al actualizar el día de pago: ${error.message}`);
     }
@@ -289,7 +371,7 @@ export default function CoachDashboard() {
       const data = await api.post("/api/v1/coaches/invitations", {});
       await modal.alert(`¡Código generado con éxito!\nCódigo UUIDv4: ${data.codigo_unico}`);
       e.target.reset();
-      queryClient.invalidateQueries();
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
     } catch (error) {
       await modal.alert(`Error: ${error.message}`);
     } finally {
@@ -419,17 +501,17 @@ export default function CoachDashboard() {
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-1">
           <button onClick={() => { setActivePanel('students'); setSelectedStudentId(null); }} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'students' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Alumnos</button>
-          <button onClick={() => setActivePanel('exercises')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Ejercicios</button>
-          <button onClick={() => setActivePanel('routines')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Mis Rutinas</button>
+          <button onClick={() => setActivePanel('exercises')} onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['exercises'], queryFn: () => api.get('/api/v1/exercises') })} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'exercises' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Ejercicios</button>
+          <button onClick={() => setActivePanel('routines')} onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['routines'], queryFn: () => api.get('/api/v1/routines') })} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Mis Rutinas</button>
           <button onClick={() => setActivePanel('finances')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'finances' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>Finanzas</button>
           <button onClick={() => setActivePanel('audits')} className={`relative px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'}`}>
             Auditoría
-            {audits.length > 0 && (
-              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg animate-pulse">{audits.length}</span>
+            {pendingAuditsCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center shadow-lg animate-pulse">{pendingAuditsCount}</span>
             )}
           </button>
           <button onClick={() => setActivePanel('tutorial')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'tutorial' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'} ml-2`}>Cómo usar</button>
-          <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); }} className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 ml-2">Crear Rutina</button>
+          <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); }} onMouseEnter={() => queryClient.prefetchQuery({ queryKey: ['exercises'], queryFn: () => api.get('/api/v1/exercises') })} className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 ml-2">Crear Rutina</button>
           <button onClick={() => setShowImportModal(true)} className="px-3 py-2 rounded-xl text-xs font-bold transition-all bg-amber-500 hover:bg-amber-400 text-black shadow-lg shadow-amber-500/20 ml-1" title="Importar rutina desde Excel, CSV, Word o PDF">Importar Rutina</button>
           <button onClick={() => setActivePanel('profile')} className={`px-3 py-2 rounded-xl text-xs font-bold transition-all ${activePanel === 'profile' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'} ml-2`}>Perfil</button>
           <button onClick={logout} className="px-3 py-2 rounded-xl text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all border border-red-500/10 ml-2">Salir</button>
@@ -484,7 +566,7 @@ export default function CoachDashboard() {
             <button onClick={() => { setActivePanel('routines'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'routines' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Mis Rutinas</button>
             <button onClick={() => { setActivePanel('finances'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'finances' ? 'bg-emerald-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Finanzas</button>
             <button onClick={() => { setActivePanel('audits'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all flex justify-between items-center ${activePanel === 'audits' ? 'bg-amber-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>
-              Auditoría {audits.length > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{audits.length}</span>}
+              Auditoría {pendingAuditsCount > 0 && <span className="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingAuditsCount}</span>}
             </button>
             <button onClick={() => { setActivePanel('tutorial'); setIsMobileMenuOpen(false); }} className={`w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all ${activePanel === 'tutorial' ? 'bg-blue-600 text-white' : 'text-zinc-400 hover:bg-white/5'}`}>Cómo usar</button>
             <button onClick={() => { setEditingRoutine(null); setIsBuildingRoutine(true); setIsMobileMenuOpen(false); }} className="w-full text-left py-3 px-4 rounded-xl text-sm font-bold transition-all bg-indigo-600 hover:bg-indigo-500 text-white">Crear Rutina</button>
@@ -503,7 +585,9 @@ export default function CoachDashboard() {
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
                 Volver a Mis Alumnos
               </button>
-              <StudentProgress studentId={selectedStudentId} />
+              <React.Suspense fallback={<ModuleLoader />}>
+                <StudentProgress studentId={selectedStudentId} />
+              </React.Suspense>
             </div>
           ) : (
           <section className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -973,7 +1057,7 @@ export default function CoachDashboard() {
                            try {
                              await api.post(`/api/v1/routines/${rut.id_rutina}/duplicate`);
                              await modal.alert("Rutina duplicada exitosamente.");
-                             queryClient.invalidateQueries();
+                             queryClient.invalidateQueries({ queryKey: ['routines'] });
                            } catch(e) { await modal.alert(e.message); }
                          }}
                          className="px-2 py-1 bg-indigo-900/40 border border-indigo-500/30 text-indigo-300 hover:bg-indigo-800/60 transition-colors rounded text-xs font-medium"
@@ -1027,6 +1111,7 @@ export default function CoachDashboard() {
                                 setLoadingAction(`assign-${rut.id_rutina}`);
                                 try {
                                   await api.post(`/api/v1/routines/${rut.id_rutina}/assign-bulk`, { id_alumnos: selectedStudentsForAssign });
+                                  queryClient.invalidateQueries({ queryKey: ['students'] });
                                   await modal.alert("Rutina asignada exitosamente.");
                                   setAssignMenuOpenId(null);
                                 } catch (err) {
@@ -1050,11 +1135,15 @@ export default function CoachDashboard() {
         )}
 
         {activePanel === 'finances' && (
-          <FinancesPanel students={students} api={api} loadStudents={() => queryClient.invalidateQueries({ queryKey: ['students'] })} modal={modal} profile={profile} gymConfig={gymConfig} />
+          <React.Suspense fallback={<ModuleLoader />}>
+            <FinancesPanel students={students} api={api} loadStudents={() => queryClient.invalidateQueries({ queryKey: ['students'] })} modal={modal} profile={profile} gymConfig={gymConfig} />
+          </React.Suspense>
         )}
 
         {activePanel === 'tutorial' && (
-          <TutorialPanel />
+          <React.Suspense fallback={<ModuleLoader />}>
+            <TutorialPanel />
+          </React.Suspense>
         )}
 
         {activePanel === 'profile' && (
@@ -1087,7 +1176,7 @@ export default function CoachDashboard() {
                            headers: { 'Content-Type': 'multipart/form-data' }
                          });
                          await modal.alert("Foto subida exitosamente.");
-                         queryClient.invalidateQueries();
+                         queryClient.invalidateQueries({ queryKey: ['coachProfile'] });
                        } catch (error) {
                          await modal.alert("Error al subir foto: " + error.message);
                        }
@@ -1121,7 +1210,7 @@ export default function CoachDashboard() {
                     config_estado_alumno_default, config_vencimiento_tipo, config_vencimiento_dia
                   });
                   await modal.alert("Perfil actualizado correctamente.");
-                  queryClient.invalidateQueries();
+                  queryClient.invalidateQueries({ queryKey: ['coachProfile'] });
                 } catch (error) {
                   await modal.alert("Error al actualizar perfil: " + error.message);
                 }
@@ -1218,7 +1307,9 @@ export default function CoachDashboard() {
             </form>
 
             <div className="border-t border-zinc-800 my-4" />
-            <GymConfigPanel />
+            <React.Suspense fallback={<ModuleLoader />}>
+              <GymConfigPanel />
+            </React.Suspense>
 
             {/* ZONA PELIGROSA: CANCELACIÓN DE SUSCRIPCIÓN */}
             <div className="border-t border-zinc-800/80 my-2" />
@@ -1256,18 +1347,22 @@ export default function CoachDashboard() {
       </div>
 
       {isBuildingRoutine && (
-        <WorkoutBuilder 
-          initialData={editingRoutine}
-          onClose={() => { setIsBuildingRoutine(false); setEditingRoutine(null); }} 
-          onSaveSuccess={() => { setIsBuildingRoutine(false); setEditingRoutine(null); queryClient.invalidateQueries(); }} 
-        />
+        <React.Suspense fallback={<ModuleLoader />}>
+          <WorkoutBuilder 
+            initialData={editingRoutine}
+            onClose={() => { setIsBuildingRoutine(false); setEditingRoutine(null); }} 
+            onSaveSuccess={() => { setIsBuildingRoutine(false); setEditingRoutine(null); queryClient.invalidateQueries({ queryKey: ['routines'] }); }} 
+          />
+        </React.Suspense>
       )}
       {/* Import Routine Modal */}
       {showImportModal && (
-        <ImportRoutineModal
-          students={students}
-          onClose={() => setShowImportModal(false)}
-        />
+        <React.Suspense fallback={<ModuleLoader />}>
+          <ImportRoutineModal
+            students={students}
+            onClose={() => setShowImportModal(false)}
+          />
+        </React.Suspense>
       )}
 
       {/* Modal Confirmación de Cancelación de Suscripción */}

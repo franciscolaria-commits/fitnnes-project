@@ -1,10 +1,22 @@
 import CalendarPicker from '../components/CalendarPicker.jsx';
 import React, { useState, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
+import { del } from 'idb-keyval';
 import { api } from '../services/api.js';
 import { useModal } from '../components/ModalProvider.jsx';
 import { Eye, EyeOff } from 'lucide-react';
+import { markLoginStart, markLoginApiDone } from '../utils/perfTracker.js';
+
+let dashboardsPreloaded = false;
+function preloadDashboards() {
+  if (dashboardsPreloaded) return;
+  dashboardsPreloaded = true;
+  import('./CoachDashboard.jsx').catch(() => {});
+  import('./StudentDashboard.jsx').catch(() => {});
+}
 
 export default function AuthView({ onLoginSuccess }) {
+  const queryClient = useQueryClient();
   const urlParams = new URLSearchParams(window.location.search);
   const initialCoachCode = urlParams.get('coachCode') || '';
   const initialActivePanel = initialCoachCode ? 'registerStudent' : 'login';
@@ -55,12 +67,15 @@ export default function AuthView({ onLoginSuccess }) {
     const email = e.target['login-email'].value;
     const password = e.target['login-password'].value;
     setLoadingAction('login');
+    preloadDashboards();
+    markLoginStart();
     try {
       const formData = new FormData();
       formData.append("username", email);
       formData.append("password", password);
 
       const data = await api.post("/api/v1/auth/login", formData);
+      markLoginApiDone();
       localStorage.setItem("fitness_jwt", data.access_token);
       const userData = {
         email: data.email,
@@ -71,11 +86,16 @@ export default function AuthView({ onLoginSuccess }) {
         email_tutor: data.email_tutor
       };
       localStorage.setItem("fitness_user", JSON.stringify(userData));
-      try {
-        window.indexedDB.deleteDatabase("keyval-store");
-      } catch (e) {}
+      queryClient.clear();
+      del("REACT_QUERY_OFFLINE_CACHE").catch(() => {});
       const _redirectUrl = new URLSearchParams(window.location.search).get("redirect");
-      window.location.href = _redirectUrl || "/";
+      if (_redirectUrl && !_redirectUrl.startsWith('/')) {
+        window.location.href = _redirectUrl;
+      } else if (onLoginSuccess) {
+        onLoginSuccess(_redirectUrl);
+      } else {
+        window.location.href = _redirectUrl || "/";
+      }
     } catch (err) {
       setError(err.message);
     } finally {
@@ -195,7 +215,7 @@ export default function AuthView({ onLoginSuccess }) {
       {activePanel === 'login' && (
         <div className="glass-card rounded-2xl p-6 shadow-xl flex flex-col gap-4">
           <h2 className="text-lg font-bold text-zinc-100">Iniciar Sesión</h2>
-          <form onSubmit={handleLogin} className="flex flex-col gap-3">
+          <form onSubmit={handleLogin} onFocus={preloadDashboards} className="flex flex-col gap-3">
             <div>
               <label className="text-xs text-zinc-400 font-semibold block mb-1">Email</label>
               <input type="email" id="login-email" required placeholder="entrenador@correo.com o alumno@correo.com" className="w-full border rounded-xl px-4 py-3 text-sm text-zinc-200" />
