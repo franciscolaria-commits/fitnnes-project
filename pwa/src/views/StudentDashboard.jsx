@@ -26,6 +26,7 @@ import StudentProfile from '../components/StudentProfile.jsx';
 import { Info } from 'lucide-react';
 
 import MembershipModal from '../components/MembershipModal.jsx';
+import PWAInstallBanner from '../components/PWAInstallBanner.jsx';
 
 
 
@@ -371,7 +372,7 @@ export default function StudentDashboard() {
 
       )}
 
-      
+      <PWAInstallBanner />
 
       {profile?.usuario && !profile.usuario.telefono && (
 
